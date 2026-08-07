@@ -75,7 +75,7 @@ export const ReceiptParamsGrid: React.FC<ReceiptParamsGridProps> = (props) => {
                     <input
                         type="text"
                         inputMode="numeric"
-                        placeholder="up to 10"
+                        placeholder="up to 10 digits"
                         value={props.fiscalDocument}
                         onChange={e => props.setFiscalDocument(e.target.value)}
                         style={commonStyles.input}
@@ -86,7 +86,7 @@ export const ReceiptParamsGrid: React.FC<ReceiptParamsGridProps> = (props) => {
                     <input
                         type="text"
                         inputMode="numeric"
-                        placeholder="up to 10"
+                        placeholder="up to 10 digits"
                         value={props.fiscalDocumentSign}
                         onChange={e => props.setFiscalDocumentSign(e.target.value)}
                         style={commonStyles.input}

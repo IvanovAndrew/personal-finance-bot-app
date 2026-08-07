@@ -1,10 +1,12 @@
 ﻿import React, {useState} from 'react';
-import {Building2, Code, Edit3, Link, Plus, QrCode, Trash2} from 'lucide-react';
+import {Building2, Code, Link, Plus, QrCode, Trash2} from 'lucide-react';
 import {appStyles, receiptStyles, commonStyles} from '../../App.styles';
 import {YerevanCityGrid} from "./YerevanCityGrid.tsx";
 import {JsonGrid} from "./JsonGrid.tsx";
 import {QRLinkGrid} from "./QRUrl.tsx";
 import {ReceiptParamsGrid} from "./ReceiptParamsGrid.tsx";
+import {financeApi} from "../../services/api.ts";
+import {formatISODateTime} from "../../utils/dateformatter.ts";
 
 type MainTabMode = 'yerevan_city' | 'fns_ru' | 'manual';
 type RuInputSubMode = 'params' | 'qr_url' | 'json';
@@ -60,22 +62,99 @@ export const ReceiptTab: React.FC = () => {
         );
     };
 
-    const handleProcess = () => {
-        window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred('success');
+    const [isLoading, setIsLoading] = useState<boolean>(false);
 
-        let payload = {};
-        if (mainTab === 'yerevan_city') {
-            payload = { country: 'AM', type: 'yerevan_city', date: ycDate, barcode: ycBarcode };
-        } else if (mainTab === 'fns_ru') {
-            payload = { country: 'RU', subMode: ruSubMode };
-            if (ruSubMode === 'params') Object.assign(payload, { date: ruDate, time: ruTime, sum: ruSum, fn: ruFn, fd: ruFd, fp: ruFp });
-            if (ruSubMode === 'qr_url') Object.assign(payload, { url: urlInput });
-            if (ruSubMode === 'json') Object.assign(payload, { json: jsonInput });
-        } else if (mainTab === 'manual') {
-            payload = { type: 'manual', store: manualStore, items: manualItems };
+    const handleProcess = async () => {
+        if (isLoading) return;
+
+        try {
+            if (mainTab === 'yerevan_city') {
+                if (!ycBarcode.trim()) {
+                    window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred('warning');
+                    window.Telegram?.WebApp?.showAlert?.('Please enter a barcode');
+                    return;
+                }
+
+                setIsLoading(true);
+
+                const { success, error } = await financeApi.saveYerevanCityCheck({
+                    date: ycDate,
+                    barcode: ycBarcode.trim(),
+                });
+
+                if (success) {
+                    window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred('success');
+                    window.Telegram?.WebApp?.showAlert?.('Receipt saved successfully!');
+                    setYcBarcode('');
+                } else {
+                    window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred('error');
+                    window.Telegram?.WebApp?.showAlert?.(error || 'Failed to save receipt');
+                }
+            } else if (mainTab === 'fns_ru') {
+                setIsLoading(true);
+
+                let result: { success: boolean; error?: string } = { success: false, error: 'Unknown mode' };
+
+                if (ruSubMode === 'qr_url') {
+                    if (!urlInput.trim()) {
+                        window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred('warning');
+                        window.Telegram?.WebApp?.showAlert?.('Please enter a QR link');
+                        setIsLoading(false);
+                        return;
+                    }
+
+                    result = await financeApi.saveFnsCheckFromUrl({
+                        url: urlInput.trim()
+                    });
+                } else if (ruSubMode === 'params') {
+                    if (!ruSum || !ruFn || !ruFd || !ruFp) {
+                        window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred('warning');
+                        window.Telegram?.WebApp?.showAlert?.('Please fill in all fiscal details');
+                        setIsLoading(false);
+                        return;
+                    }
+
+                    result = await financeApi.saveFnsCheckByRequisites({
+                        dateTime: formatISODateTime(ruDate, ruTime),
+                        fiscalDocumentNumber: ruFd.trim(),
+                        fiscalDocumentSign: ruFp.trim(),
+                        fiscalNumber: ruFn.trim(),
+                        totalPrice: parseFloat(ruSum.replace(',', '.')) || 0
+                    });
+                } else if (ruSubMode === 'json') {
+                    window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred('warning');
+                    window.Telegram?.WebApp?.showAlert?.('JSON mode is not implemented yet');
+                    setIsLoading(false);
+                    return;
+                }
+
+                if (result.success) {
+                    window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred('success');
+                    window.Telegram?.WebApp?.showAlert?.('Receipt saved successfully!');
+
+                    if (ruSubMode === 'qr_url') {
+                        setUrlInput('');
+                    } else if (ruSubMode === 'params') {
+                        setRuSum('');
+                        setRuFn('');
+                        setRuFd('');
+                        setRuFp('');
+                        setRuTime('');
+                    }
+                } else {
+                    window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred('error');
+                    window.Telegram?.WebApp?.showAlert?.(result.error || 'Failed to save receipt');
+                }
+            } else if (mainTab === 'manual') {
+                // Обработка для ручного ввода
+            }
+        } catch (error) {
+            console.error('Error processing receipt:', error);
+            window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred('error');
+            window.Telegram?.WebApp?.showAlert?.('An unexpected error occurred.');
+        } finally {
+            setIsLoading(false);
         }
-
-        console.log('Processing receipt payload:', payload);
     };
 
     return (
@@ -105,6 +184,7 @@ export const ReceiptTab: React.FC = () => {
                     <span>FNS Receipt</span>
                 </button>
 
+                {/*
                 <button
                     onClick={() => setMainTab('manual')}
                     style={{
@@ -115,6 +195,7 @@ export const ReceiptTab: React.FC = () => {
                     <Edit3 size={15} />
                     <span>Manual</span>
                 </button>
+                */}
             </div>
 
             {/* --- Tab 1 --- */}

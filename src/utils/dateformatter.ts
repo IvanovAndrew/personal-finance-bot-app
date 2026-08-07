@@ -20,3 +20,12 @@ export const toDateOnlyString = (date: Date): string => {
 
     return `${year}-${month}-${day}`; // "2026-08-07"
 };
+
+export const formatISODateTime = (date: Date, timeStr: string): string => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const formattedTime = timeStr.length === 5 ? `${timeStr}:00` : timeStr || '00:00:00';
+
+    return `${year}-${month}-${day}T${formattedTime}`;
+};

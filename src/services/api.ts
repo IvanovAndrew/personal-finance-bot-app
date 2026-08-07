@@ -1,5 +1,6 @@
 ﻿import type {Category, Currency} from '../types/finance';
 import {enrichCategory} from "../utils/categoryIcons.ts";
+import {toDateOnlyString} from "../utils/dateformatter.ts";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -33,6 +34,33 @@ async function apiFetch<T>(endpoint: string, options: RequestInit = {}): Promise
     }
 
     return response.json();
+}
+
+export interface SaveTransactionPayload {
+    isoutcome: boolean;
+    date: string; // ISO String
+    category: string;
+    subCategory?: string | null;
+    description?: string;
+    amount: number;
+    currency: string;
+}
+
+export interface SaveYerevanCityCheckPayload {
+    date: Date;
+    barcode: string;
+}
+
+export interface SaveFnsCheckFromUrlPayload {
+    url: string;
+}
+
+export interface SaveFnsCheckByRequisitesPayload {
+    dateTime: string; // ISO String: "YYYY-MM-DDTHH:mm:ss"
+    fiscalDocumentNumber: string;
+    fiscalDocumentSign: string;
+    fiscalNumber: string;
+    totalPrice: number;
 }
 
 export interface SaveTransactionPayload {
@@ -100,6 +128,33 @@ export const financeApi = {
     
     async saveTransaction(payload: SaveTransactionPayload): Promise<{ success: boolean; error?: string }> {
         return apiFetch<{ success: boolean; error?: string }>('/transactions/save', {
+            method: 'POST',
+            body: JSON.stringify(payload),
+        });
+    },
+    
+    async saveYerevanCityCheck(payload: SaveYerevanCityCheckPayload): Promise<{ success: boolean; error?: string }> {
+
+        const formattedPayload = {
+            barcode: payload.barcode,
+            date: toDateOnlyString(payload.date),
+        };
+        
+        return apiFetch<{ success: boolean; error?: string }>('/transactions/yerevancity/save', {
+            method: 'POST',
+            body: JSON.stringify(formattedPayload),
+        });
+    },
+    
+    async saveFnsCheckFromUrl(payload: SaveFnsCheckFromUrlPayload): Promise<{ success: boolean; error?: string }> {
+        return apiFetch<{ success: boolean; error?: string }>('/transactions/fns/url/save', {
+            method: 'POST',
+            body: JSON.stringify(payload),
+        });
+    },
+
+    async saveFnsCheckByRequisites(payload: SaveFnsCheckByRequisitesPayload): Promise<{ success: boolean; error?: string }> {
+        return apiFetch<{ success: boolean; error?: string }>('/transactions/fns/requisites/save', {
             method: 'POST',
             body: JSON.stringify(payload),
         });
