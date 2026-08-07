@@ -19,7 +19,7 @@ export const theme = {
 
     // additional
     danger: '#FF453A',
-    success: '#30D158',
+    success: '#20B2AA',
   },
   radius: {
     sm: '10px',
