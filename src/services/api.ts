@@ -3,19 +3,15 @@ import {enrichCategory} from "../utils/categoryIcons.ts";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-/**
- * Вспомогательный метод для получения initData из Telegram Web App
- */
-const getTelegramInitData = (): string => {
-    // @ts-ignore
+/*const getTelegramInitData = (): string => {
     const tg = window.Telegram?.WebApp;
     if (tg?.initData) {
         return tg.initData;
     }
-    // Заглушка для тестирования в обычном браузере (не внутри Telegram)
+    // stub for testing in a browser
     return 'query_id=STUB&user=%7B%22id%22%3A12345678%2C%22first_name%22%3A%22Test%22%7D&hash=stub_hash';
 };
-
+*/
 
 async function apiFetch<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     //const initData = getTelegramInitData();

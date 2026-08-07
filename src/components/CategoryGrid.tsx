@@ -68,7 +68,7 @@ export const CategoryGrid: React.FC<CategoryGridProps> = ({
                                     width: '36px',
                                     height: '36px',
                                     borderRadius: theme.radius.md,
-                                    backgroundColor: cat.bgLight || theme.colors.bgElement,
+                                    backgroundColor: theme.colors.bgElement,
                                     fontSize: '16px',
                                 }}
                             >

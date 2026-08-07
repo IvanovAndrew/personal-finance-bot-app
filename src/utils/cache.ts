@@ -27,7 +27,7 @@ export const cacheService = {
             const itemStr = localStorage.getItem(key);
             if (!itemStr) return true;
             const item: CacheItem<unknown> = JSON.parse(itemStr);
-            return Date.now() - item.timestamp > ONE_SECOND;
+            return Date.now() - item.timestamp > ONE_WEEK;
         } catch {
             return true;
         }
