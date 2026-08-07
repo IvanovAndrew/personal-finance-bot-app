@@ -1,6 +1,7 @@
 ﻿import type {Category, Currency} from '../types/finance';
 import {enrichCategory} from "../utils/categoryIcons.ts";
 import {toDateOnlyString} from "../utils/dateformatter.ts";
+import {ONE_MINUTE} from "../constants/time.ts";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -14,7 +15,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 };
 */
 
-async function apiFetch<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+async function apiFetch<T>(endpoint: string, options: RequestInit = {}, timeoutMs: number = 3 * ONE_MINUTE): Promise<T> {
     //const initData = getTelegramInitData();
 
     const headers: HeadersInit = {
@@ -23,17 +24,26 @@ async function apiFetch<T>(endpoint: string, options: RequestInit = {}): Promise
         ...options.headers,
     };
 
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-        ...options,
-        headers,
-    });
+    try {
+        const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+            ...options,
+            signal: AbortSignal.timeout(timeoutMs),
+            headers,
+        });
 
-    if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`API Error [${response.status}]: ${errorText || response.statusText}`);
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`API Error [${response.status}]: ${errorText || response.statusText}`);
+        }
+
+        return response.json();
+    } catch (error: any) {
+        if (error.name === 'TimeoutError' || error.name === 'AbortError') {
+            console.error(`Request to ${endpoint} timed out after ${timeoutMs}ms`);
+            throw new Error('Server response timed out. Please check your data or try again.');
+        }
+        throw error;
     }
-
-    return response.json();
 }
 
 export interface SaveTransactionPayload {

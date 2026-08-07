@@ -1,7 +1,4 @@
-﻿const ONE_SECOND = 1000;
-const ONE_MINUTE = 60 * ONE_SECOND;
-const ONE_HOUR = 60 * ONE_MINUTE;
-const ONE_WEEK = 7 * 24 * ONE_HOUR;
+﻿import {ONE_WEEK} from "../constants/time.ts";
 
 interface CacheItem<T> {
     timestamp: number;
