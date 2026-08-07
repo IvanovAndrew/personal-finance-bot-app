@@ -2,7 +2,7 @@
 import {ArrowUpRight, ArrowDownLeft, ChevronDown, Loader2, CheckCircle2, XCircle} from 'lucide-react';
 import { Numpad } from '../Numpad.tsx';
 import { CategoryGrid } from '../CategoryGrid.tsx';
-import { theme, commonStyles, appStyles } from '../../App.styles';
+import {theme, commonStyles, appStyles, statusModalStyles} from '../../App.styles';
 import type {Category, Currency, SubCategory, TransactionType} from "../../types/finance.ts";
 import {SubCategoryModal} from "../SubCategoryModal.tsx";
 import {financeApi} from "../../services/api.ts";
@@ -45,7 +45,7 @@ export const EnterTransactionTab: React.FC<EnterOutcomeTabProps> = ({ incomeCate
         if (!numericAmount || numericAmount <= 0) return;
 
         setSaveStatus('saving');
-        setStatusMessage('Saving...');
+        setStatusMessage('Saving... It can take some time');
 
         try {
             const { success, error } = await financeApi.saveTransaction({
@@ -271,53 +271,26 @@ export const EnterTransactionTab: React.FC<EnterOutcomeTabProps> = ({ incomeCate
         </button>
 
         {saveStatus !== 'idle' && (
-            <div style={{
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                backgroundColor: 'rgba(0, 0, 0, 0.65)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                zIndex: 1000,
-                backdropFilter: 'blur(4px)',
-            }}>
-                <div style={{
-                    backgroundColor: theme.colors.bgCard,
-                    border: `1px solid ${theme.colors.border}`,
-                    borderRadius: '16px',
-                    padding: '24px 36px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    gap: '12px',
-                    boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
-                    minWidth: '180px',
-                }}>
+            <div style={statusModalStyles.overlay}>
+                <div style={statusModalStyles.card}>
                     {saveStatus === 'saving' && (
                         <Loader2
                             size={40}
-                            color="#FFDD2D"
+                            color={theme.colors.textSecondary}
                             style={{ animation: 'spin 1s linear infinite' }}
                         />
                     )}
                     {saveStatus === 'saved' && (
-                        <CheckCircle2 size={40} color="#34C759" />
+                        <CheckCircle2 size={40} color={theme.colors.success} />
                     )}
                     {saveStatus === 'error' && (
-                        <XCircle size={40} color="#FF3B30" />
+                        <XCircle size={40} color={theme.colors.danger} />
                     )}
-                    <span style={{
-                        color: theme.colors.textPrimary,
-                        fontSize: '16px',
-                        fontWeight: '600',
-                        textAlign: 'center'
-                    }}>
-                        {statusMessage}
-                    </span>
+                    <span style={statusModalStyles.text}>
+                {statusMessage}
+            </span>
                 </div>
-            </div>)}
+            </div>
+        )}
     </div>;
 }
