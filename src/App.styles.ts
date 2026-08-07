@@ -423,3 +423,37 @@ export const datePickerStyles: { [key: string]: React.CSSProperties } = {
     gap: '6px',
   },
 };
+
+export const statusModalStyles = {
+  overlay: {
+    position: 'fixed' as const,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.65)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1000,
+    backdropFilter: 'blur(4px)',
+  },
+  card: {
+    backgroundColor: theme.colors.bgCard,
+    border: `1px solid ${theme.colors.border}`,
+    borderRadius: '16px',
+    padding: '24px 36px',
+    display: 'flex',
+    flexDirection: 'column' as const,
+    alignItems: 'center',
+    gap: '12px',
+    boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+    minWidth: '180px',
+  },
+  text: {
+    color: theme.colors.textPrimary,
+    fontSize: '16px',
+    fontWeight: '600',
+    textAlign: 'center' as const,
+  },
+};

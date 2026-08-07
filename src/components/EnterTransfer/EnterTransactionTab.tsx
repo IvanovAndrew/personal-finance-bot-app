@@ -1,5 +1,5 @@
 ﻿import React, {useState} from "react";
-import { ArrowUpRight, ArrowDownLeft, ChevronDown } from 'lucide-react';
+import {ArrowUpRight, ArrowDownLeft, ChevronDown, Loader2, CheckCircle2, XCircle} from 'lucide-react';
 import { Numpad } from '../Numpad.tsx';
 import { CategoryGrid } from '../CategoryGrid.tsx';
 import { theme, commonStyles, appStyles } from '../../App.styles';
@@ -14,6 +14,8 @@ interface EnterOutcomeTabProps {
     outcomeCategories: Category[];
     currencies: Currency[];
 }
+
+type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
 export const EnterTransactionTab: React.FC<EnterOutcomeTabProps> = ({ incomeCategories, outcomeCategories, currencies }) => {
     
@@ -30,6 +32,9 @@ export const EnterTransactionTab: React.FC<EnterOutcomeTabProps> = ({ incomeCate
 
     const [showSubModal, setShowSubModal] = useState<boolean>(false);
 
+    const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
+    const [statusMessage, setStatusMessage] = useState<string>('');
+
     if (!currencies.length || (!incomeCategories.length && !outcomeCategories.length)) {
         return <div style={{ color: '#fff', padding: '20px', textAlign: 'center' }}>Loading transaction data...</div>;
     }
@@ -38,6 +43,9 @@ export const EnterTransactionTab: React.FC<EnterOutcomeTabProps> = ({ incomeCate
         
         const numericAmount = parseFloat(amountStr);
         if (!numericAmount || numericAmount <= 0) return;
+
+        setSaveStatus('saving');
+        setStatusMessage('Saving...');
 
         try {
             const { success, error } = await financeApi.saveTransaction({
@@ -53,16 +61,31 @@ export const EnterTransactionTab: React.FC<EnterOutcomeTabProps> = ({ incomeCate
             if (error || !success) {
                 window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred('error');
                 window.Telegram?.WebApp?.showAlert?.(error || `Couldn't save the transaction.`);
+
+                setSaveStatus('error');
+                setStatusMessage(error || 'Error, not saved');
+                
                 return;
             }
 
             window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred('success');
+
+            setSaveStatus('saved');
+            setStatusMessage('Saved');
+            
             setAmountStr('0');
             setNote('');
             setSelectedSubCat(null);
+
+            setTimeout(() => setSaveStatus('idle'), 2000);
         } catch (error) {
             console.error('Error:', error);
             window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred('error');
+
+            setSaveStatus('error');
+            setStatusMessage('Error, not saved');
+
+            setTimeout(() => setSaveStatus('idle'), 2000);
         }
     };
 
@@ -82,7 +105,7 @@ export const EnterTransactionTab: React.FC<EnterOutcomeTabProps> = ({ incomeCate
     };
     
     const saveButtonActive = () : boolean => {
-        return amountStr !== '0';
+        return amountStr !== '0' && saveStatus === 'idle';
     } 
         
 
@@ -105,6 +128,14 @@ export const EnterTransactionTab: React.FC<EnterOutcomeTabProps> = ({ incomeCate
     };
 
     return <div style={appStyles.tabContent}>
+
+        <style>{`
+            @keyframes spin {
+                from { transform: rotate(0deg); }
+                to { transform: rotate(360deg); }
+            }
+        `}</style>
+        
         <div style={appStyles.typeToggleGroup}>
             <button
                 onClick={() => setTxType('expense')}
@@ -204,7 +235,7 @@ export const EnterTransactionTab: React.FC<EnterOutcomeTabProps> = ({ incomeCate
         />
 
         {/* Subcategory Modal */}
-        {showSubModal && (
+        {showSubModal && 
             <SubCategoryModal
                 category={txType === 'income' ? selectedIncomeCategory : selectedOutcomeCategory}
                 selectedSubCat={selectedSubCat}
@@ -214,9 +245,8 @@ export const EnterTransactionTab: React.FC<EnterOutcomeTabProps> = ({ incomeCate
                 }}
                 onClose={() => setShowSubModal(false)}
             />
-        )}
+        }
 
-        {/* Comment Field */}
         <input
             type="text"
             placeholder="Enter a comment..."
@@ -239,5 +269,55 @@ export const EnterTransactionTab: React.FC<EnterOutcomeTabProps> = ({ incomeCate
             disabled={!saveButtonActive()}>
             Save {amountStr} {selectedCurrency.symbol}
         </button>
+
+        {saveStatus !== 'idle' && (
+            <div style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'rgba(0, 0, 0, 0.65)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 1000,
+                backdropFilter: 'blur(4px)',
+            }}>
+                <div style={{
+                    backgroundColor: theme.colors.bgCard,
+                    border: `1px solid ${theme.colors.border}`,
+                    borderRadius: '16px',
+                    padding: '24px 36px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '12px',
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+                    minWidth: '180px',
+                }}>
+                    {saveStatus === 'saving' && (
+                        <Loader2
+                            size={40}
+                            color="#FFDD2D"
+                            style={{ animation: 'spin 1s linear infinite' }}
+                        />
+                    )}
+                    {saveStatus === 'saved' && (
+                        <CheckCircle2 size={40} color="#34C759" />
+                    )}
+                    {saveStatus === 'error' && (
+                        <XCircle size={40} color="#FF3B30" />
+                    )}
+                    <span style={{
+                        color: theme.colors.textPrimary,
+                        fontSize: '16px',
+                        fontWeight: '600',
+                        textAlign: 'center'
+                    }}>
+                        {statusMessage}
+                    </span>
+                </div>
+            </div>)}
     </div>;
 }
