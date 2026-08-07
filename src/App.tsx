@@ -15,6 +15,15 @@ const CACHE_KEYS = {
 };
 
 export const App: React.FC = () => {
+
+    useEffect(() => {
+        financeApi.health().then((isHealthy) => {
+            if (!isHealthy) {
+                console.error('API is not healthy');
+            }
+        });
+    }, []);
+    
   const [activeTab, setActiveTab] = useState<TabType>('add');
 
   const [incomeCategories, setIncomeCategories] = useState<Category[]>(() => {

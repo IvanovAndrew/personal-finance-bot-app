@@ -107,6 +107,10 @@ export interface RawSubCategory {
 }
 
 export const financeApi = {
+    
+    async health(): Promise<boolean> {
+        return apiFetch<boolean>('/health');
+    },
 
     async getCurrencies(): Promise<Currency[]> {
         return apiFetch<Currency[]>('/currencies');
