@@ -109,6 +109,7 @@ export interface RawCategory {
     code: string;
     name: string;
     subCategories?: RawSubCategory[]
+    isPopular: boolean;
 }
 
 export interface RawSubCategory {
