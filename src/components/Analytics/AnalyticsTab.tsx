@@ -32,10 +32,11 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, c
     const [error, setError] = useState<string | null>(null);
 
     const summaryCache = useRef<Record<string, SummaryResponse>>({});
+    const activeDate = viewMode === 'days' ? startDate : selectedMonth;
 
     const dateKey = viewMode === 'days'
-        ? startDate.toISOString().split('T')[0]
-        : `${startDate.getFullYear()}-${startDate.getMonth() + 1}`;
+        ? activeDate.toISOString().split('T')[0]
+        : `${activeDate.getFullYear()}-${activeDate.getMonth() + 1}`;
     const cacheKey = `${currencyCode}_${dateKey}`;
 
     const fetchFullAnalytics = useCallback(async () => {
@@ -51,10 +52,8 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, c
         setError(null);
 
         try {
-            const currentDate = viewMode === 'days' ? startDate : selectedMonth;
-
             const data = await financeApi.getSummary({
-                monthDate: currentDate,
+                monthDate: activeDate,
                 currency: currencyCode,
             });
 
