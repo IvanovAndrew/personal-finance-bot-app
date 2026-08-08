@@ -73,7 +73,7 @@ export const SummaryAnalyticsGrid: FC<SummaryAnalyticsGridProps> = ({ summary })
                 }}
             >
                 <div style={{ fontSize: '12px', color: theme.colors.textSecondary }}>
-                    📅 {formatDateDMMMMYYYY(new Date(summary.payday))} —— [{summary.daysUntilPayday} days] —— 💰 Payday
+                    📅 {formatDateDMMMMYYYY(new Date(summary.startPeriod))} —— [{summary.daysUntilPayday} days] —— 💰 {formatDateDMMMMYYYY(new Date(summary.payday))} Payday
                 </div>
 
                 <div style={{ fontSize: '18px', fontWeight: '800', color: theme.colors.primary }}>
