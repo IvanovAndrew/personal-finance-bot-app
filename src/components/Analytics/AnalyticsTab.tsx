@@ -1,4 +1,4 @@
-﻿import React, {useCallback, useEffect, useState} from 'react';
+﻿import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {
     Calendar,
     PieChart,
@@ -31,7 +31,22 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, c
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
 
+    const summaryCache = useRef<Record<string, SummaryResponse>>({});
+
+    const dateKey = viewMode === 'days'
+        ? startDate.toISOString().split('T')[0]
+        : `${startDate.getFullYear()}-${startDate.getMonth() + 1}`;
+    const cacheKey = `${currencyCode}_${dateKey}`;
+
     const fetchFullAnalytics = useCallback(async () => {
+
+        if (summaryCache.current[cacheKey]) {
+            console.log("Cache hit for key:", cacheKey);
+            setSummary(summaryCache.current[cacheKey]);
+            setError(null);
+            return;
+        }
+        
         setIsLoading(true);
         setError(null);
 
@@ -43,6 +58,8 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, c
                 currency: currencyCode,
             });
 
+            summaryCache.current[cacheKey] = data;
+
             setSummary(data);
         } catch (err: any) {
             setError('Failed to load analytics');
@@ -50,7 +67,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, c
         } finally {
             setIsLoading(false);
         }
-    }, [currencyCode, selectedMonth, startDate, viewMode]);
+    }, [currencyCode, selectedMonth, startDate]);
 
     useEffect(() => {
         fetchFullAnalytics();
