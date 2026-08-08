@@ -97,12 +97,30 @@ export interface DailySpendingResponse {
     categories: { name: string; amount: number; icon: string }[];
 }
 
+export interface SummaryResponse {
+    totalIncome: number;
+    totalOutcome: number;
+    totalBalance: number;
+    futureExpenses: number;
+    realFreeMoney: number;
+    startPeriod: string;
+    payday: string;
+    daysUntilPayday: number;
+    dailyBudgetLimit: number;
+    currency: string;
+}
+
 export interface CategoryAnalyticsResponse {
     categoryId: string;
     categoryName: string;
     totalAmount: number;
     subcategoriesTotal: { subId: string; name: string; amount: number }[];
     monthlyTrend: { month: string; amount: number }[];
+}
+
+export interface SummaryPayload {
+    monthDate: Date;
+    currency: string;
 }
 
 export interface RawCategory {
@@ -173,6 +191,11 @@ export const financeApi = {
             method: 'POST',
             body: JSON.stringify(payload),
         });
+    },
+    
+    async getSummary(payload: SummaryPayload): Promise<SummaryResponse> {
+        const params = new URLSearchParams({ currency: payload.currency, start: toDateOnlyString(payload.monthDate) });
+        return apiFetch<SummaryResponse>(`/analytics/summary?${params.toString()}`);
     },
 
     async getBudgetAnalytics(monthDate: Date, currency: string): Promise<BudgetAnalyticsResponse> {
