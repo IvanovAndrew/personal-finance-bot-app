@@ -1,4 +1,4 @@
-﻿import React, {useEffect, useState} from 'react';
+﻿import React, {useCallback, useEffect, useState} from 'react';
 import {
     Calendar,
     PieChart,
@@ -31,44 +31,30 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, c
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
 
-    
-    useEffect(() => {
-        let isMounted = true;
+    const fetchFullAnalytics = useCallback(async () => {
+        setIsLoading(true);
+        setError(null);
 
-        const fetchFullAnalytics = async () => {
-            setIsLoading(true);
-            setError(null);
+        try {
+            const currentDate = viewMode === 'days' ? startDate : selectedMonth;
 
-            try {
-                const currentDate = viewMode === 'days' ? startDate : selectedMonth;
+            const data = await financeApi.getSummary({
+                monthDate: currentDate,
+                currency: currencyCode,
+            });
 
-                const data = await financeApi.getSummary({
-                    monthDate: currentDate,
-                    currency: currencyCode,
-                });
-
-                if (isMounted) {
-                    console.log('Analytics fetched successfully:', data);
-                    setSummary(data);
-                }
-            } catch (err: any) {
-                if (isMounted) {
-                    setError('Failed to load analytics');
-                    console.error('Analytics fetch error:', err);
-                }
-            } finally {
-                if (isMounted) {
-                    setIsLoading(false);
-                }
-            }
-        };
-
-        fetchFullAnalytics();
-
-        return () => {
-            isMounted = false;
-        };
+            setSummary(data);
+        } catch (err: any) {
+            setError('Failed to load analytics');
+            console.error('Analytics fetch error:', err);
+        } finally {
+            setIsLoading(false);
+        }
     }, [currencyCode, selectedMonth, startDate, viewMode]);
+
+    useEffect(() => {
+        fetchFullAnalytics();
+    }, [fetchFullAnalytics]);
 
     return (
         <div style={appStyles.tabContent}>
@@ -176,10 +162,48 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, c
                 </button>
             </div>
 
-            {viewMode === 'summary' && <SummaryAnalyticsGrid summary={summary} />}
-            {viewMode === 'days' && <DayAnalyticsGrid startDate={startDate} currency={currencyCode}/>}
-            {viewMode === 'categories' && <CategoryAnalyticsGrid categories={outcomeCategories} selectedMonth={selectedMonth} currency={currencyCode} />}
-            {viewMode === 'subcategories' && <SubCategoryAnalyticsGrid categories={outcomeCategories.filter(x => x.subCategories.length > 0)} selectedMonth={selectedMonth} currency={currencyCode}/>}
+            {error && !isLoading ? (
+                <div style={{
+                    ...commonStyles.card,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '28px 16px',
+                    textAlign: 'center',
+                    gap: '12px',
+                    borderColor: theme.colors.danger,
+                }}>
+                    <AlertCircle size={36} color={theme.colors.danger} />
+                    <span style={{ fontSize: '14px', color: theme.colors.textPrimary, fontWeight: '600' }}>
+                        {error}
+                    </span>
+                    <button
+                        onClick={fetchFullAnalytics}
+                        style={{
+                            ...receiptStyles.subChip,
+                            padding: '8px 16px',
+                            backgroundColor: theme.colors.bgElement,
+                            borderColor: theme.colors.border,
+                            color: theme.colors.textPrimary,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            cursor: 'pointer',
+                        }}
+                    >
+                        <RefreshCw size={14} />
+                        <span>Retry</span>
+                    </button>
+                </div>
+            ) : (
+                <>
+                    {viewMode === 'summary' && <SummaryAnalyticsGrid summary={summary} />}
+                    {viewMode === 'days' && <DayAnalyticsGrid startDate={startDate} currency={currencyCode}/>}
+                    {viewMode === 'categories' && <CategoryAnalyticsGrid categories={outcomeCategories} selectedMonth={selectedMonth} currency={currencyCode} />}
+                    {viewMode === 'subcategories' && <SubCategoryAnalyticsGrid categories={outcomeCategories.filter(x => x.subCategories.length > 0)} selectedMonth={selectedMonth} currency={currencyCode}/>}
+                </>
+            )}
 
         </div>
     );
