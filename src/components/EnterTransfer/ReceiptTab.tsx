@@ -7,6 +7,7 @@ import {QRLinkGrid} from "./QRUrl.tsx";
 import {ReceiptParamsGrid} from "./ReceiptParamsGrid.tsx";
 import {financeApi} from "../../services/api.ts";
 import {formatISODateTime} from "../../utils/dateformatter.ts";
+import {StatusModal, type StatusModalType} from "../StatusModal.tsx";
 
 type MainTabMode = 'yerevan_city' | 'fns_ru' | 'manual';
 type RuInputSubMode = 'params' | 'qr_url' | 'json';
@@ -44,6 +45,26 @@ export const ReceiptTab: React.FC = () => {
         { id: '1', name: '', price: '', quantity: '1' }
     ]);
 
+    const [processStatus, setProcessStatus] = useState<StatusModalType | null>(null);
+    const [statusMessage, setStatusMessage] = useState<string>('');
+
+    const showStatus = (status: StatusModalType, message: string, autoHideMs = 2000) => {
+        setProcessStatus(status);
+        setStatusMessage(message);
+
+        if (status === 'error') {
+            window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred('error');
+        } else if (status === 'success' || status === 'saved') {
+            window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred('success');
+        }
+
+        if (autoHideMs > 0) {
+            setTimeout(() => {
+                setProcessStatus(null);
+            }, autoHideMs);
+        }
+    };
+
     const addManualItem = () => {
         setManualItems(prev => [
             ...prev,
@@ -62,20 +83,17 @@ export const ReceiptTab: React.FC = () => {
         );
     };
 
-    const [isLoading, setIsLoading] = useState<boolean>(false);
-
     const handleProcess = async () => {
-        if (isLoading) return;
-
         try {
             if (mainTab === 'yerevan_city') {
                 if (!ycBarcode.trim()) {
                     window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred('warning');
                     window.Telegram?.WebApp?.showAlert?.('Please enter a barcode');
+                    showStatus('error', 'Please enter a barcode', 2000);
                     return;
                 }
 
-                setIsLoading(true);
+                showStatus('loading', 'Loading and parsing receipt...', 0);
 
                 const { success, error } = await financeApi.saveYerevanCityCheck({
                     date: ycDate,
@@ -84,14 +102,14 @@ export const ReceiptTab: React.FC = () => {
 
                 if (success) {
                     window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred('success');
-                    window.Telegram?.WebApp?.showAlert?.('Receipt saved successfully!');
+                    showStatus('success', 'Receipt saved successfully!');
                     setYcBarcode('');
                 } else {
                     window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred('error');
-                    window.Telegram?.WebApp?.showAlert?.(error || 'Failed to save receipt');
+                    showStatus('error', error || 'Failed to save receipt', 2000);
                 }
             } else if (mainTab === 'fns_ru') {
-                setIsLoading(true);
+                showStatus('loading', 'Loading and parsing receipt...', 0);
 
                 let result: { success: boolean; error?: string } = { success: false, error: 'Unknown mode' };
 
@@ -99,9 +117,11 @@ export const ReceiptTab: React.FC = () => {
                     if (!urlInput.trim()) {
                         window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred('warning');
                         window.Telegram?.WebApp?.showAlert?.('Please enter a QR link');
-                        setIsLoading(false);
+                        showStatus('error', 'Please enter a QR link', 2000);
                         return;
                     }
+
+                    showStatus('loading', 'Fetching FNS receipt...', 0);
 
                     result = await financeApi.saveFnsCheckFromUrl({
                         url: urlInput.trim()
@@ -110,9 +130,11 @@ export const ReceiptTab: React.FC = () => {
                     if (!ruSum || !ruFn || !ruFd || !ruFp) {
                         window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred('warning');
                         window.Telegram?.WebApp?.showAlert?.('Please fill in all fiscal details');
-                        setIsLoading(false);
+                        showStatus('error', 'Please fill in all fiscal details', 2000);
                         return;
                     }
+
+                    showStatus('loading', 'Fetching FNS receipt...', 0);
 
                     result = await financeApi.saveFnsCheckByRequisites({
                         dateTime: formatISODateTime(ruDate, ruTime),
@@ -124,13 +146,13 @@ export const ReceiptTab: React.FC = () => {
                 } else if (ruSubMode === 'json') {
                     window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred('warning');
                     window.Telegram?.WebApp?.showAlert?.('JSON mode is not implemented yet');
-                    setIsLoading(false);
+                    showStatus('error', 'JSON mode is not implemented yet', 2000);
                     return;
                 }
 
                 if (result.success) {
                     window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred('success');
-                    window.Telegram?.WebApp?.showAlert?.('Receipt saved successfully!');
+                    showStatus('success', 'Receipt saved successfully!');
 
                     if (ruSubMode === 'qr_url') {
                         setUrlInput('');
@@ -143,7 +165,7 @@ export const ReceiptTab: React.FC = () => {
                     }
                 } else {
                     window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred('error');
-                    window.Telegram?.WebApp?.showAlert?.(result.error || 'Failed to save receipt');
+                    showStatus('error', result.error || 'Failed to save receipt', 2000);
                 }
             } else if (mainTab === 'manual') {
                 // Обработка для ручного ввода
@@ -151,9 +173,7 @@ export const ReceiptTab: React.FC = () => {
         } catch (error) {
             console.error('Error processing receipt:', error);
             window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred('error');
-            window.Telegram?.WebApp?.showAlert?.('An unexpected error occurred.');
-        } finally {
-            setIsLoading(false);
+            showStatus('error', 'An unexpected error occurred.', 2000);
         }
     };
 
@@ -297,6 +317,8 @@ export const ReceiptTab: React.FC = () => {
             <button onClick={handleProcess} style={commonStyles.primaryBtn}>
                 <span>{mainTab === 'manual' ? 'Save Receipt' : 'Load and parse'}</span>
             </button>
+
+            {processStatus && <StatusModal status={processStatus} statusMessage={statusMessage} />}
 
         </div>
     );

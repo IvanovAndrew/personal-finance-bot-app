@@ -79,7 +79,7 @@ export const SummaryAnalyticsGrid: FC<SummaryAnalyticsGridProps> = ({ summary })
                 <div style={{ fontSize: '18px', fontWeight: '800', color: theme.colors.primary }}>
                     {formatAmount(summary.dailyBudgetLimit)}{' '}
                     <span style={{ fontSize: '13px', fontWeight: 'normal', color: theme.colors.textSecondary }}>
-                        can be spent daily till the payday
+                        / day
                     </span>
                 </div>
             </div>

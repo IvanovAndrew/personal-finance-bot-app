@@ -5,9 +5,9 @@ import {ChevronLeft, ChevronRight} from "lucide-react";
 
 interface CategoryGridProps {
     categories: Category[];
-    selectedCategory: Category;
+    selectedCategory: Category | null;
     selectedSubCat: SubCategory | null;
-    onSelectCategory: (cat: Category) => void;
+    onSelectCategory: (cat: Category | null) => void;
 }
 
 const ITEMS_PER_PAGE = 12;
@@ -55,7 +55,7 @@ export const CategoryGrid: React.FC<CategoryGridProps> = ({
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px' }}>
                 {currentCategories.map((cat) => {
-                    const isSelected = selectedCategory.code === cat.code;
+                    const isSelected = selectedCategory !== null && selectedCategory.code === cat.code;
                     return (
                         <button
                             key={cat.code}
@@ -123,8 +123,8 @@ export const CategoryGrid: React.FC<CategoryGridProps> = ({
                             justifyContent: 'center',
                             gap: '4px',
                             padding: '8px 2px',
-                            borderColor: theme.colors.primary,
-                            backgroundColor: theme.colors.bgElement,
+                            borderColor: theme.colors.border,
+                            backgroundColor: theme.colors.bgCard,
                         }}
                     >
                         <div
@@ -135,20 +135,20 @@ export const CategoryGrid: React.FC<CategoryGridProps> = ({
                                 width: '36px',
                                 height: '36px',
                                 borderRadius: theme.radius.md,
-                                backgroundColor: theme.colors.primaryLight,
+                                backgroundColor: theme.colors.bgCard,
                             }}
                         >
                             {page === totalPages - 1 ? (
-                                <ChevronLeft size={20} color={theme.colors.primary} />
+                                <ChevronLeft size={20} color={theme.colors.textSecondary} />
                             ) : (
-                                <ChevronRight size={20} color={theme.colors.primary} />
+                                <ChevronRight size={20} color={theme.colors.textSecondary} />
                             )}
                         </div>
                         <span
                             style={{
                                 fontSize: '10px',
                                 fontWeight: '600',
-                                color: theme.colors.primary,
+                                color: theme.colors.textSecondary,
                                 textAlign: 'center',
                                 whiteSpace: 'nowrap',
                                 overflow: 'hidden',

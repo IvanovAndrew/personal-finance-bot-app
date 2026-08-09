@@ -1,13 +1,15 @@
 ﻿import React, {useState} from "react";
-import {ArrowUpRight, ArrowDownLeft, ChevronDown, Loader2, CheckCircle2, XCircle} from 'lucide-react';
+import {ArrowUpRight, ArrowDownLeft, ChevronDown} from 'lucide-react';
 import { Numpad } from '../Numpad.tsx';
 import { CategoryGrid } from '../CategoryGrid.tsx';
-import {theme, commonStyles, appStyles, statusModalStyles} from '../../App.styles';
+import {theme, commonStyles, appStyles} from '../../App.styles';
 import type {Category, Currency, SubCategory, TransactionType} from "../../types/finance.ts";
 import {SubCategoryModal} from "../SubCategoryModal.tsx";
 import {financeApi} from "../../services/api.ts";
 import {toDateOnlyString} from "../../utils/dateformatter.ts";
 import {CustomDatePicker} from "../CustomDatePicker.tsx";
+import {StatusModal} from "../StatusModal.tsx";
+import {CurrencyDropdown} from "../CurrencyDropdown.tsx";
 
 interface EnterOutcomeTabProps {
     incomeCategories: Category[];
@@ -15,7 +17,7 @@ interface EnterOutcomeTabProps {
     currencies: Currency[];
 }
 
-type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
+export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
 export const EnterTransactionTab: React.FC<EnterOutcomeTabProps> = ({ incomeCategories, outcomeCategories, currencies }) => {
     
@@ -26,8 +28,8 @@ export const EnterTransactionTab: React.FC<EnterOutcomeTabProps> = ({ incomeCate
     const [showCurrencyPicker, setShowCurrencyPicker] = useState<boolean>(false);
     const [note, setNote] = useState<string>('');
 
-    const [selectedIncomeCategory, setSelectedIncomeCategory] = useState<Category>(incomeCategories[0]);
-    const [selectedOutcomeCategory, setSelectedOutcomeCategory] = useState<Category>(outcomeCategories[0]);
+    const [selectedIncomeCategory, setSelectedIncomeCategory] = useState<Category | null>(null);
+    const [selectedOutcomeCategory, setSelectedOutcomeCategory] = useState<Category | null>(null);
     const [selectedSubCat, setSelectedSubCat] = useState<SubCategory | null>(null);
 
     const [showSubModal, setShowSubModal] = useState<boolean>(false);
@@ -53,7 +55,7 @@ export const EnterTransactionTab: React.FC<EnterOutcomeTabProps> = ({ incomeCate
                 date: toDateOnlyString(date),
                 amount: numericAmount,
                 currency: selectedCurrency.name,
-                category: txType === 'income' ? selectedIncomeCategory.code : selectedOutcomeCategory.code,
+                category: (txType === 'income' ? selectedIncomeCategory?.code : selectedOutcomeCategory?.code) || '',
                 subCategory: selectedSubCat?.code,
                 description: note,
             });
@@ -105,11 +107,11 @@ export const EnterTransactionTab: React.FC<EnterOutcomeTabProps> = ({ incomeCate
     };
     
     const saveButtonActive = () : boolean => {
-        return amountStr !== '0' && saveStatus === 'idle';
+        return (txType == 'income' && selectedIncomeCategory !== null || txType == 'expense' && selectedOutcomeCategory !== null) && amountStr !== '0' && saveStatus === 'idle';
     } 
         
 
-    const handleCategorySelect = (cat: Category) => {
+    const handleCategorySelect = (cat: Category | null) => {
         window.Telegram?.WebApp?.HapticFeedback?.selectionChanged();
 
         if (txType === 'income') {
@@ -120,7 +122,7 @@ export const EnterTransactionTab: React.FC<EnterOutcomeTabProps> = ({ incomeCate
 
         setSelectedSubCat(null);
 
-        const subs = cat.subCategories;
+        const subs = cat?.subCategories;
         
         if (subs && subs.length > 0) {
             setShowSubModal(true);
@@ -157,17 +159,14 @@ export const EnterTransactionTab: React.FC<EnterOutcomeTabProps> = ({ incomeCate
             </button>
         </div>
 
-        {/* Amount Hero Card + Currency Selector */}
         <div style={{ ...appStyles.heroCard, padding: '12px 16px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
 
-                {/* Компактный выбор даты слева */}
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '2px' }}>
                     <span style={{ fontSize: '9px', color: theme.colors.textSecondary, fontWeight: '700' }}>DATE</span>
                     <CustomDatePicker selectedDate={date} onChange={setDate} />
                 </div>
 
-                {/* Ввод суммы и валюты справа */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                         <span style={{ fontSize: '28px', fontWeight: '700', color: txType === 'expense' ? theme.colors.danger : theme.colors.success }}>
                             {txType === 'expense' ? '−' : '+'}
@@ -186,42 +185,7 @@ export const EnterTransactionTab: React.FC<EnterOutcomeTabProps> = ({ incomeCate
                 </div>
             </div>
 
-            {/* Выпадающий список валют */}
-            {showCurrencyPicker && (
-                <div style={{
-                    position: 'absolute',
-                    right: '16px',
-                    top: '50px',
-                    backgroundColor: theme.colors.bgCard,
-                    border: `1px solid ${theme.colors.border}`,
-                    borderRadius: theme.radius.md,
-                    zIndex: 10,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    padding: '4px'
-                }}>
-                    {currencies.map(curr => (
-                        <button
-                            key={curr.name}
-                            onClick={() => {
-                                setSelectedCurrency(curr);
-                                setShowCurrencyPicker(false);
-                            }}
-                            style={{
-                                background: 'none',
-                                border: 'none',
-                                color: theme.colors.textPrimary,
-                                padding: '6px 12px',
-                                fontSize: '12px',
-                                textAlign: 'left',
-                                cursor: 'pointer'
-                            }}
-                        >
-                            {curr.name} ({curr.symbol})
-                        </button>
-                    ))}
-                </div>
-            )}
+            {showCurrencyPicker && <CurrencyDropdown currencies={currencies} setSelectedCurrency={setSelectedCurrency} setShowCurrencyPicker={setShowCurrencyPicker}/>}
         </div>
 
             
@@ -255,7 +219,6 @@ export const EnterTransactionTab: React.FC<EnterOutcomeTabProps> = ({ incomeCate
             style={commonStyles.input}
         />
 
-        {/* Numpad */}
         <Numpad onInput={handleNumpad}/>
 
         {/* Save Button */}
@@ -270,27 +233,6 @@ export const EnterTransactionTab: React.FC<EnterOutcomeTabProps> = ({ incomeCate
             Save {amountStr} {selectedCurrency.symbol}
         </button>
 
-        {saveStatus !== 'idle' && (
-            <div style={statusModalStyles.overlay}>
-                <div style={statusModalStyles.card}>
-                    {saveStatus === 'saving' && (
-                        <Loader2
-                            size={40}
-                            color={theme.colors.textSecondary}
-                            style={{ animation: 'spin 1s linear infinite' }}
-                        />
-                    )}
-                    {saveStatus === 'saved' && (
-                        <CheckCircle2 size={40} color={theme.colors.success} />
-                    )}
-                    {saveStatus === 'error' && (
-                        <XCircle size={40} color={theme.colors.danger} />
-                    )}
-                    <span style={statusModalStyles.text}>
-                {statusMessage}
-            </span>
-                </div>
-            </div>
-        )}
+        {saveStatus !== 'idle' && <StatusModal status={saveStatus} statusMessage={statusMessage}/>}
     </div>;
 }

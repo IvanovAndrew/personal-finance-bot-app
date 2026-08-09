@@ -4,7 +4,7 @@ import type { Category, SubCategory } from '../types/finance';
 import {modalStyles, theme} from '../App.styles';
 
 interface SubCategoryModalProps {
-    category: Category;
+    category: Category | null;
     selectedSubCat: SubCategory | null;
     onSelectSubCat: (sub: SubCategory) => void;
     onClose: () => void;
@@ -27,7 +27,7 @@ export const SubCategoryModal: React.FC<SubCategoryModalProps> = ({
             >
                 <div style={modalStyles.header}>
                     <span style={modalStyles.title}>
-                        {category.icon} {category.name}
+                        {category?.icon} {category?.name}
                     </span>
                     <button
                         onClick={onClose}
@@ -42,7 +42,7 @@ export const SubCategoryModal: React.FC<SubCategoryModalProps> = ({
                 </span>
                 
                 <div style={modalStyles.subGrid}>
-                    {category.subCategories.map((sub) => {
+                    {category?.subCategories.map((sub) => {
                         const isSelected = selectedSubCat?.code === sub.code;
                         return (
                             <button
