@@ -12,7 +12,7 @@ interface SubCategoryAnalyticsGridProps {
     monthlyData: MonthlyAnalyticsResponse;
 }
 
-export const SubCategoryAnalyticsGrid: FC<SubCategoryAnalyticsGridProps> = ({ categories, selectedMonth, currency, monthlyData }) => {
+export const SubCategoryAnalyticsGrid: FC<SubCategoryAnalyticsGridProps> = ({ categories, selectedMonth, currency }) => {
 
     const [selectedCategory, setSelectedCategory] = useState<Category | null>(categories[0] || null);
     const [selectedSubCatId, setSelectedSubCatId] = useState<string | null>(null);

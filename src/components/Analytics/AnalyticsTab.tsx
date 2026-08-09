@@ -1,9 +1,5 @@
 ﻿import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {
-    Calendar,
-    PieChart,
-    Layers, LayoutDashboard, Loader2, AlertCircle, RefreshCw,
-} from 'lucide-react';
+import {PieChart, LayoutDashboard, Loader2, AlertCircle, RefreshCw} from 'lucide-react';
 import {commonStyles, appStyles, receiptStyles, statusModalStyles, theme} from '../../App.styles';
 import type {Category, Currency} from '../../types/finance';
 //import {DayAnalyticsGrid} from "./DayAnalyticsGrid.tsx";
