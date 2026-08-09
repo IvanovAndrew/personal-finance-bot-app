@@ -3,14 +3,16 @@ import {commonStyles, theme, receiptStyles, appStyles} from "../../App.styles.ts
 import type {Category} from "../../types/finance.ts";
 import {formatDateMMMMYYYY} from "../../utils/dateformatter.ts";
 import {getMonthsInRange} from "../../utils/monthEnumerator.ts";
+import type {MonthlyAnalyticsResponse} from "../../services/api.ts";
 
 interface SubCategoryAnalyticsGridProps {
     categories: Category[];
     selectedMonth: Date;
     currency: string;
+    monthlyData: MonthlyAnalyticsResponse;
 }
 
-export const SubCategoryAnalyticsGrid: FC<SubCategoryAnalyticsGridProps> = ({ categories, selectedMonth, currency }) => {
+export const SubCategoryAnalyticsGrid: FC<SubCategoryAnalyticsGridProps> = ({ categories, selectedMonth, currency, monthlyData }) => {
 
     const [selectedCategory, setSelectedCategory] = useState<Category | null>(categories[0] || null);
     const [selectedSubCatId, setSelectedSubCatId] = useState<string | null>(null);

@@ -135,6 +135,28 @@ export interface RawSubCategory {
     name: string;
 }
 
+export interface SubCategoryAnalytics {
+    subCategory: string | null;
+    total: number;
+}
+
+export interface CategoryAnalytics {
+    category: string;
+    total: number;
+    subCategories: SubCategoryAnalytics[];
+}
+
+export interface MonthlyAnalyticsItem {
+    month: string;
+    total: number;
+    categories: CategoryAnalytics[];
+}
+
+export interface MonthlyAnalyticsResponse {
+    currency: string;
+    months: MonthlyAnalyticsItem[];
+}
+
 export const financeApi = {
     
     async health(): Promise<boolean> {
@@ -210,20 +232,7 @@ export const financeApi = {
         return apiFetch<DailySpendingResponse[]>(`/analytics/daily?${params.toString()}`);
     },
 
-    
-    async getCategoryAnalytics(monthDate: Date, currency: string): Promise<CategoryAnalyticsResponse[]> {
-        const monthStr = monthDate.toISOString().slice(0, 7);
-        const params = new URLSearchParams({ month: monthStr, currency });
-        return apiFetch<CategoryAnalyticsResponse[]>(`/analytics/categories?${params.toString()}`);
-    },
-
-    async getSubCategoryAnalytics(
-        categoryId: string,
-        startMonthDate: Date,
-        currency: string
-    ): Promise<CategoryAnalyticsResponse> {
-        const monthStr = startMonthDate.toISOString().slice(0, 7);
-        const params = new URLSearchParams({ categoryId, startMonth: monthStr, currency });
-        return apiFetch<CategoryAnalyticsResponse>(`/analytics/subcategories?${params.toString()}`);
+    async getMonthlyAnalytics(startMonth: Date, currency: string): Promise<MonthlyAnalyticsResponse> {
+        return apiFetch<MonthlyAnalyticsResponse>(`/analytics/history/monthly?start=${toDateOnlyString(startMonth)}&currency=${currency}`);
     },
 };

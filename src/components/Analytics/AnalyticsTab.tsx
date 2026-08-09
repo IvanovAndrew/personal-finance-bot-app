@@ -6,11 +6,11 @@ import {
 } from 'lucide-react';
 import {commonStyles, appStyles, receiptStyles, statusModalStyles, theme} from '../../App.styles';
 import type {Category, Currency} from '../../types/finance';
-import {DayAnalyticsGrid} from "./DayAnalyticsGrid.tsx";
+//import {DayAnalyticsGrid} from "./DayAnalyticsGrid.tsx";
 import {CategoryAnalyticsGrid} from "./CategoryAnalyticsGrid.tsx";
 import {CustomDatePicker} from "../CustomDatePicker.tsx";
-import {SubCategoryAnalyticsGrid} from "./SubCategoryAnalyticsGrid.tsx";
-import {financeApi, type SummaryResponse} from "../../services/api.ts";
+//import {SubCategoryAnalyticsGrid} from "./SubCategoryAnalyticsGrid.tsx";
+import {financeApi, type MonthlyAnalyticsResponse, type SummaryResponse} from "../../services/api.ts";
 import {SummaryAnalyticsGrid} from "./SummaryAnalyticsGrid.tsx";
 
 interface AnalyticsTabProps {
@@ -21,56 +21,73 @@ interface AnalyticsTabProps {
 type ViewMode = 'summary' | 'days' | 'categories' | 'subcategories';
 
 export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, currencies }) => {
-    
-    const [currencyCode, setCurrencyCode] = useState(currencies[0].name);
+
+    const [currencyCode, setCurrencyCode] = useState(currencies[0]?.name || 'AMD');
     const [viewMode, setViewMode] = useState<ViewMode>('summary');
     const [selectedMonth, setSelectedMonth] = useState(new Date());
     const [startDate, setStartDate] = useState(new Date());
 
     const [summary, setSummary] = useState<SummaryResponse | null>(null);
+    const [monthlyData, setMonthlyData] = useState<MonthlyAnalyticsResponse | null>(null);
+
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
 
-    const summaryCache = useRef<Record<string, SummaryResponse>>({});
-    const activeDate = viewMode === 'days' ? startDate : selectedMonth;
+    const analyticsCache = useRef<Record<string, any>>({});
 
-    const dateKey = viewMode === 'days'
-        ? activeDate.toISOString().split('T')[0]
-        : `${activeDate.getFullYear()}-${activeDate.getMonth() + 1}`;
-    const cacheKey = `${currencyCode}_${dateKey}`;
+    // Формируем раздельные ключи кэша под каждый тип запроса
+    const summaryMonthKey = `${selectedMonth.getFullYear()}-${selectedMonth.getMonth() + 1}`;
+    const summaryCacheKey = `summary_${currencyCode}_${summaryMonthKey}`;
 
-    const fetchFullAnalytics = useCallback(async () => {
+    const monthlyMonthKey = `${selectedMonth.getFullYear()}-${selectedMonth.getMonth() + 1}`;
+    const monthlyCacheKey = `monthly_${currencyCode}_${monthlyMonthKey}`;
 
-        if (summaryCache.current[cacheKey]) {
-            console.log("Cache hit for key:", cacheKey);
-            setSummary(summaryCache.current[cacheKey]);
-            setError(null);
-            return;
-        }
-        
+    const fetchAnalytics = useCallback(async (forceRefresh = false) => {
+        // 'days' обрабатывается локально внутри DayAnalyticsGrid
+        if (viewMode === 'days') return;
+
         setIsLoading(true);
         setError(null);
 
         try {
-            const data = await financeApi.getSummary({
-                monthDate: activeDate,
-                currency: currencyCode,
-            });
+            if (viewMode === 'summary') {
+                
+                if (!forceRefresh && analyticsCache.current[summaryCacheKey]) {
+                    setSummary(analyticsCache.current[summaryCacheKey]);
+                    setIsLoading(false);
+                    return;
+                }
 
-            summaryCache.current[cacheKey] = data;
+                const data = await financeApi.getSummary({
+                    monthDate: selectedMonth,
+                    currency: currencyCode,
+                });
+                analyticsCache.current[summaryCacheKey] = data;
+                setSummary(data);
 
-            setSummary(data);
+            } else if (viewMode === 'categories' || viewMode === 'subcategories') {
+                
+                if (!forceRefresh && analyticsCache.current[monthlyCacheKey]) {
+                    setMonthlyData(analyticsCache.current[monthlyCacheKey]);
+                    setIsLoading(false);
+                    return;
+                }
+
+                const data = await financeApi.getMonthlyAnalytics(selectedMonth, currencyCode);
+                analyticsCache.current[monthlyCacheKey] = data;
+                setMonthlyData(data);
+            }
         } catch (err: any) {
             setError('Failed to load analytics');
             console.error('Analytics fetch error:', err);
         } finally {
             setIsLoading(false);
         }
-    }, [currencyCode, selectedMonth, startDate]);
+    }, [viewMode, currencyCode, selectedMonth, summaryCacheKey, monthlyCacheKey]);
 
     useEffect(() => {
-        fetchFullAnalytics();
-    }, [fetchFullAnalytics]);
+        fetchAnalytics();
+    }, [fetchAnalytics]);
 
     return (
         <div style={appStyles.tabContent}>
@@ -131,8 +148,8 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, c
                 gap: '4px',
                 padding: '4px',
                 boxSizing: 'border-box',
-                width: '100%'}}>
-
+                width: '100%'
+            }}>
                 <button
                     onClick={() => setViewMode('summary')}
                     style={{
@@ -143,7 +160,8 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, c
                     <LayoutDashboard size={14} />
                     <span>Summary</span>
                 </button>
-                
+
+                {/*
                 <button
                     onClick={() => setViewMode('days')}
                     style={{
@@ -154,6 +172,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, c
                     <Calendar size={14} />
                     <span>Daily</span>
                 </button>
+                */}
 
                 <button
                     onClick={() => setViewMode('categories')}
@@ -166,6 +185,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, c
                     <span>Categories</span>
                 </button>
 
+                {/*
                 <button
                     onClick={() => setViewMode('subcategories')}
                     style={{
@@ -176,6 +196,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, c
                     <Layers size={14} />
                     <span>Subcategories</span>
                 </button>
+                */}
             </div>
 
             {error && !isLoading ? (
@@ -195,7 +216,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, c
                         {error}
                     </span>
                     <button
-                        onClick={fetchFullAnalytics}
+                        onClick={() => fetchAnalytics(true)}
                         style={{
                             ...receiptStyles.subChip,
                             padding: '8px 16px',
@@ -214,10 +235,38 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, c
                 </div>
             ) : (
                 <>
-                    {viewMode === 'summary' && <SummaryAnalyticsGrid summary={summary} />}
-                    {viewMode === 'days' && <DayAnalyticsGrid startDate={startDate} currency={currencyCode}/>}
-                    {viewMode === 'categories' && <CategoryAnalyticsGrid categories={outcomeCategories} selectedMonth={selectedMonth} currency={currencyCode} />}
-                    {viewMode === 'subcategories' && <SubCategoryAnalyticsGrid categories={outcomeCategories.filter(x => x.subCategories.length > 0)} selectedMonth={selectedMonth} currency={currencyCode}/>}
+                    {viewMode === 'summary' && (
+                        <SummaryAnalyticsGrid summary={summary} />
+                    )}
+
+                    {/*
+                    {viewMode === 'days' && (
+                        <DayAnalyticsGrid
+                            startDate={startDate}
+                            currency={currencyCode}
+                        />
+                    )}
+                    */}
+
+                    {viewMode === 'categories' && (
+                        <CategoryAnalyticsGrid
+                            categories={outcomeCategories}
+                            startMonth={selectedMonth}
+                            monthlyData={monthlyData}
+                            currency={currencyCode}
+                        />
+                    )}
+
+                    {/*
+                    {viewMode === 'subcategories' && (
+                        <SubCategoryAnalyticsGrid
+                            categories={outcomeCategories.filter(x => x.subCategories.length > 0)}
+                            selectedMonth={selectedMonth}
+                            monthlyData={monthlyData}
+                            currency={currencyCode}
+                        />
+                    )}
+                    */}
                 </>
             )}
 
