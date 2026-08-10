@@ -58,15 +58,17 @@ export const commonStyles: { [key: string]: React.CSSProperties } = {
     flex: 1,
   },
   label: {
-    fontSize: '11px',
+    fontSize: '10px',
     color: theme.colors.textSecondary,
-    fontWeight: '600',
+    fontWeight: '700',
+    letterSpacing: '0.5px',
     textTransform: 'uppercase',
   },
   row2: {
     display: 'grid',
     gridTemplateColumns: '1fr 1fr',
     gap: '10px',
+    alignItems: 'flex-start',
   },
   row3: {
     display: 'grid',
@@ -99,6 +101,23 @@ export const commonStyles: { [key: string]: React.CSSProperties } = {
     justifyContent: 'center',
     gap: '8px',
     transition: 'opacity 0.2s ease',
+  },
+  inputControl: {
+    height: '38px',
+    width: '100%',
+    boxSizing: 'border-box' as const,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: '0 12px',
+    backgroundColor: theme.colors.bgElement,
+    border: `1px solid ${theme.colors.border}`,
+    borderRadius: theme.radius.md,
+    color: theme.colors.textPrimary,
+    fontSize: '13px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    outline: 'none',
   },
 };
 

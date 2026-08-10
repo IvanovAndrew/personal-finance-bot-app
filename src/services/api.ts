@@ -123,6 +123,11 @@ export interface SummaryPayload {
     currency: string;
 }
 
+export interface SpendingHistoryMonthlyPayload {
+    startMonth: Date;
+    currency: string;
+}
+
 export interface RawCategory {
     code: string;
     name: string;
@@ -220,19 +225,7 @@ export const financeApi = {
         return apiFetch<SummaryResponse>(`/analytics/summary?${params.toString()}`);
     },
 
-    async getBudgetAnalytics(monthDate: Date, currency: string): Promise<BudgetAnalyticsResponse> {
-        const monthStr = monthDate.toISOString().slice(0, 7); // YYYY-MM
-        const params = new URLSearchParams({ month: monthStr, currency });
-        return apiFetch<BudgetAnalyticsResponse>(`/analytics/budget?${params.toString()}`);
-    },
-
-    async getDailySpending(startDate: Date, currency: string): Promise<DailySpendingResponse[]> {
-        const dateStr = startDate.toISOString().slice(0, 10); // YYYY-MM-DD
-        const params = new URLSearchParams({ startDate: dateStr, currency });
-        return apiFetch<DailySpendingResponse[]>(`/analytics/daily?${params.toString()}`);
-    },
-
-    async getMonthlyAnalytics(startMonth: Date, currency: string): Promise<MonthlyAnalyticsResponse> {
-        return apiFetch<MonthlyAnalyticsResponse>(`/analytics/history/monthly?start=${toDateOnlyString(startMonth)}&currency=${currency}`);
+    async getMonthlyAnalytics(payload: SpendingHistoryMonthlyPayload): Promise<MonthlyAnalyticsResponse> {
+        return apiFetch<MonthlyAnalyticsResponse>(`/analytics/history/monthly?start=${toDateOnlyString(payload.startMonth)}&currency=${payload.currency}`);
     },
 };

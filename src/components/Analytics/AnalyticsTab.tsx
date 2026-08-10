@@ -1,27 +1,49 @@
-﻿import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {PieChart, LayoutDashboard, Loader2, AlertCircle, RefreshCw} from 'lucide-react';
-import {commonStyles, appStyles, receiptStyles, statusModalStyles, theme} from '../../App.styles';
-import type {Category, Currency} from '../../types/finance';
-//import {DayAnalyticsGrid} from "./DayAnalyticsGrid.tsx";
-import {CategoryAnalyticsGrid} from "./CategoryAnalyticsGrid.tsx";
-import {CustomDatePicker} from "../CustomDatePicker.tsx";
-//import {SubCategoryAnalyticsGrid} from "./SubCategoryAnalyticsGrid.tsx";
-import {financeApi, type MonthlyAnalyticsResponse, type SummaryResponse} from "../../services/api.ts";
-import {SummaryAnalyticsGrid} from "./SummaryAnalyticsGrid.tsx";
+﻿import React, { useCallback, useEffect, useRef, useState } from 'react';
+import {
+    Calendar,
+    PieChart,
+    Layers,
+    LayoutDashboard,
+    Loader2,
+    AlertCircle,
+    RefreshCw,
+} from 'lucide-react';
+import { commonStyles, appStyles, receiptStyles, theme } from '../../App.styles';
+import type { Category, Currency } from '../../types/finance';
+import { DayAnalyticsGrid } from "./DayAnalyticsGrid.tsx";
+import { CategoryAnalyticsGrid } from "./CategoryAnalyticsGrid.tsx";
+import { CustomDatePicker } from "../CustomDatePicker.tsx";
+import { SubCategoryAnalyticsGrid } from "./SubCategoryAnalyticsGrid.tsx";
+import { financeApi, type SummaryResponse, type MonthlyAnalyticsResponse } from "../../services/api.ts";
+import { SummaryAnalyticsGrid } from "./SummaryAnalyticsGrid.tsx";
+import {MonthAnalyticsGrid} from "./MonthAnalyticsGrid.tsx";
 
 interface AnalyticsTabProps {
     outcomeCategories: Category[];
     currencies: Currency[];
 }
 
-type ViewMode = 'summary' | 'days' | 'categories' | 'subcategories';
+type ViewMode = 'summary' | 'days' | 'months' | 'categories' | 'subcategories';
+
+const STORAGE_KEYS = {
+    CURRENCY: 'analytics_selected_currency',
+    MONTH: 'analytics_selected_month',
+};
 
 export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, currencies }) => {
 
-    const [currencyCode, setCurrencyCode] = useState(currencies[0]?.name || 'AMD');
+    // 1. Initialize state from localStorage to prevent fetching irrelevant default filters
+    const [currencyCode, setCurrencyCode] = useState<string>(() => {
+        return localStorage.getItem(STORAGE_KEYS.CURRENCY) || currencies[0]?.name || 'AMD';
+    });
+
+    const [selectedMonth, setSelectedMonth] = useState<Date>(() => {
+        const savedMonth = localStorage.getItem(STORAGE_KEYS.MONTH);
+        return savedMonth ? new Date(savedMonth) : new Date();
+    });
+
     const [viewMode, setViewMode] = useState<ViewMode>('summary');
-    const [selectedMonth, setSelectedMonth] = useState(new Date());
-    const [startDate, setStartDate] = useState(new Date());
+    const [startDate, setStartDate] = useState<Date>(new Date());
 
     const [summary, setSummary] = useState<SummaryResponse | null>(null);
     const [monthlyData, setMonthlyData] = useState<MonthlyAnalyticsResponse | null>(null);
@@ -31,7 +53,17 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, c
 
     const analyticsCache = useRef<Record<string, any>>({});
 
-    // Формируем раздельные ключи кэша под каждый тип запроса
+    // Persist filter changes to localStorage
+    const handleCurrencyChange = (newCurrency: string) => {
+        setCurrencyCode(newCurrency);
+        localStorage.setItem(STORAGE_KEYS.CURRENCY, newCurrency);
+    };
+
+    const handleMonthChange = (newMonth: Date) => {
+        setSelectedMonth(newMonth);
+        localStorage.setItem(STORAGE_KEYS.MONTH, newMonth.toISOString());
+    };
+
     const summaryMonthKey = `${selectedMonth.getFullYear()}-${selectedMonth.getMonth() + 1}`;
     const summaryCacheKey = `summary_${currencyCode}_${summaryMonthKey}`;
 
@@ -39,7 +71,6 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, c
     const monthlyCacheKey = `monthly_${currencyCode}_${monthlyMonthKey}`;
 
     const fetchAnalytics = useCallback(async (forceRefresh = false) => {
-        // 'days' обрабатывается локально внутри DayAnalyticsGrid
         if (viewMode === 'days') return;
 
         setIsLoading(true);
@@ -47,7 +78,6 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, c
 
         try {
             if (viewMode === 'summary') {
-                
                 if (!forceRefresh && analyticsCache.current[summaryCacheKey]) {
                     setSummary(analyticsCache.current[summaryCacheKey]);
                     setIsLoading(false);
@@ -61,15 +91,17 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, c
                 analyticsCache.current[summaryCacheKey] = data;
                 setSummary(data);
 
-            } else if (viewMode === 'categories' || viewMode === 'subcategories') {
-                
+            } else if (viewMode === 'months' || viewMode === 'categories' || viewMode === 'subcategories') {
                 if (!forceRefresh && analyticsCache.current[monthlyCacheKey]) {
                     setMonthlyData(analyticsCache.current[monthlyCacheKey]);
                     setIsLoading(false);
                     return;
                 }
 
-                const data = await financeApi.getMonthlyAnalytics(selectedMonth, currencyCode);
+                const data = await financeApi.getMonthlyAnalytics({
+                    startMonth: selectedMonth,
+                    currency: currencyCode,
+                });
                 analyticsCache.current[monthlyCacheKey] = data;
                 setMonthlyData(data);
             }
@@ -81,34 +113,51 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, c
         }
     }, [viewMode, currencyCode, selectedMonth, summaryCacheKey, monthlyCacheKey]);
 
+    // 2. Debounce fetch requests by 250ms when rapid filter changes occur
     useEffect(() => {
-        fetchAnalytics();
+        const timer = setTimeout(() => {
+            fetchAnalytics();
+        }, 250);
+
+        return () => clearTimeout(timer);
     }, [fetchAnalytics]);
 
     return (
         <div style={appStyles.tabContent}>
 
-            {isLoading && (
-                <div style={statusModalStyles.overlay}>
-                    <div style={statusModalStyles.card}>
-                        <Loader2
-                            size={40}
-                            color={theme.colors.primary}
-                            style={{ animation: 'spin 1s linear infinite' }}
-                        />
-                        <span style={statusModalStyles.text}>Loading data...</span>
-                    </div>
-                </div>
-            )}
-
-            <div style={commonStyles.card}>
-                <div style={commonStyles.row2}>
-                    <div style={commonStyles.inputGroup}>
-                        <label style={commonStyles.label}>Currency</label>
+            {/* Filter controls card */}
+            <div style={{ ...commonStyles.card, padding: '14px 16px' }}>
+                <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: '1fr 1fr',
+                    gap: '12px',
+                    alignItems: 'end', // Выравнивает инпуты строго по нижней линии
+                    width: '100%',
+                }}>
+                    {/* Currency */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', width: '100%' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <label style={commonStyles.label}>Currency</label>
+                            {isLoading && (
+                                <Loader2
+                                    size={12}
+                                    color={theme.colors.primary}
+                                    style={{ animation: 'spin 1s linear infinite' }}
+                                />
+                            )}
+                        </div>
                         <select
                             value={currencyCode}
-                            onChange={(e) => setCurrencyCode(e.target.value)}
-                            style={commonStyles.input}
+                            onChange={(e) => handleCurrencyChange(e.target.value)}
+                            style={{
+                                ...commonStyles.inputControl,
+                                appearance: 'none',
+                                WebkitAppearance: 'none',
+                                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`,
+                                backgroundRepeat: 'no-repeat',
+                                backgroundPosition: 'right 12px center',
+                                paddingRight: '32px',
+                            }}
                         >
                             {currencies?.map(c => (
                                 <option key={c.name} value={c.name}>
@@ -118,7 +167,8 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, c
                         </select>
                     </div>
 
-                    <div style={commonStyles.inputGroup}>
+                    {/* Start Day / Month */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', width: '100%' }}>
                         <label style={commonStyles.label}>
                             {viewMode === 'days' ? 'Start Day' : 'Start Month'}
                         </label>
@@ -128,7 +178,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, c
                                 if (viewMode === 'days') {
                                     setStartDate(date);
                                 } else {
-                                    setSelectedMonth(date);
+                                    handleMonthChange(date);
                                 }
                             }}
                             showMonthPicker={viewMode !== 'days'}
@@ -137,10 +187,11 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, c
                 </div>
             </div>
 
+            {/* View Mode Tabs */}
             <div style={{
                 ...receiptStyles.mainTabs,
                 display: 'grid',
-                gridTemplateColumns: 'repeat(4, 1fr)',
+                gridTemplateColumns: 'repeat(5, 1fr)',
                 gap: '4px',
                 padding: '4px',
                 boxSizing: 'border-box',
@@ -157,7 +208,6 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, c
                     <span>Summary</span>
                 </button>
 
-                {/*
                 <button
                     onClick={() => setViewMode('days')}
                     style={{
@@ -168,7 +218,17 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, c
                     <Calendar size={14} />
                     <span>Daily</span>
                 </button>
-                */}
+
+                <button
+                    onClick={() => setViewMode('months')}
+                    style={{
+                        ...receiptStyles.mainTabBtn,
+                        ...(viewMode === 'months' ? receiptStyles.mainTabActive : {}),
+                    }}
+                >
+                    <Calendar size={14} />
+                    <span>Monthly</span>
+                </button>
 
                 <button
                     onClick={() => setViewMode('categories')}
@@ -181,7 +241,6 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, c
                     <span>Categories</span>
                 </button>
 
-                {/*
                 <button
                     onClick={() => setViewMode('subcategories')}
                     style={{
@@ -192,9 +251,9 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, c
                     <Layers size={14} />
                     <span>Subcategories</span>
                 </button>
-                */}
             </div>
 
+            {/* Content Display */}
             {error && !isLoading ? (
                 <div style={{
                     ...commonStyles.card,
@@ -230,19 +289,25 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, c
                     </button>
                 </div>
             ) : (
-                <>
+                <div style={{ opacity: isLoading ? 0.6 : 1, transition: 'opacity 0.2s ease' }}>
                     {viewMode === 'summary' && (
                         <SummaryAnalyticsGrid summary={summary} />
                     )}
 
-                    {/*
                     {viewMode === 'days' && (
                         <DayAnalyticsGrid
                             startDate={startDate}
                             currency={currencyCode}
                         />
                     )}
-                    */}
+
+                    {viewMode === 'months' && (
+                        <MonthAnalyticsGrid
+                            categories={outcomeCategories}
+                            currency={currencyCode}
+                            monthlyData={monthlyData}
+                        />
+                    )}
 
                     {viewMode === 'categories' && (
                         <CategoryAnalyticsGrid
@@ -253,17 +318,14 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, c
                         />
                     )}
 
-                    {/*
                     {viewMode === 'subcategories' && (
                         <SubCategoryAnalyticsGrid
                             categories={outcomeCategories.filter(x => x.subCategories.length > 0)}
-                            selectedMonth={selectedMonth}
                             monthlyData={monthlyData}
                             currency={currencyCode}
                         />
                     )}
-                    */}
-                </>
+                </div>
             )}
 
         </div>

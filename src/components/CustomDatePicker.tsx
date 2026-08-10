@@ -1,8 +1,8 @@
 ﻿import React from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import {datePickerStyles, theme} from '../App.styles';
-import {CalendarIcon} from "lucide-react";
+import {commonStyles, theme} from '../App.styles';
+import {Calendar} from "lucide-react";
 
 interface CustomDatePickerProps {
     selectedDate: Date;
@@ -19,14 +19,33 @@ export const CustomDatePicker: React.FC<CustomDatePickerProps> = ({ selectedDate
                 dateFormat={showMonthPicker ? 'MMMM yyyy' : 'dd.MM.yyyy'}
                 showMonthYearPicker={showMonthPicker}
                 popperPlacement="bottom-start"
-                customInput={<button type="button" style={datePickerStyles.triggerBtn}>
-                    <CalendarIcon size={13} color={theme.colors.primary} />
-                    <span>{selectedDate.toLocaleDateString('en-US',
-                        showMonthPicker
-                            ? { month: 'long', year: 'numeric' }
-                            : { month: 'long', day: 'numeric', year: 'numeric' }
-                    )}</span>
-                </button>}
+                customInput={
+                    <button
+                        type="button"
+                        style={{
+                            ...commonStyles.inputControl,
+                            justifyContent: 'flex-start',
+                            gap: '8px',
+                            width: '100%',
+                        }}
+                    >
+                        <Calendar size={15} color={theme.colors.primary} style={{ flexShrink: 0 }} />
+                        <span style={{
+                            color: theme.colors.textPrimary,
+                            fontSize: '13px',
+                            fontWeight: '600',
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                        }}>
+                            {selectedDate.toLocaleDateString('en-US',
+                                showMonthPicker
+                                    ? { month: 'long', year: 'numeric' }
+                                    : { month: 'long', day: 'numeric', year: 'numeric' }
+                            )}
+                        </span>
+                    </button>
+                }
             />
         </div>
     );
