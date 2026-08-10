@@ -2,24 +2,20 @@
 import {commonStyles, theme, receiptStyles, appStyles} from "../../App.styles.ts";
 import type {Category} from "../../types/finance.ts";
 import {formatDateMMMMYYYY} from "../../utils/dateformatter.ts";
-import {getMonthsInRange} from "../../utils/monthEnumerator.ts";
 import type {MonthlyAnalyticsResponse} from "../../services/api.ts";
 
 interface SubCategoryAnalyticsGridProps {
     categories: Category[];
-    selectedMonth: Date;
     currency: string;
-    monthlyData: MonthlyAnalyticsResponse;
+    monthlyData: MonthlyAnalyticsResponse | null;
 }
 
-export const SubCategoryAnalyticsGrid: FC<SubCategoryAnalyticsGridProps> = ({ categories, selectedMonth, currency }) => {
+export const SubCategoryAnalyticsGrid: FC<SubCategoryAnalyticsGridProps> = ({ categories, currency, monthlyData }) => {
 
     const [selectedCategory, setSelectedCategory] = useState<Category | null>(categories[0] || null);
     const [selectedSubCatId, setSelectedSubCatId] = useState<string | null>(null);
 
     const [subCatViewType, setSubCatViewType] = useState<'total' | 'monthly'>('total');
-
-    const requestedMonths = getMonthsInRange(selectedMonth);
 
     return <div style={commonStyles.card}>
         <span style={commonStyles.cardTitle}>Subcategory analytics</span>
@@ -93,9 +89,9 @@ export const SubCategoryAnalyticsGrid: FC<SubCategoryAnalyticsGridProps> = ({ ca
                 </div>
 
                 <div style={receiptStyles.manualList}>
-                    {requestedMonths.map((m, idx) => (
-                        <div key={formatDateMMMMYYYY(m)} style={{ ...receiptStyles.subChip, justifyContent: 'space-between', padding: '10px 12px' }}>
-                            <span style={{ color: theme.colors.textSecondary }}>{formatDateMMMMYYYY(m)}</span>
+                    {monthlyData?.months?.map((m, idx) => (
+                        <div key={formatDateMMMMYYYY(new Date(m.month))} style={{ ...receiptStyles.subChip, justifyContent: 'space-between', padding: '10px 12px' }}>
+                            <span style={{ color: theme.colors.textSecondary }}>{formatDateMMMMYYYY(new Date(m.month))}</span>
                             <span style={{ fontWeight: '700', color: theme.colors.primary }}>
                       {(idx + 2) * 8400} {currency}
                     </span>
