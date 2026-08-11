@@ -151,6 +151,11 @@ export interface CategoryAnalytics {
     subCategories: SubCategoryAnalytics[];
 }
 
+export interface DailyAnalyticsPayload {
+    date: Date;
+    currency: string;
+}
+
 export interface MonthlyAnalyticsItem {
     month: string;
     total: number;
@@ -223,6 +228,11 @@ export const financeApi = {
     async getSummary(payload: SummaryPayload): Promise<SummaryResponse> {
         const params = new URLSearchParams({ currency: payload.currency, start: toDateOnlyString(payload.monthDate) });
         return apiFetch<SummaryResponse>(`/analytics/summary?${params.toString()}`);
+    },
+
+    async getDailyAnalytics(payload: DailyAnalyticsPayload): Promise<SaveTransactionPayload[]> {
+        const params = new URLSearchParams({ day: toDateOnlyString(payload.date), currency: payload.currency });
+        return apiFetch<SaveTransactionPayload[]>(`/moneytransfer/outcomes?${params.toString()}`);
     },
 
     async getMonthlyAnalytics(payload: SpendingHistoryMonthlyPayload): Promise<MonthlyAnalyticsResponse> {

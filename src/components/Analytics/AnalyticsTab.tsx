@@ -188,69 +188,84 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, c
             </div>
 
             {/* View Mode Tabs */}
-            <div style={{
-                ...receiptStyles.mainTabs,
-                display: 'grid',
-                gridTemplateColumns: 'repeat(5, 1fr)',
-                gap: '4px',
-                padding: '4px',
-                boxSizing: 'border-box',
-                width: '100%'
-            }}>
-                <button
-                    onClick={() => setViewMode('summary')}
-                    style={{
-                        ...receiptStyles.mainTabBtn,
-                        ...(viewMode === 'summary' ? receiptStyles.mainTabActive : {}),
-                    }}
-                >
-                    <LayoutDashboard size={14} />
-                    <span>Summary</span>
-                </button>
+            {/* View Mode Tabs */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', width: '100%' }}>
+                {/* Upper row: Time periods */}
+                <div style={{
+                    ...receiptStyles.mainTabs,
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(3, 1fr)',
+                    gap: '4px',
+                    padding: '4px',
+                    boxSizing: 'border-box',
+                    width: '100%'
+                }}>
+                    <button
+                        onClick={() => setViewMode('summary')}
+                        style={{
+                            ...receiptStyles.mainTabBtn,
+                            ...(viewMode === 'summary' ? receiptStyles.mainTabActive : {}),
+                        }}
+                    >
+                        <LayoutDashboard size={14} />
+                        <span>Summary</span>
+                    </button>
 
-                <button
-                    onClick={() => setViewMode('days')}
-                    style={{
-                        ...receiptStyles.mainTabBtn,
-                        ...(viewMode === 'days' ? receiptStyles.mainTabActive : {}),
-                    }}
-                >
-                    <Calendar size={14} />
-                    <span>Daily</span>
-                </button>
+                    <button
+                        onClick={() => setViewMode('days')}
+                        style={{
+                            ...receiptStyles.mainTabBtn,
+                            ...(viewMode === 'days' ? receiptStyles.mainTabActive : {}),
+                        }}
+                    >
+                        <Calendar size={14} />
+                        <span>Daily</span>
+                    </button>
 
-                <button
-                    onClick={() => setViewMode('months')}
-                    style={{
-                        ...receiptStyles.mainTabBtn,
-                        ...(viewMode === 'months' ? receiptStyles.mainTabActive : {}),
-                    }}
-                >
-                    <Calendar size={14} />
-                    <span>Monthly</span>
-                </button>
+                    <button
+                        onClick={() => setViewMode('months')}
+                        style={{
+                            ...receiptStyles.mainTabBtn,
+                            ...(viewMode === 'months' ? receiptStyles.mainTabActive : {}),
+                        }}
+                    >
+                        <Calendar size={14} />
+                        <span>Monthly</span>
+                    </button>
+                </div>
 
-                <button
-                    onClick={() => setViewMode('categories')}
-                    style={{
-                        ...receiptStyles.mainTabBtn,
-                        ...(viewMode === 'categories' ? receiptStyles.mainTabActive : {}),
-                    }}
-                >
-                    <PieChart size={14} />
-                    <span>Categories</span>
-                </button>
+                {/* Lower row: Category breakdowns */}
+                <div style={{
+                    ...receiptStyles.mainTabs,
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(2, 1fr)',
+                    gap: '4px',
+                    padding: '4px',
+                    boxSizing: 'border-box',
+                    width: '100%'
+                }}>
+                    <button
+                        onClick={() => setViewMode('categories')}
+                        style={{
+                            ...receiptStyles.mainTabBtn,
+                            ...(viewMode === 'categories' ? receiptStyles.mainTabActive : {}),
+                        }}
+                    >
+                        <PieChart size={14} />
+                        <span>Categories</span>
+                    </button>
 
-                <button
-                    onClick={() => setViewMode('subcategories')}
-                    style={{
-                        ...receiptStyles.mainTabBtn,
-                        ...(viewMode === 'subcategories' ? receiptStyles.mainTabActive : {}),
-                    }}
-                >
-                    <Layers size={14} />
-                    <span>Subcategories</span>
-                </button>
+                    <button
+                        onClick={() => setViewMode('subcategories')}
+                        style={{
+                            ...receiptStyles.mainTabBtn,
+                            ...(viewMode === 'subcategories' ? receiptStyles.mainTabActive : {}),
+                        }}
+                    >
+                        <Layers size={14} />
+                        <span>Subcategories</span>
+                    </button>
+                </div>
             </div>
 
             {/* Content Display */}
@@ -291,13 +306,14 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, c
             ) : (
                 <div style={{ opacity: isLoading ? 0.6 : 1, transition: 'opacity 0.2s ease' }}>
                     {viewMode === 'summary' && (
-                        <SummaryAnalyticsGrid summary={summary} />
+                        <SummaryAnalyticsGrid summary={summary} isLoading={isLoading} />
                     )}
 
                     {viewMode === 'days' && (
                         <DayAnalyticsGrid
                             startDate={startDate}
-                            currency={currencyCode}
+                            currency={currencies.find(x => x.name == currencyCode) || currencies[0]}
+                            categories={outcomeCategories}
                         />
                     )}
 
@@ -305,6 +321,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, c
                         <MonthAnalyticsGrid
                             categories={outcomeCategories}
                             currency={currencyCode}
+                            isLoading={isLoading}
                             monthlyData={monthlyData}
                         />
                     )}
@@ -315,6 +332,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, c
                             startMonth={selectedMonth}
                             monthlyData={monthlyData}
                             currency={currencyCode}
+                            isLoading={isLoading}
                         />
                     )}
 
@@ -322,7 +340,8 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, c
                         <SubCategoryAnalyticsGrid
                             categories={outcomeCategories.filter(x => x.subCategories.length > 0)}
                             monthlyData={monthlyData}
-                            currency={currencyCode}
+                            currency={currencies.find(x => x.name == currencyCode) || currencies[0]}
+                            isLoading={isLoading}
                         />
                     )}
                 </div>

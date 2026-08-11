@@ -5,23 +5,39 @@ import type { Category } from "../../types/finance.ts";
 import type { MonthlyAnalyticsResponse } from "../../services/api.ts";
 import { formatCurrencyValue } from "../../utils/numberformatter.ts";
 import { X } from "lucide-react";
+import {LoadingData} from "../LoadingData.tsx";
+import {getCategoryMeta} from "../../utils/categoryutils.ts";
 
 interface MonthAnalyticsGridProps {
     categories?: Category[];
     currency: string;
     monthlyData: MonthlyAnalyticsResponse | null;
+    isLoading?: boolean;
 }
 
 export const MonthAnalyticsGrid: FC<MonthAnalyticsGridProps> = ({
                                                                     categories = [],
                                                                     currency,
                                                                     monthlyData,
+                                                                    isLoading,
                                                                 }) => {
     const [selectedMonthStr, setSelectedMonthStr] = useState<string | null>(null);
 
+    if (isLoading) {
+        return <LoadingData text="Loading monthly data..." />;
+    }
+
     if (!monthlyData || !monthlyData.months || monthlyData.months.length === 0) {
         return (
-            <div style={{ ...commonStyles.card, textAlign: 'center', padding: '20px', color: theme.colors.textSecondary }}>
+            <div style={{ ...commonStyles.card, textAlign: 'center', padding: '24px', color: theme.colors.textSecondary }}>
+                No analytics data available
+            </div>
+        );
+    }
+
+    if (!monthlyData || !monthlyData.months || monthlyData.months.length === 0) {
+        return (
+            <div style={{ ...commonStyles.card, textAlign: 'center', padding: '24px', color: theme.colors.textSecondary }}>
                 No analytics data available
             </div>
         );
@@ -30,26 +46,6 @@ export const MonthAnalyticsGrid: FC<MonthAnalyticsGridProps> = ({
     const parseMonthString = (monthStr: string): Date => {
         const parts = monthStr.split('-');
         return new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, 1);
-    };
-
-    // Гибкий поиск категории по коду или названию
-    const getCategoryMeta = (rawCode: string) => {
-        if (!categories || categories.length === 0) {
-            return { code: rawCode, name: rawCode, icon: '📁' };
-        }
-
-        const normalized = rawCode.trim().toLowerCase();
-        const found = categories.find(
-            (c) => c.code.toLowerCase() === normalized || c.name.toLowerCase() === normalized
-        );
-
-        return (
-            found || {
-                code: rawCode,
-                name: rawCode,
-                icon: '📁',
-            }
-        );
     };
 
     const grandTotal = monthlyData.months.reduce((acc, m) => acc + m.total, 0);
@@ -209,7 +205,7 @@ export const MonthAnalyticsGrid: FC<MonthAnalyticsGridProps> = ({
 
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                             {activeMonthCategories.map((cat) => {
-                                const meta = getCategoryMeta(cat.category);
+                                const meta = getCategoryMeta(categories, cat.category);
                                 const catPercentage = activeMonthData.total > 0 ? (cat.total / activeMonthData.total) * 100 : 0;
 
                                 return (

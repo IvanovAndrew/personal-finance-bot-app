@@ -19,5 +19,6 @@ export interface Category extends Omit<RawCategory, 'subcategories' | 'subCatego
 export interface Currency {
     name: string;
     symbol: string;
+    format: string;
     isPopular: boolean;
 }

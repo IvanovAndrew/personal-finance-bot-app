@@ -1,67 +1,170 @@
-﻿import type {FC} from "react";
-import {commonStyles, theme, receiptStyles} from "../../App.styles.ts";
-import {formatDateDMMMMYYYY} from "../../utils/dateformatter.ts";
+﻿import { type FC, useEffect, useState, useMemo } from "react";
+import { commonStyles, theme, receiptStyles } from "../../App.styles.ts";
+import { financeApi, type SaveTransactionPayload } from "../../services/api.ts";
+import { formatCurrencyValue } from "../../utils/numberformatter.ts";
+import type {Category, Currency} from "../../types/finance.ts";
+import {getCategoryMeta, getSubCategoryName} from "../../utils/categoryutils.ts";
+import {LoadingData} from "../LoadingData.tsx";
+import {ErrorData} from "../Error.tsx";
 
 interface DayAnalyticsGridProps {
     startDate: Date;
-    currency: string;
+    currency: Currency;
+    categories?: Category[];
 }
 
-export const DayAnalyticsGrid: FC<DayAnalyticsGridProps> = ({ startDate, currency }) => {
-    return <div style={commonStyles.card}>
-        <span style={commonStyles.cardTitle}>Daily</span>
-        <p style={commonStyles.cardSub}>From {startDate.toLocaleDateString()}</p>
+export const DayAnalyticsGrid: FC<DayAnalyticsGridProps> = ({
+                                                                startDate,
+                                                                currency,
+                                                                categories = [],
+                                                            }) => {
+    const [items, setItems] = useState<SaveTransactionPayload[]>([]);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [error, setError] = useState<string | null>(null);
 
-        <div style={{ display: 'flex', alignItems: 'flex-end', gap: '8px', height: '120px', padding: '10px 0' }}>
-            {[
-                { day: '01', amount: 12000, height: '60%' },
-                { day: '02', amount: 4500, height: '25%' },
-                { day: '03', amount: 18900, height: '90%' },
-                { day: '04', amount: 2000, height: '15%' },
-                { day: '05', amount: 9800, height: '50%' },
-            ].map((item, idx) => (
-                <div
-                    key={idx}
-                    style={{
-                        flex: 1,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        gap: '6px',
-                        height: '100%',
-                        justifyContent: 'flex-end'
-                    }}
-                >
-                    <div
-                        style={{
-                            width: '100%',
-                            backgroundColor: theme.colors.primary,
-                            borderRadius: theme.radius.sm,
-                            height: item.height,
-                            transition: 'height 0.3s ease'
-                        }}
-                    />
-                    <span style={{ fontSize: '10px', color: theme.colors.textSecondary }}>{item.day}</span>
-                </div>
-            ))}
-        </div>
+    useEffect(() => {
+        let isMounted = true;
 
-        <span style={{ ...commonStyles.cardTitle, marginTop: '8px', fontSize: '14px' }}>
-            Expenses for {formatDateDMMMMYYYY(startDate)}:
-          </span>
-        <div style={receiptStyles.manualList}>
-            <div style={receiptStyles.subChipActive}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', padding: '4px' }}>
-                    <span>🛒 Супермаркеты</span>
-                    <span style={{ color: theme.colors.primary, fontWeight: '700' }}>14 400 {currency}</span>
+        const loadDailyData = async () => {
+            setIsLoading(true);
+            setError(null);
+            try {
+                const data = await financeApi.getDailyAnalytics({
+                    date: startDate,
+                    currency: currency.name,
+                });
+                if (isMounted) {
+                    setItems(data || []);
+                }
+            } catch (err) {
+                if (isMounted) {
+                    setError("Failed to load daily expenses");
+                }
+            } finally {
+                if (isMounted) {
+                    setIsLoading(false);
+                }
+            }
+        };
+
+        loadDailyData();
+
+        return () => {
+            isMounted = false;
+        };
+    }, [startDate, currency]);
+
+    const dayTotal = useMemo(() => {
+        return items.reduce((acc, curr) => acc + curr.amount, 0);
+    }, [items]);
+
+    const groupedByCategory = useMemo(() => {
+        const map = new Map<string, { category: string; total: number; items: SaveTransactionPayload[] }>();
+
+        items.forEach((item) => {
+            const key = item.category || 'Others';
+            const current = map.get(key) || { category: key, total: 0, items: [] };
+            current.total += item.amount;
+            current.items.push(item);
+            map.set(key, current);
+        });
+
+        return Array.from(map.values()).sort((a, b) => b.total - a.total);
+    }, [items]);
+
+    if (isLoading) {
+        return <LoadingData text={"Loading expenses..."} />;
+    }
+
+    if (error) {
+        return <ErrorData error={error} />;
+    }
+
+    const formattedDayStr = startDate.toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' });
+
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {/* Header / Day Summary Card */}
+            <div style={{ ...commonStyles.card, padding: '14px 16px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                        <div style={{ fontSize: '10px', color: theme.colors.textSecondary, fontWeight: '700', letterSpacing: '0.5px' }}>
+                            TOTAL FOR DAY
+                        </div>
+                        <div style={{ fontSize: '13px', color: theme.colors.textPrimary, fontWeight: '700', marginTop: '2px' }}>
+                            {formattedDayStr}
+                        </div>
+                    </div>
+                    <span style={{ fontSize: '20px', fontWeight: '800', color: theme.colors.textPrimary }}>
+                        {formatCurrencyValue(dayTotal)} {currency.symbol}
+                    </span>
                 </div>
             </div>
-            <div style={receiptStyles.subChipActive}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', padding: '4px' }}>
-                    <span>🚕 Транспорт</span>
-                    <span style={{ color: theme.colors.primary, fontWeight: '700' }}>4 500 {currency}</span>
+
+            {/* List of Transactions grouped by Category */}
+            {groupedByCategory.length === 0 ? (
+                <div style={{ ...commonStyles.card, textAlign: 'center', padding: '24px', color: theme.colors.textSecondary }}>
+                    No expenses recorded for this day
                 </div>
-            </div>
+            ) : (
+                groupedByCategory.map((group) => {
+                    const meta = getCategoryMeta(categories, group.category);
+
+                    return (
+                        <div key={group.category} style={commonStyles.card}>
+                            {/* Category Header */}
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <span style={{ fontSize: '16px' }}>{meta.icon}</span>
+                                    <span style={commonStyles.cardTitle}>{meta.name}</span>
+                                </div>
+                                <span style={{ fontSize: '14px', fontWeight: '700', color: theme.colors.primary }}>
+                                    {formatCurrencyValue(group.total)} {currency.symbol}
+                                </span>
+                            </div>
+
+                            {/* Items inside this Category */}
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                {group.items.map((item, idx) => (
+                                    <div
+                                        key={idx}
+                                        style={{
+                                            ...receiptStyles.subChip,
+                                            justifyContent: 'space-between',
+                                            padding: '8px 12px',
+                                            backgroundColor: theme.colors.bgElement,
+                                            borderRadius: theme.radius.md,
+                                            border: `1px solid ${theme.colors.border}`,
+                                        }}
+                                    >
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', maxWidth: '70%' }}>
+                                            <span style={{
+                                                fontSize: '12px',
+                                                fontWeight: '600',
+                                                color: theme.colors.textPrimary,
+                                                whiteSpace: 'nowrap',
+                                                overflow: 'hidden',
+                                                textOverflow: 'ellipsis'
+                                            }}>
+                                                {item.description}
+                                            </span>
+                                            {item.subCategory && (
+                                                <span style={{ fontSize: '10px', color: theme.colors.textSecondary }}>
+                                                    {getSubCategoryName(categories, item.category, item.subCategory)}
+                                                </span>
+                                            )}
+                                        </div>
+
+                                        <span style={{ fontSize: '12px', fontWeight: '700', color: theme.colors.textPrimary }}>
+                                            {formatCurrencyValue(item.amount)} {currency.symbol}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    );
+                })
+            )}
         </div>
-    </div>;
-} 
+    );
+};

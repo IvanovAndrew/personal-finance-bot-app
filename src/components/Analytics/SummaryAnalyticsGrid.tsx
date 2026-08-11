@@ -2,13 +2,22 @@
 import {commonStyles, theme} from "../../App.styles.ts";
 import type {SummaryResponse} from "../../services/api.ts";
 import {formatDateDMMMMYYYY} from "../../utils/dateformatter.ts";
+import {LoadingData} from "../LoadingData.tsx";
+import {NoAvailableData} from "../NoAvailableData.tsx";
 
 interface SummaryAnalyticsGridProps {
     summary: SummaryResponse | null;
+    isLoading: boolean;
 }
 
-export const SummaryAnalyticsGrid: FC<SummaryAnalyticsGridProps> = ({ summary }) => {
-    if (!summary) return null;
+export const SummaryAnalyticsGrid: FC<SummaryAnalyticsGridProps> = ({ summary, isLoading }) => {
+    if (isLoading) {
+        return <LoadingData text={"Loading data..."}/>;
+    }
+    
+    if (!summary){
+        return <NoAvailableData/>
+    }
 
     const formatAmount = (val: number) =>
         `${val.toLocaleString('ru-RU')} ${summary.currency}`;

@@ -427,20 +427,72 @@ export const modalStyles: { [key: string]: React.CSSProperties } = {
   },
 };
 
-export const datePickerStyles: { [key: string]: React.CSSProperties } = {
+export const datePickerStyles: { [key: string]: React.CSSProperties | string } = {
   triggerBtn: {
-    backgroundColor: theme.colors.bgElement,
-    border: `1px solid ${theme.colors.border}`,
-    borderRadius: theme.radius.md,
-    color: theme.colors.textPrimary,
-    fontSize: '12px',
-    fontWeight: '600',
-    padding: '6px 10px',
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '6px',
+    ...commonStyles.inputControl,
+    justifyContent: 'flex-start',
+    gap: '8px',
+    width: '100%',
   },
+  calendarIcon: {
+    flexShrink: 0,
+  },
+  dateText: {
+    color: theme.colors.textPrimary,
+    fontSize: '13px',
+    fontWeight: '600',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
+
+  popupThemeCss: `
+    /* Контейнер года */
+    .react-datepicker-year-header,
+    .react-datepicker__header .react-datepicker-year-header {
+      color: #FFFFFF !important;
+      font-weight: 700 !important;
+      font-size: 15px !important;
+    }
+
+    /* На всякий случай перебиваем глубокие селекторы в шапке */
+    .react-datepicker__header,
+    .react-datepicker__header * {
+      color: #FFFFFF !important;
+    }
+
+    .react-datepicker {
+      background-color: ${theme.colors.bgCard} !important;
+      border: 1px solid ${theme.colors.border} !important;
+      border-radius: ${theme.radius.lg} !important;
+      font-family: inherit !important;
+      color: ${theme.colors.textPrimary} !important;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5) !important;
+    }
+
+    .react-datepicker__navigation-icon::before {
+      border-color: ${theme.colors.primary} !important;
+    }
+
+    .react-datepicker__month-text,
+    .react-datepicker__day {
+      color: ${theme.colors.textPrimary} !important;
+      border-radius: ${theme.radius.md} !important;
+    }
+
+    .react-datepicker__month-text:hover,
+    .react-datepicker__day:hover {
+      background-color: ${theme.colors.bgElement} !important;
+    }
+
+    .react-datepicker__month-text--selected,
+    .react-datepicker__month-text--keyboard-selected,
+    .react-datepicker__day--selected {
+      background-color: ${theme.colors.primary} !important;
+      color: #000000 !important;
+      font-weight: 700 !important;
+    }
+  `,
 };
 
 export const statusModalStyles = {
