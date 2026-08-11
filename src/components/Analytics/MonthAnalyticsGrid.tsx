@@ -6,6 +6,7 @@ import type { MonthlyAnalyticsResponse } from "../../services/api.ts";
 import { formatCurrencyValue } from "../../utils/numberformatter.ts";
 import { X } from "lucide-react";
 import {LoadingData} from "../LoadingData.tsx";
+import {NoAvailableData} from "../NoAvailableData.tsx";
 import {getCategoryMeta} from "../../utils/categoryutils.ts";
 
 interface MonthAnalyticsGridProps {
@@ -28,19 +29,7 @@ export const MonthAnalyticsGrid: FC<MonthAnalyticsGridProps> = ({
     }
 
     if (!monthlyData || !monthlyData.months || monthlyData.months.length === 0) {
-        return (
-            <div style={{ ...commonStyles.card, textAlign: 'center', padding: '24px', color: theme.colors.textSecondary }}>
-                No analytics data available
-            </div>
-        );
-    }
-
-    if (!monthlyData || !monthlyData.months || monthlyData.months.length === 0) {
-        return (
-            <div style={{ ...commonStyles.card, textAlign: 'center', padding: '24px', color: theme.colors.textSecondary }}>
-                No analytics data available
-            </div>
-        );
+        return <NoAvailableData/>;
     }
 
     const parseMonthString = (monthStr: string): Date => {
@@ -60,10 +49,10 @@ export const MonthAnalyticsGrid: FC<MonthAnalyticsGridProps> = ({
         : [];
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <div style={commonStyles.column12}>
             {/* Grand Total Card */}
             <div style={{ ...commonStyles.card, padding: '14px 16px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={commonStyles.rowBetween}>
                     <div>
                         <div style={{ fontSize: '11px', color: theme.colors.textSecondary, fontWeight: '700' }}>
                             GRAND TOTAL OUTCOME
@@ -84,7 +73,7 @@ export const MonthAnalyticsGrid: FC<MonthAnalyticsGridProps> = ({
                     Monthly Expenses Trend
                 </span>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <div style={commonStyles.column10}>
                     {monthlyData.months.map((m) => {
                         const parsedDate = parseMonthString(m.month);
                         const percentage = (m.total / maxMonthTotal) * 100;
@@ -108,7 +97,7 @@ export const MonthAnalyticsGrid: FC<MonthAnalyticsGridProps> = ({
                                     transition: 'all 0.15s ease',
                                 }}
                             >
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <div style={commonStyles.rowBetween}>
                                     <span style={{ fontWeight: '700', fontSize: '13px', color: theme.colors.textPrimary }}>
                                         {formatDateMMMMYYYY(parsedDate)}
                                     </span>
@@ -203,7 +192,7 @@ export const MonthAnalyticsGrid: FC<MonthAnalyticsGridProps> = ({
                             </span>
                         </div>
 
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <div style={commonStyles.column8}>
                             {activeMonthCategories.map((cat) => {
                                 const meta = getCategoryMeta(categories, cat.category);
                                 const catPercentage = activeMonthData.total > 0 ? (cat.total / activeMonthData.total) * 100 : 0;
@@ -220,8 +209,8 @@ export const MonthAnalyticsGrid: FC<MonthAnalyticsGridProps> = ({
                                             backgroundColor: theme.colors.bgElement,
                                         }}
                                     >
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                        <div style={commonStyles.rowBetween}>
+                                            <div style={commonStyles.rowStart}>
                                                 <span style={{ fontSize: '15px' }}>{meta.icon}</span>
                                                 <span style={{ fontWeight: '600', fontSize: '13px', color: theme.colors.textPrimary }}>
                                                     {meta.name}

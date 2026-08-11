@@ -36,17 +36,17 @@ async function apiFetch<T>(endpoint: string, options: RequestInit = {}, signal?:
         }
 
         return response.json();
-    } catch (error: any) {
-        if (error.name === 'AbortError') {
+    } catch (error: unknown) {
+        if (error instanceof Error && error.name === 'AbortError') {
             console.warn(`Request to ${endpoint} was aborted.`);
-            throw new Error('Request was canceled.');
+            throw new Error('Request was canceled.', { cause: error });
         }
         throw error;
     }
 }
 
 export interface SaveTransactionPayload {
-    isoutcome: boolean;
+    isOutcome: boolean;
     date: string; // ISO String
     category: string;
     subCategory?: string | null;
@@ -73,16 +73,6 @@ export interface SaveFnsCheckByRequisitesPayload {
     totalPrice: number;
 }
 
-export interface SaveTransactionPayload {
-    isoutcome: boolean;
-    date: string; // ISO String
-    category: string;
-    subCategory?: string | null;
-    description?: string;
-    amount: number;
-    currency: string;
-}
-
 export interface DailySpendingResponse {
     date: string;
     amount: number;
@@ -100,14 +90,6 @@ export interface SummaryResponse {
     daysUntilPayday: number;
     dailyBudgetLimit: number;
     currency: string;
-}
-
-export interface CategoryAnalyticsResponse {
-    categoryId: string;
-    categoryName: string;
-    totalAmount: number;
-    subcategoriesTotal: { subId: string; name: string; amount: number }[];
-    monthlyTrend: { month: string; amount: number }[];
 }
 
 export interface SummaryPayload {
@@ -177,9 +159,7 @@ export const financeApi = {
 
         const rawCategories = await apiFetch<RawCategory[]>(`/categories?${params.toString()}`, {}, signal);
         
-        var enriched = rawCategories.map(enrichCategory);
-
-        return enriched;
+        return rawCategories.map(enrichCategory);
     },
 
     

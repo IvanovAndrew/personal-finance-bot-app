@@ -38,7 +38,7 @@ export const CategorySwitcherModal: FC<CategorySwitcherModalProps> = ({
         <>
             {/* Header Card */}
             <div style={{ ...commonStyles.card, padding: '14px 16px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={commonStyles.rowBetween}>
                     <div>
                         <div style={{ fontSize: '10px', color: theme.colors.textSecondary, fontWeight: '700', letterSpacing: '0.5px' }}>
                             {label}

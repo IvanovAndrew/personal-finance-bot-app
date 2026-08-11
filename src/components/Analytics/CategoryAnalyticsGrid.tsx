@@ -26,6 +26,17 @@ export const CategoryAnalyticsGrid: FC<CategoryAnalyticsGridProps> = ({
     const [selectedCategoryCode, setSelectedCategoryCode] = useState<string | null>(null);
     const [selectedMonthStr, setSelectedMonthStr] = useState<string | null>(null);
 
+    const allUniqueCategoryCodes = Array.from(
+        new Set((monthlyData?.months|| []).flatMap((m) => m.categories.map((c) => c.category)))
+    );
+    
+    const availableCategories = useMemo(() => {
+        const matching = categories.filter((c) =>
+            allUniqueCategoryCodes.some((code) => code.toLowerCase() === c.code.toLowerCase())
+        );
+        return matching.length > 0 ? matching : categories;
+    }, [categories, allUniqueCategoryCodes]);
+
     if (isLoading){
         return <LoadingData text={"Loading data..."}/>;
     }
@@ -38,17 +49,6 @@ export const CategoryAnalyticsGrid: FC<CategoryAnalyticsGridProps> = ({
         const parts = monthStr.split('-');
         return new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, 1);
     };
-
-    const allUniqueCategoryCodes = Array.from(
-        new Set(monthlyData.months.flatMap((m) => m.categories.map((c) => c.category)))
-    );
-
-    const availableCategories = useMemo(() => {
-        const matching = categories.filter((c) =>
-            allUniqueCategoryCodes.some((code) => code.toLowerCase() === c.code.toLowerCase())
-        );
-        return matching.length > 0 ? matching : categories;
-    }, [categories, allUniqueCategoryCodes]);
 
     const activeCode = selectedCategoryCode || availableCategories[0]?.code || allUniqueCategoryCodes[0] || null;
     const activeMeta = activeCode ? getCategoryMeta(categories, activeCode) : null;
@@ -87,9 +87,10 @@ export const CategoryAnalyticsGrid: FC<CategoryAnalyticsGridProps> = ({
         .sort((a, b) => b.total - a.total);
 
     const selectedMonthDate = selectedMonthStr ? parseMonthString(selectedMonthStr) : null;
+    const maxTotal = Math.max(...categoryMonthlyTrend.map((item) => item.total), 1);
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <div style={commonStyles.column12}>
             {/* Category Switcher Header */}
             <CategorySwitcherModal
                 categories={categories}
@@ -140,7 +141,6 @@ export const CategoryAnalyticsGrid: FC<CategoryAnalyticsGridProps> = ({
                         >
                             {categoryMonthlyTrend.map((m) => {
                                 const parsedDate = parseMonthString(m.monthStr);
-                                const maxTotal = Math.max(...categoryMonthlyTrend.map((item) => item.total), 1);
                                 const heightPercent = m.total > 0 ? Math.max((m.total / maxTotal) * 100, 8) : 4;
 
                                 const isBarSelected = selectedMonthStr === m.monthStr;
@@ -225,7 +225,7 @@ export const CategoryAnalyticsGrid: FC<CategoryAnalyticsGridProps> = ({
                                 </span>
                             </div>
 
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            <div style={commonStyles.column8}>
                                 {subCategoryList.map((sc) => {
                                     const percentage = activeSubcategoryTotal > 0 ? (sc.total / activeSubcategoryTotal) * 100 : 0;
 
@@ -241,7 +241,7 @@ export const CategoryAnalyticsGrid: FC<CategoryAnalyticsGridProps> = ({
                                                 backgroundColor: theme.colors.bgElement,
                                             }}
                                         >
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <div style={commonStyles.rowBetween}>
                                                 <span style={{ fontWeight: '600', fontSize: '13px', color: theme.colors.textPrimary }}>
                                                     {sc.name}
                                                 </span>

@@ -23,7 +23,7 @@ export const SummaryAnalyticsGrid: FC<SummaryAnalyticsGridProps> = ({ summary, i
         `${val.toLocaleString('ru-RU')} ${summary.currency}`;
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <div style={commonStyles.column12}>
             <div style={commonStyles.card}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
                     <span style={commonStyles.label}>Income</span>
@@ -41,7 +41,7 @@ export const SummaryAnalyticsGrid: FC<SummaryAnalyticsGridProps> = ({ summary, i
 
                 <div style={{ height: '1px', backgroundColor: theme.colors.border, margin: '8px 0' }} />
 
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <div style={commonStyles.rowSpaceBetween}>
                     <span style={{ ...commonStyles.label, fontWeight: '600', color: theme.colors.textPrimary }}>
                         Total balance
                     </span>
@@ -59,7 +59,7 @@ export const SummaryAnalyticsGrid: FC<SummaryAnalyticsGridProps> = ({ summary, i
                     </span>
                 </div>
 
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <div style={commonStyles.rowSpaceBetween}>
                     <span style={{ fontSize: '13px', fontWeight: '700', color: theme.colors.textPrimary }}>
                         Real free money
                     </span>
@@ -82,7 +82,7 @@ export const SummaryAnalyticsGrid: FC<SummaryAnalyticsGridProps> = ({ summary, i
                 }}
             >
                 <div style={{ fontSize: '12px', color: theme.colors.textSecondary }}>
-                    📅 {formatDateDMMMMYYYY(new Date(summary.startPeriod))} —— [{summary.daysUntilPayday} days] —— 💰 {formatDateDMMMMYYYY(new Date(summary.payday))} Payday
+                    📅 {formatDateDMMMMYYYY(new Date(summary.startPeriod))} — [{summary.daysUntilPayday} days] — 💰 {formatDateDMMMMYYYY(new Date(summary.payday))} Payday
                 </div>
 
                 <div style={{ fontSize: '18px', fontWeight: '800', color: theme.colors.primary }}>

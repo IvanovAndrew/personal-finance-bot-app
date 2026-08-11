@@ -24,7 +24,6 @@ export const SubCategoryAnalyticsGrid: FC<SubCategoryAnalyticsGridProps> = ({
     const [selectedSubCatId, setSelectedSubCatId] = useState<string | null>(null);
     const [subCatViewType, setSubCatViewType] = useState<'total' | 'monthly'>('total');
 
-    // 1. Агрегация общей суммы по каждой подкатегории за всё время
     const subCategoryTotalsMap = useMemo(() => {
         const map = new Map<string, number>();
         if (!monthlyData?.months) return map;
@@ -45,7 +44,6 @@ export const SubCategoryAnalyticsGrid: FC<SubCategoryAnalyticsGridProps> = ({
         return map;
     }, [monthlyData, selectedCategory]);
 
-    // Хелпер для получения итоговой суммы подкатегории
     const getSubcategoryTotal = (subCode: string): number => {
         return subCategoryTotalsMap.get(subCode.toLowerCase()) || 0;
     };
@@ -153,7 +151,7 @@ export const SubCategoryAnalyticsGrid: FC<SubCategoryAnalyticsGridProps> = ({
 
             {/* Monthly View */}
             {subCatViewType === 'monthly' && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <div style={commonStyles.column10}>
                     <label style={commonStyles.label}>Choose a subcategory</label>
                     <div style={receiptStyles.subSelector}>
                         {(selectedCategory?.subCategories || []).map((sub) => (

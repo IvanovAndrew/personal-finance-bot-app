@@ -39,6 +39,7 @@ export const DayAnalyticsGrid: FC<DayAnalyticsGridProps> = ({
             } catch (err) {
                 if (isMounted) {
                     setError("Failed to load daily expenses");
+                    console.error("Daily analytics fetch error:", err);
                 }
             } finally {
                 if (isMounted) {
@@ -83,10 +84,10 @@ export const DayAnalyticsGrid: FC<DayAnalyticsGridProps> = ({
     const formattedDayStr = startDate.toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' });
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <div style={commonStyles.column12}>
             {/* Header / Day Summary Card */}
             <div style={{ ...commonStyles.card, padding: '14px 16px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={commonStyles.rowBetween}>
                     <div>
                         <div style={{ fontSize: '10px', color: theme.colors.textSecondary, fontWeight: '700', letterSpacing: '0.5px' }}>
                             TOTAL FOR DAY
@@ -113,8 +114,8 @@ export const DayAnalyticsGrid: FC<DayAnalyticsGridProps> = ({
                     return (
                         <div key={group.category} style={commonStyles.card}>
                             {/* Category Header */}
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <div style={commonStyles.rowBetween}>
+                                <div style={commonStyles.rowStart}>
                                     <span style={{ fontSize: '16px' }}>{meta.icon}</span>
                                     <span style={commonStyles.cardTitle}>{meta.name}</span>
                                 </div>

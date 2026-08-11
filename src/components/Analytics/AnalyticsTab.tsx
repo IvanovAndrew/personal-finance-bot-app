@@ -51,7 +51,9 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, c
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
 
-    const analyticsCache = useRef<Record<string, any>>({});
+    const summaryCache = useRef<Record<string, SummaryResponse>>({});
+    const monthlyCache = useRef<Record<string, MonthlyAnalyticsResponse>>({});
+    
     const abortControllerRef = useRef<AbortController | null>(null);
 
     // Persist filter changes to localStorage
@@ -65,68 +67,90 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, c
         localStorage.setItem(STORAGE_KEYS.MONTH, newMonth.toISOString());
     };
 
-    const summaryMonthKey = `${selectedMonth.getFullYear()}-${selectedMonth.getMonth() + 1}`;
-    const summaryCacheKey = `summary_${currencyCode}_${summaryMonthKey}`;
-
-    const monthlyMonthKey = `${selectedMonth.getFullYear()}-${selectedMonth.getMonth() + 1}`;
-    const monthlyCacheKey = `monthly_${currencyCode}_${monthlyMonthKey}`;
-
     const fetchAnalytics = useCallback(async (forceRefresh = false) => {
         if (viewMode === 'days') return;
 
-        // cancel the previous request
+        const monthKey = `${selectedMonth.getFullYear()}-${selectedMonth.getMonth() + 1}`;
+        const isSummaryMode = viewMode === 'summary';
+        const cacheKey = `${currencyCode}_${monthKey}`;
+
+        // 1. Проверяем кэш до создания нового HTTP-запроса
+        if (!forceRefresh) {
+            if (isSummaryMode && summaryCache.current[cacheKey]) {
+                setSummary(summaryCache.current[cacheKey]);
+                setError(null);
+                setIsLoading(false);
+                return;
+            }
+            if (!isSummaryMode && monthlyCache.current[cacheKey]) {
+                setMonthlyData(monthlyCache.current[cacheKey]);
+                setError(null);
+                setIsLoading(false);
+                return;
+            }
+        }
+
+        // 2. Отменяем ПРЕДЫДУЩИЙ незавершенный сетевой запрос
         if (abortControllerRef.current) {
             abortControllerRef.current.abort();
         }
-        
-        // create a new controller
+
         const controller = new AbortController();
         abortControllerRef.current = controller;
 
         setIsLoading(true);
-        setError(null);
+        setError(null); // Важно: всегда сбрасываем ошибку при старте запроса!
 
         try {
-            if (viewMode === 'summary') {
-                if (!forceRefresh && analyticsCache.current[summaryCacheKey]) {
-                    setSummary(analyticsCache.current[summaryCacheKey]);
-                    setIsLoading(false);
-                    return;
-                }
-
+            if (isSummaryMode) {
                 const data = await financeApi.getSummary({
                     monthDate: selectedMonth,
                     currency: currencyCode,
                 }, controller.signal);
-                analyticsCache.current[summaryCacheKey] = data;
-                setSummary(data);
 
-            } else if (viewMode === 'months' || viewMode === 'categories' || viewMode === 'subcategories') {
-                if (!forceRefresh && analyticsCache.current[monthlyCacheKey]) {
-                    setMonthlyData(analyticsCache.current[monthlyCacheKey]);
-                    setIsLoading(false);
-                    return;
+                // Записываем только если запрос не был отменен
+                if (!controller.signal.aborted) {
+                    summaryCache.current[cacheKey] = data;
+                    setSummary(data);
                 }
-
+            } else {
                 const data = await financeApi.getMonthlyAnalytics({
                     startMonth: selectedMonth,
                     currency: currencyCode,
                 }, controller.signal);
-                analyticsCache.current[monthlyCacheKey] = data;
-                setMonthlyData(data);
+
+                if (!controller.signal.aborted) {
+                    monthlyCache.current[cacheKey] = data;
+                    setMonthlyData(data);
+                }
             }
-        } catch (err: any) {
-            if (err.name === 'AbortError' || err.message === 'Request was canceled.') {
+        } catch (err: unknown) {
+            // Если запрос отменен вручную — просто игнорируем и НЕ ставим setError
+            if (err instanceof Error && (err.name === 'AbortError' || err.message === 'Request was canceled.')) {
                 return;
             }
-            setError('Failed to load analytics');
-            console.error('Analytics fetch error:', err);
+
+            // Показываем ошибку только если это был текущий актуальный контроллер
+            if (abortControllerRef.current === controller) {
+                setError('Failed to load analytics');
+                console.error('Analytics fetch error:', err);
+            }
         } finally {
             if (abortControllerRef.current === controller) {
                 setIsLoading(false);
             }
         }
-    }, [viewMode, currencyCode, selectedMonth, summaryCacheKey, monthlyCacheKey]);
+    }, [viewMode, currencyCode, selectedMonth]);
+
+    useEffect(() => {
+        fetchAnalytics();
+
+        return () => {
+            if (abortControllerRef.current) {
+                abortControllerRef.current.abort();
+            }
+        };
+    }, [fetchAnalytics]);
 
     useEffect(() => {
         fetchAnalytics();
@@ -151,8 +175,8 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, c
                     width: '100%',
                 }}>
                     {/* Currency */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', width: '100%' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={commonStyles.column6Full}>
+                        <div style={commonStyles.rowBetween}>
                             <label style={commonStyles.label}>Currency</label>
                             {isLoading && (
                                 <Loader2
@@ -184,7 +208,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, c
                     </div>
 
                     {/* Start Day / Month */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', width: '100%' }}>
+                    <div style={commonStyles.column6Full}>
                         <label style={commonStyles.label}>
                             {viewMode === 'days' ? 'Start Day' : 'Start Month'}
                         </label>
@@ -205,7 +229,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, c
 
             {/* View Mode Tabs */}
             {/* View Mode Tabs */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', width: '100%' }}>
+            <div style={commonStyles.column6Full}>
                 {/* Upper row: Time periods */}
                 <div style={{
                     ...receiptStyles.mainTabs,

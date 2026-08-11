@@ -46,7 +46,7 @@ export const CategoryGrid: React.FC<CategoryGridProps> = ({
     return (
         <div style={commonStyles.card}>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={commonStyles.rowBetween}>
                 <span style={commonStyles.cardTitle}>Category</span>
                 {selectedSubCat && (
                     <span style={appStyles.currencyBadge}>{selectedSubCat.name}</span>

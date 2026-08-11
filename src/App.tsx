@@ -24,21 +24,27 @@ export const App: React.FC = () => {
         });
     }, []);
     
-  const [activeTab, setActiveTab] = useState<TabType>('add');
-
-  const [incomeCategories, setIncomeCategories] = useState<Category[]>(() => {
+    const [activeTab, setActiveTab] = useState<TabType>('add');
+    
+    const [incomeCategories, setIncomeCategories] = useState<Category[]>(() => {
       return cacheService.get<Category[]>(CACHE_KEYS.CATEGORIES_INCOME) || [];
-  });
+    });
 
     const [outcomeCategories, setOutcomeCategories] = useState<Category[]>(() => {
         return cacheService.get<Category[]>(CACHE_KEYS.CATEGORIES_OUTCOME) || [];
     });
     
-  const [currencies, setCurrencies] = useState<Currency[]>(() => {
+    const [currencies, setCurrencies] = useState<Currency[]>(() => {
       return cacheService.get<Currency[]>(CACHE_KEYS.CURRENCIES) || [];
-  });
+    });
+
+    const [isLoading, setIsLoading] = useState<boolean>(() => {
+        const hasIncomeCache = !!cacheService.get(CACHE_KEYS.CATEGORIES_INCOME) && !cacheService.isExpired(CACHE_KEYS.CATEGORIES_INCOME);
+        const hasOutcomeCache = !!cacheService.get(CACHE_KEYS.CATEGORIES_OUTCOME) && !cacheService.isExpired(CACHE_KEYS.CATEGORIES_OUTCOME);
+        const hasCurrenciesCache = !!cacheService.get(CACHE_KEYS.CURRENCIES) && !cacheService.isExpired(CACHE_KEYS.CURRENCIES);
     
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+        return !(hasIncomeCache && hasOutcomeCache && hasCurrenciesCache);
+    });
 
     useEffect(() => {
         if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
@@ -46,15 +52,6 @@ export const App: React.FC = () => {
             tg.ready();
             tg.expand();
             tg.setHeaderColor?.('#0A0A0C');
-        }
-
-        const hasIncomeCache = !!cacheService.get(CACHE_KEYS.CATEGORIES_INCOME) && !cacheService.isExpired(CACHE_KEYS.CATEGORIES_INCOME);
-        const hasOutcomeCache = !!cacheService.get(CACHE_KEYS.CATEGORIES_OUTCOME) && !cacheService.isExpired(CACHE_KEYS.CATEGORIES_OUTCOME);
-        const hasCurrenciesCache = !!cacheService.get(CACHE_KEYS.CURRENCIES) && !cacheService.isExpired(CACHE_KEYS.CURRENCIES);
-
-        if (hasIncomeCache && hasOutcomeCache && hasCurrenciesCache) {
-            setIsLoading(false); // всё есть в свежем кэше — сразу показываем UI
-            return;
         }
 
         const loadData = async () => {

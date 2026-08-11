@@ -119,6 +119,53 @@ export const commonStyles: { [key: string]: React.CSSProperties } = {
     cursor: 'pointer',
     outline: 'none',
   },
+  // Ниже — общие layout-паттерны, вынесенные из Analytics/* и других мест,
+  // где один и тот же объект стиля повторялся дословно в нескольких файлах.
+  rowBetween: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  rowSpaceBetween: {
+    display: 'flex',
+    justifyContent: 'space-between',
+  },
+  rowStart: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+  },
+  column12: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '12px',
+  },
+  column10: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '10px',
+  },
+  column8: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px',
+  },
+  column6Full: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '6px',
+    width: '100%',
+  },
+  statLabel: {
+    fontSize: '11px',
+    color: theme.colors.textSecondary,
+    fontWeight: '700',
+  },
+  statValue: {
+    fontWeight: '700',
+    fontSize: '13px',
+    color: theme.colors.textPrimary,
+  },
 };
 
 export const appStyles: { [key: string]: React.CSSProperties } = {

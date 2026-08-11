@@ -51,7 +51,7 @@ export const EnterTransactionTab: React.FC<EnterOutcomeTabProps> = ({ incomeCate
 
         try {
             const { success, error } = await financeApi.saveTransaction({
-                isoutcome: txType === 'expense',
+                isOutcome: txType === 'expense',
                 date: toDateOnlyString(date),
                 amount: numericAmount,
                 currency: selectedCurrency.name,
@@ -160,7 +160,7 @@ export const EnterTransactionTab: React.FC<EnterOutcomeTabProps> = ({ incomeCate
         </div>
 
         <div style={{ ...appStyles.heroCard, padding: '12px 16px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={commonStyles.rowBetween}>
 
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '2px' }}>
                     <span style={{ fontSize: '9px', color: theme.colors.textSecondary, fontWeight: '700' }}>DATE</span>
