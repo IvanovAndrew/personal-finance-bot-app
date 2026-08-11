@@ -52,6 +52,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, c
     const [error, setError] = useState<string | null>(null);
 
     const analyticsCache = useRef<Record<string, any>>({});
+    const abortControllerRef = useRef<AbortController | null>(null);
 
     // Persist filter changes to localStorage
     const handleCurrencyChange = (newCurrency: string) => {
@@ -73,6 +74,15 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, c
     const fetchAnalytics = useCallback(async (forceRefresh = false) => {
         if (viewMode === 'days') return;
 
+        // cancel the previous request
+        if (abortControllerRef.current) {
+            abortControllerRef.current.abort();
+        }
+        
+        // create a new controller
+        const controller = new AbortController();
+        abortControllerRef.current = controller;
+
         setIsLoading(true);
         setError(null);
 
@@ -87,7 +97,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, c
                 const data = await financeApi.getSummary({
                     monthDate: selectedMonth,
                     currency: currencyCode,
-                });
+                }, controller.signal);
                 analyticsCache.current[summaryCacheKey] = data;
                 setSummary(data);
 
@@ -101,25 +111,31 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, c
                 const data = await financeApi.getMonthlyAnalytics({
                     startMonth: selectedMonth,
                     currency: currencyCode,
-                });
+                }, controller.signal);
                 analyticsCache.current[monthlyCacheKey] = data;
                 setMonthlyData(data);
             }
         } catch (err: any) {
+            if (err.name === 'AbortError' || err.message === 'Request was canceled.') {
+                return;
+            }
             setError('Failed to load analytics');
             console.error('Analytics fetch error:', err);
         } finally {
-            setIsLoading(false);
+            if (abortControllerRef.current === controller) {
+                setIsLoading(false);
+            }
         }
     }, [viewMode, currencyCode, selectedMonth, summaryCacheKey, monthlyCacheKey]);
 
-    // 2. Debounce fetch requests by 250ms when rapid filter changes occur
     useEffect(() => {
-        const timer = setTimeout(() => {
-            fetchAnalytics();
-        }, 250);
+        fetchAnalytics();
 
-        return () => clearTimeout(timer);
+        return () => {
+            if (abortControllerRef.current) {
+                abortControllerRef.current.abort();
+            }
+        };
     }, [fetchAnalytics]);
 
     return (
