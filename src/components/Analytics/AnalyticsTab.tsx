@@ -1,4 +1,4 @@
-﻿import React, { useCallback, useEffect, useRef, useState } from 'react';
+﻿import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {
     Calendar,
     PieChart,
@@ -37,20 +37,21 @@ const STORAGE_KEYS = {
 
 export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, currencies }) => {
 
-    const [selectedCurrency, setSelectedCurrency] = useState<Currency>(() => {
-        const savedCode = localStorage.getItem(STORAGE_KEYS.CURRENCY);
-        const found = currencies.find(c => c.name === savedCode);
-        return found || currencies[0];
+    // 1. Store only the string code in state
+    const [currencyCode, setCurrencyCode] = useState<string>(() => {
+        return localStorage.getItem(STORAGE_KEYS.CURRENCY) || currencies[0]?.name || 'AMD';
     });
 
-    useEffect(() => {
-        if (currencies.length === 0) return;
-
-        const savedCode = localStorage.getItem(STORAGE_KEYS.CURRENCY);
-        const matched = currencies.find(c => c.name === savedCode) || currencies[0];
-
-        setSelectedCurrency(prev => (prev.name === matched.name ? prev : matched));
-    }, [currencies]);
+    // 2. Derive the active Currency object synchronously on render
+    const selectedCurrency = useMemo(() => {
+        const found = currencies.find(c => c.name === currencyCode);
+        return found || currencies[0] || {
+            name: 'AMD',
+            symbol: '֏',
+            format: 'С0',
+            isPopular: true,
+        };
+    }, [currencies, currencyCode]);
 
     const [selectedMonth, setSelectedMonth] = useState<Date>(() => {
         const savedMonth = localStorage.getItem(STORAGE_KEYS.MONTH);
@@ -75,11 +76,8 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, c
 
     // Persist filter changes to localStorage
     const handleCurrencyChange = (currencyName: string) => {
-        const targetCurrency = currencies.find(c => c.name === currencyName);
-        if (targetCurrency) {
-            setSelectedCurrency(targetCurrency);
-            localStorage.setItem(STORAGE_KEYS.CURRENCY, targetCurrency.name);
-        }
+        setCurrencyCode(currencyName);
+        localStorage.setItem(STORAGE_KEYS.CURRENCY, currencyName);
     };
 
     const handleMonthChange = (newMonth: Date) => {
@@ -93,7 +91,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, c
 
         const monthKey = `${selectedMonth.getFullYear()}-${selectedMonth.getMonth() + 1}`;
         const dayKey = startDate.toISOString().slice(0, 10);
-        const cacheKey = isDaysMode ? `${selectedCurrency.name}_${dayKey}` : `${selectedCurrency.name}_${monthKey}`;
+        const cacheKey = isDaysMode ? `${currencyCode}_${dayKey}` : `${currencyCode}_${monthKey}`;
 
         // 1. Проверяем кэш до создания нового HTTP-запроса
         if (!forceRefresh) {
@@ -132,7 +130,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, c
             if (isSummaryMode) {
                 const data = await financeApi.getSummary({
                     monthDate: selectedMonth,
-                    currency: selectedCurrency.name,
+                    currency: currencyCode,
                 }, controller.signal);
 
                 if (!controller.signal.aborted) {
@@ -142,7 +140,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, c
             } else if (isDaysMode) {
                 const data = await financeApi.getDailyAnalytics({
                     date: startDate,
-                    currency: selectedCurrency.name,
+                    currency: currencyCode,
                 }, controller.signal);
 
                 if (!controller.signal.aborted) {
@@ -152,7 +150,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, c
             } else {
                 const data = await financeApi.getMonthlyAnalytics({
                     startMonth: selectedMonth,
-                    currency: selectedCurrency.name,
+                    currency: currencyCode,
                 }, controller.signal);
 
                 if (!controller.signal.aborted) {
@@ -174,7 +172,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, c
                 setIsLoading(false);
             }
         }
-    }, [viewMode, selectedCurrency, selectedMonth, startDate]);
+    }, [viewMode, currencyCode, selectedMonth, startDate]);
 
     useEffect(() => {
         fetchAnalytics();
@@ -211,7 +209,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, c
                             )}
                         </div>
                         <select
-                            value={selectedCurrency.name}
+                            value={currencyCode}
                             onChange={(e) => handleCurrencyChange(e.target.value)}
                             style={{
                                 ...commonStyles.inputControl,
@@ -411,7 +409,6 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, c
                     )}
                 </div>
             )}
-
         </div>
     );
 };
