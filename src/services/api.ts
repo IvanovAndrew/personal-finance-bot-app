@@ -141,6 +141,12 @@ export interface MonthlyAnalyticsResponse {
     months: MonthlyAnalyticsItem[];
 }
 
+export interface SaveCheckDto {
+    success: boolean;
+    error?: string;
+    positions?: SaveTransactionPayload[];
+}
+
 export const financeApi = {
     
     async health(signal?: AbortSignal): Promise<boolean> {
@@ -170,28 +176,28 @@ export const financeApi = {
         }, signal);
     },
     
-    async saveYerevanCityCheck(payload: SaveYerevanCityCheckPayload, signal?: AbortSignal): Promise<{ success: boolean; error?: string }> {
+    async saveYerevanCityCheck(payload: SaveYerevanCityCheckPayload, signal?: AbortSignal): Promise<SaveCheckDto> {
 
         const formattedPayload = {
             barcode: payload.barcode,
             date: toDateOnlyString(payload.date),
         };
         
-        return apiFetch<{ success: boolean; error?: string }>('/transactions/yerevancity/save', {
+        return apiFetch<SaveCheckDto>('/transactions/yerevancity/save', {
             method: 'POST',
             body: JSON.stringify(formattedPayload),
         }, signal);
     },
     
-    async saveFnsCheckFromUrl(payload: SaveFnsCheckFromUrlPayload, signal?: AbortSignal): Promise<{ success: boolean; error?: string }> {
-        return apiFetch<{ success: boolean; error?: string }>('/transactions/fns/url/save', {
+    async saveFnsCheckFromUrl(payload: SaveFnsCheckFromUrlPayload, signal?: AbortSignal): Promise<SaveCheckDto> {
+        return apiFetch<SaveCheckDto>('/transactions/fns/url/save', {
             method: 'POST',
             body: JSON.stringify(payload),
         }, signal);
     },
 
-    async saveFnsCheckByRequisites(payload: SaveFnsCheckByRequisitesPayload, signal?: AbortSignal): Promise<{ success: boolean; error?: string }> {
-        return apiFetch<{ success: boolean; error?: string }>('/transactions/fns/requisites/save', {
+    async saveFnsCheckByRequisites(payload: SaveFnsCheckByRequisitesPayload, signal?: AbortSignal): Promise<SaveCheckDto> {
+        return apiFetch<SaveCheckDto>('/transactions/fns/requisites/save', {
             method: 'POST',
             body: JSON.stringify(payload),
         }, signal);

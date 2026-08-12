@@ -112,16 +112,37 @@ export const DayAnalyticsGrid: FC<DayAnalyticsGridProps> = ({
                                             }}>
                                                 {item.description}
                                             </span>
-                                            {item.subCategory && (
-                                                <div>
-                                                    <span style={{ fontSize: '10px', color: theme.colors.textSecondary }}>
-                                                        {item.shop}
-                                                    </span>
-                                                    <span style={{ fontSize: '10px', color: theme.colors.textSecondary }}>
-                                                        {getSubCategoryName(categories, item.category, item.subCategory)}
-                                                    </span>
-                                                </div>
-                                            )}
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', marginTop: '2px' }}>
+                                                {item.subCategory && (
+                                                    <span style={{
+                                                        fontSize: '10px',
+                                                        fontWeight: '600',
+                                                        color: theme.colors.primary,
+                                                        backgroundColor: theme.colors.primaryLight,
+                                                        padding: '1px 6px',
+                                                        borderRadius: '4px',
+                                                    }}>
+                {getSubCategoryName(categories, item.category, item.subCategory)}
+            </span>
+                                                )}
+
+                                                {item.shop && (
+                                                    <span style={{
+                                                        fontSize: '10px',
+                                                        fontWeight: '500',
+                                                        color: theme.colors.textSecondary,
+                                                        backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                                                        border: `1px solid ${theme.colors.border}`,
+                                                        padding: '1px 6px',
+                                                        borderRadius: '4px',
+                                                        display: 'inline-flex',
+                                                        alignItems: 'center',
+                                                        gap: '3px'
+                                                    }}>
+                <span>🏪</span> {item.shop}
+            </span>
+                                                )}
+                                            </div>
                                         </div>
 
                                         <span style={{ fontSize: '12px', fontWeight: '700', color: theme.colors.textPrimary }}>

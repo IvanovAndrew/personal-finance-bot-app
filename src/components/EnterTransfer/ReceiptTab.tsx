@@ -5,9 +5,11 @@ import {YerevanCityGrid} from "./YerevanCityGrid.tsx";
 import {JsonGrid} from "./JsonGrid.tsx";
 import {QRLinkGrid} from "./QRUrl.tsx";
 import {ReceiptParamsGrid} from "./ReceiptParamsGrid.tsx";
-import {financeApi} from "../../services/api.ts";
+import {financeApi, type SaveCheckDto, type SaveTransactionPayload} from "../../services/api.ts";
 import {formatISODateTime} from "../../utils/dateformatter.ts";
 import {StatusModal, type StatusModalType} from "../StatusModal.tsx";
+import {CheckSavedSuccessModal} from "../CheckSavedSuccessModal.tsx";
+import type {Category, Currency} from "../../types/finance.ts";
 
 type MainTabMode = 'yerevan_city' | 'fns_ru' | 'manual';
 type RuInputSubMode = 'params' | 'qr_url' | 'json';
@@ -19,7 +21,12 @@ interface ManualItem {
     quantity: string;
 }
 
-export const ReceiptTab: React.FC = () => {
+interface ReceiptTabProps {
+    categories: Category[],
+    currencies: Currency[]
+}
+
+export const ReceiptTab: React.FC<ReceiptTabProps> = ({ categories, currencies }) => {
     const [mainTab, setMainTab] = useState<MainTabMode>('yerevan_city');
     const [ruSubMode, setRuSubMode] = useState<RuInputSubMode>('qr_url');
     
@@ -44,9 +51,12 @@ export const ReceiptTab: React.FC = () => {
     const [manualItems, setManualItems] = useState<ManualItem[]>([
         { id: '1', name: '', price: '', quantity: '1' }
     ]);
+    
+    const [currency, setCurrency] = useState<Currency>(currencies[0]);
 
     const [processStatus, setProcessStatus] = useState<StatusModalType | null>(null);
     const [statusMessage, setStatusMessage] = useState<string>('');
+    const [savedPositions, setSavedPositions] = useState<SaveTransactionPayload[] | null>(null);
 
     const showStatus = (status: StatusModalType, message: string, autoHideMs = 2000) => {
         setProcessStatus(status);
@@ -95,7 +105,7 @@ export const ReceiptTab: React.FC = () => {
 
                 showStatus('loading', 'Loading and parsing receipt...', 0);
 
-                const { success, error } = await financeApi.saveYerevanCityCheck({
+                const { success, error, positions } = await financeApi.saveYerevanCityCheck({
                     date: ycDate,
                     barcode: ycBarcode.trim(),
                 });
@@ -103,7 +113,10 @@ export const ReceiptTab: React.FC = () => {
                 if (success) {
                     window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred('success');
                     showStatus('success', 'Receipt saved successfully!');
+                    
                     setYcBarcode('');
+                    setCurrency(currencies.find(c => c.name === 'AMD') || currencies[0]);
+                    setSavedPositions(positions || []);
                 } else {
                     window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred('error');
                     showStatus('error', error || 'Failed to save receipt', 2000);
@@ -111,7 +124,7 @@ export const ReceiptTab: React.FC = () => {
             } else if (mainTab === 'fns_ru') {
                 showStatus('loading', 'Loading and parsing receipt...', 0);
 
-                let result: { success: boolean; error?: string } = { success: false, error: 'Unknown mode' };
+                let result: SaveCheckDto = { success: false, error: 'Unknown mode', positions: [] };
 
                 if (ruSubMode === 'qr_url') {
                     if (!urlInput.trim()) {
@@ -153,6 +166,9 @@ export const ReceiptTab: React.FC = () => {
                 if (result.success) {
                     window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred('success');
                     showStatus('success', 'Receipt saved successfully!');
+
+                    setCurrency(currencies.find(c => c.name === 'RUR') || currencies[0]);
+                    setSavedPositions(result.positions || []);
 
                     if (ruSubMode === 'qr_url') {
                         setUrlInput('');
@@ -319,6 +335,14 @@ export const ReceiptTab: React.FC = () => {
             </button>
 
             {processStatus && <StatusModal status={processStatus} statusMessage={statusMessage} />}
+
+            <CheckSavedSuccessModal
+                isOpen={!!savedPositions}
+                onClose={() => setSavedPositions(null)}
+                positions={savedPositions || []}
+                categories={categories}
+                currency={currency}
+            />
 
         </div>
     );
