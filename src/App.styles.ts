@@ -475,7 +475,6 @@ export const modalStyles: { [key: string]: React.CSSProperties } = {
 export const datePickerStyles: { [key: string]: React.CSSProperties | string } = {
   triggerBtn: {
     ...commonStyles.inputControl,
-    justifyContent: 'flex-start',
     gap: '8px',
     width: '100%',
   },
@@ -575,33 +574,32 @@ export const datePickerStyles: { [key: string]: React.CSSProperties | string } =
     }
 
     /* ========================================================= */
-    /* 2. MONTH PICKER STYLES (Режим выбора месяца showMonthYearPicker) */
+    /* 2. MONTH PICKER STYLES (Режим выбора месяца)              */
     /* ========================================================= */
-    .react-datepicker--month-year-picker .react-datepicker__month,
-    .react-datepicker__month-picker {
-      display: grid !important;
-      grid-template-columns: repeat(3, 1fr) !important;
+    .react-datepicker__month-wrapper {
+      display: flex !important;
       gap: 8px !important;
-      padding: 0 !important;
-      margin: 0 !important;
+      margin-bottom: 8px !important;
+      width: 100% !important;
     }
 
-    .react-datepicker--month-year-picker .react-datepicker__month-wrapper {
-      display: contents !important;
+    .react-datepicker__month-wrapper:last-child {
+      margin-bottom: 0 !important;
     }
 
     .react-datepicker__month-text {
-      display: flex !important;
+      flex: 1 !important;
+      display: inline-flex !important;
       align-items: center !important;
       justify-content: center !important;
-      width: 100% !important;
-      height: 40px !important;
+      height: 38px !important;
       margin: 0 !important;
       border-radius: ${theme.radius.md} !important;
       background-color: ${theme.colors.bgElement} !important;
       color: ${theme.colors.textPrimary} !important;
       font-size: 13px !important;
       font-weight: 600 !important;
+      cursor: pointer !important;
     }
 
     .react-datepicker__month-text:hover {
@@ -648,5 +646,46 @@ export const statusModalStyles = {
     fontSize: '16px',
     fontWeight: '600',
     textAlign: 'center' as const,
+  },
+};
+
+export const amountInputStyles = {
+  group: {
+    display: 'flex',
+    alignItems: 'center',
+    backgroundColor: theme.colors.bgElement,
+    border: `1px solid ${theme.colors.border}`,
+    borderRadius: theme.radius.md,
+    padding: '4px 8px 4px 14px',
+    gap: '8px',
+    width: '100%',
+    boxSizing: 'border-box' as const,
+  },
+  input: {
+    flex: 1,
+    background: 'transparent',
+    border: 'none',
+    outline: 'none',
+    color: theme.colors.textPrimary,
+    fontSize: '24px',
+    fontWeight: '700',
+    width: '100%',
+    minWidth: 0,
+  },
+  select: {
+    appearance: 'none' as const,
+    WebkitAppearance: 'none' as const,
+    backgroundColor: theme.colors.bgCard,
+    border: `1px solid ${theme.colors.border}`,
+    borderRadius: theme.radius.sm,
+    color: theme.colors.primary,
+    padding: '6px 26px 6px 10px',
+    fontSize: '13px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    flexShrink: 0,
+    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23${theme.colors.primary.replace('#', '')}' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`,
+    backgroundRepeat: 'no-repeat',
+    backgroundPosition: 'right 8px center',
   },
 };

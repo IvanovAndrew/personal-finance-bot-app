@@ -1,8 +1,8 @@
 ﻿import React, {useState} from "react";
-import {ArrowUpRight, ArrowDownLeft, ChevronDown} from 'lucide-react';
+import {ArrowUpRight, ArrowDownLeft} from 'lucide-react';
 import { Numpad } from '../Numpad.tsx';
 import { CategoryGrid } from '../CategoryGrid.tsx';
-import {theme, commonStyles, appStyles} from '../../App.styles';
+import { commonStyles, appStyles, amountInputStyles} from '../../App.styles';
 import type {Category, Currency, SubCategory, TransactionType} from "../../types/finance.ts";
 import {SubCategoryModal} from "../SubCategoryModal.tsx";
 import {financeApi} from "../../services/api.ts";
@@ -162,26 +162,38 @@ export const EnterTransactionTab: React.FC<EnterOutcomeTabProps> = ({ incomeCate
         <div style={{ ...appStyles.heroCard, padding: '12px 16px' }}>
             <div style={commonStyles.rowBetween}>
 
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '2px' }}>
-                    <span style={{ fontSize: '9px', color: theme.colors.textSecondary, fontWeight: '700' }}>DATE</span>
-                    <CustomDatePicker selectedDate={date} onChange={setDate} />
+                <div>
+                    <label style={commonStyles.label}>Date</label>
+                    <CustomDatePicker
+                        selectedDate={date}
+                        onChange={setDate}
+                    />
                 </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <span style={{ fontSize: '28px', fontWeight: '700', color: txType === 'expense' ? theme.colors.danger : theme.colors.success }}>
-                            {txType === 'expense' ? '−' : '+'}
-                        </span>
-                    <span style={{ fontSize: '32px', fontWeight: '800', color: theme.colors.textPrimary }}>
-                            {amountStr}
-                        </span>
+                {/* Amount + Currency Input Group */}
+                <div>
+                    <label style={commonStyles.label}>AMOUNT</label>
+                    <div style={amountInputStyles.group}>
+                        <input
+                            type="number"
+                            value={amountStr}
+                            onChange={(e) => setAmountStr(e.target.value)}
+                            placeholder="0"
+                            style={amountInputStyles.input}
+                        />
 
-                    <button
-                        onClick={() => setShowCurrencyPicker(!showCurrencyPicker)}
-                        style={{ ...appStyles.currencyBadge, padding: '4px 8px', fontSize: '12px' }}
-                    >
-                        <span>{selectedCurrency.name}</span>
-                        <ChevronDown size={12} color="#FFDD2D"/>
-                    </button>
+                        <select
+                            value={selectedCurrency.name}
+                            onChange={(e) => setSelectedCurrency(currencies.find((c) => c.name === e.target.value) || currencies[0])}
+                            style={amountInputStyles.select}
+                        >
+                            {currencies?.map((c) => (
+                                <option key={c.name} value={c.name}>
+                                    {c.name} {c.symbol ? `(${c.symbol})` : ''}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
                 </div>
             </div>
 
