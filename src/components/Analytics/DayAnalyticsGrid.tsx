@@ -113,9 +113,14 @@ export const DayAnalyticsGrid: FC<DayAnalyticsGridProps> = ({
                                                 {item.description}
                                             </span>
                                             {item.subCategory && (
-                                                <span style={{ fontSize: '10px', color: theme.colors.textSecondary }}>
-                                                    {getSubCategoryName(categories, item.category, item.subCategory)}
-                                                </span>
+                                                <div>
+                                                    <span style={{ fontSize: '10px', color: theme.colors.textSecondary }}>
+                                                        {item.shop}
+                                                    </span>
+                                                    <span style={{ fontSize: '10px', color: theme.colors.textSecondary }}>
+                                                        {getSubCategoryName(categories, item.category, item.subCategory)}
+                                                    </span>
+                                                </div>
                                             )}
                                         </div>
 
