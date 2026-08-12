@@ -1,68 +1,35 @@
-﻿import { type FC, useEffect, useState, useMemo } from "react";
+﻿import { type FC, useMemo } from "react";
 import { commonStyles, theme, receiptStyles } from "../../App.styles.ts";
-import { financeApi, type SaveTransactionPayload } from "../../services/api.ts";
+import { type SaveTransactionPayload } from "../../services/api.ts";
 import { formatCurrencyValue } from "../../utils/numberformatter.ts";
 import type {Category, Currency} from "../../types/finance.ts";
 import {getCategoryMeta, getSubCategoryName} from "../../utils/categoryutils.ts";
 import {LoadingData} from "../LoadingData.tsx";
-import {ErrorData} from "../Error.tsx";
 
 interface DayAnalyticsGridProps {
     startDate: Date;
     currency: Currency;
     categories?: Category[];
+    items: SaveTransactionPayload[] | null;
+    isLoading: boolean;
 }
 
 export const DayAnalyticsGrid: FC<DayAnalyticsGridProps> = ({
                                                                 startDate,
                                                                 currency,
                                                                 categories = [],
+                                                                items,
+                                                                isLoading,
                                                             }) => {
-    const [items, setItems] = useState<SaveTransactionPayload[]>([]);
-    const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [error, setError] = useState<string | null>(null);
-
-    useEffect(() => {
-        let isMounted = true;
-
-        const loadDailyData = async () => {
-            setIsLoading(true);
-            setError(null);
-            try {
-                const data = await financeApi.getDailyAnalytics({
-                    date: startDate,
-                    currency: currency.name,
-                });
-                if (isMounted) {
-                    setItems(data || []);
-                }
-            } catch (err) {
-                if (isMounted) {
-                    setError("Failed to load daily expenses");
-                    console.error("Daily analytics fetch error:", err);
-                }
-            } finally {
-                if (isMounted) {
-                    setIsLoading(false);
-                }
-            }
-        };
-
-        loadDailyData();
-
-        return () => {
-            isMounted = false;
-        };
-    }, [startDate, currency]);
 
     const dayTotal = useMemo(() => {
-        return items.reduce((acc, curr) => acc + curr.amount, 0);
+        return (items?? []).reduce((acc, curr) => acc + curr.amount, 0);
     }, [items]);
 
     const groupedByCategory = useMemo(() => {
         const map = new Map<string, { category: string; total: number; items: SaveTransactionPayload[] }>();
 
-        items.forEach((item) => {
+        (items?? []).forEach((item) => {
             const key = item.category || 'Others';
             const current = map.get(key) || { category: key, total: 0, items: [] };
             current.total += item.amount;
@@ -75,10 +42,6 @@ export const DayAnalyticsGrid: FC<DayAnalyticsGridProps> = ({
 
     if (isLoading) {
         return <LoadingData text={"Loading expenses..."} />;
-    }
-
-    if (error) {
-        return <ErrorData error={error} />;
     }
 
     const formattedDayStr = startDate.toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' });

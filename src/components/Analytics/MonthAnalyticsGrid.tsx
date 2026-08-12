@@ -1,7 +1,7 @@
 ﻿import { type FC, useState } from "react";
 import { commonStyles, theme, receiptStyles } from "../../App.styles.ts";
 import { formatDateMMMMYYYY } from "../../utils/dateformatter.ts";
-import type { Category } from "../../types/finance.ts";
+import type {Category, Currency} from "../../types/finance.ts";
 import type { MonthlyAnalyticsResponse } from "../../services/api.ts";
 import { formatCurrencyValue } from "../../utils/numberformatter.ts";
 import { X } from "lucide-react";
@@ -11,7 +11,7 @@ import {getCategoryMeta} from "../../utils/categoryutils.ts";
 
 interface MonthAnalyticsGridProps {
     categories?: Category[];
-    currency: string;
+    currency: Currency;
     monthlyData: MonthlyAnalyticsResponse | null;
     isLoading?: boolean;
 }
@@ -62,7 +62,7 @@ export const MonthAnalyticsGrid: FC<MonthAnalyticsGridProps> = ({
                         </div>
                     </div>
                     <span style={{ fontSize: '20px', fontWeight: '800', color: theme.colors.textPrimary }}>
-                        {formatCurrencyValue(grandTotal)} {currency}
+                        {formatCurrencyValue(grandTotal)} {currency.symbol}
                     </span>
                 </div>
             </div>
@@ -102,7 +102,7 @@ export const MonthAnalyticsGrid: FC<MonthAnalyticsGridProps> = ({
                                         {formatDateMMMMYYYY(parsedDate)}
                                     </span>
                                     <span style={{ fontWeight: '700', fontSize: '13px', color: theme.colors.textPrimary }}>
-                                        {formatCurrencyValue(m.total)} {currency}
+                                        {formatCurrencyValue(m.total)} {currency.symbol}
                                     </span>
                                 </div>
 
@@ -188,7 +188,7 @@ export const MonthAnalyticsGrid: FC<MonthAnalyticsGridProps> = ({
                                 Categories for {formatDateMMMMYYYY(parseMonthString(activeMonthData.month))}
                             </span>
                             <span style={{ fontSize: '12px', fontWeight: '700', color: theme.colors.primary }}>
-                                {formatCurrencyValue(activeMonthData.total)} {currency}
+                                {formatCurrencyValue(activeMonthData.total)} {currency.symbol}
                             </span>
                         </div>
 
@@ -218,7 +218,7 @@ export const MonthAnalyticsGrid: FC<MonthAnalyticsGridProps> = ({
                                             </div>
                                             <div style={{ textAlign: 'right' }}>
                                                 <span style={{ fontWeight: '700', fontSize: '13px', color: theme.colors.textPrimary, marginRight: '6px' }}>
-                                                    {formatCurrencyValue(cat.total)} {currency}
+                                                    {formatCurrencyValue(cat.total)} {currency.symbol}
                                                 </span>
                                                 <span style={{ fontSize: '10px', color: theme.colors.textSecondary }}>
                                                     ({catPercentage.toFixed(1)}%)

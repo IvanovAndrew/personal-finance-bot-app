@@ -1,5 +1,5 @@
 ﻿import { useMemo, useState, type FC } from "react";
-import type { Category } from "../../types/finance.ts";
+import type {Category, Currency} from "../../types/finance.ts";
 import type { MonthlyAnalyticsResponse } from "../../services/api.ts";
 import { commonStyles, receiptStyles, theme } from "../../App.styles.ts";
 import { formatCurrencyValue } from "../../utils/numberformatter.ts";
@@ -12,7 +12,7 @@ import {LoadingData} from "../LoadingData.tsx";
 interface CategoryAnalyticsGridProps {
     categories: Category[];
     startMonth: Date;
-    currency: string;
+    currency: Currency;
     monthlyData: MonthlyAnalyticsResponse | null;
     isLoading: boolean;
 }
@@ -101,7 +101,7 @@ export const CategoryAnalyticsGrid: FC<CategoryAnalyticsGridProps> = ({
                     setSelectedMonthStr(null);
                 }}
                 totalAmount={categoryGrandTotal}
-                currency={currency}
+                currency={currency.symbol}
             />
 
             {activeMeta && (
@@ -247,7 +247,7 @@ export const CategoryAnalyticsGrid: FC<CategoryAnalyticsGridProps> = ({
                                                 </span>
                                                 <div style={{ textAlign: 'right' }}>
                                                     <span style={{ fontWeight: '700', fontSize: '13px', color: theme.colors.textPrimary, marginRight: '6px' }}>
-                                                        {formatCurrencyValue(sc.total)} {currency}
+                                                        {formatCurrencyValue(sc.total)} {currency.symbol}
                                                     </span>
                                                     <span style={{ fontSize: '10px', color: theme.colors.textSecondary }}>
                                                         ({percentage.toFixed(1)}%)

@@ -14,7 +14,12 @@ import { DayAnalyticsGrid } from "./DayAnalyticsGrid.tsx";
 import { CategoryAnalyticsGrid } from "./CategoryAnalyticsGrid.tsx";
 import { CustomDatePicker } from "../CustomDatePicker.tsx";
 import { SubCategoryAnalyticsGrid } from "./SubCategoryAnalyticsGrid.tsx";
-import { financeApi, type SummaryResponse, type MonthlyAnalyticsResponse } from "../../services/api.ts";
+import {
+    financeApi,
+    type SummaryResponse,
+    type MonthlyAnalyticsResponse,
+    type SaveTransactionPayload
+} from "../../services/api.ts";
 import { SummaryAnalyticsGrid } from "./SummaryAnalyticsGrid.tsx";
 import {MonthAnalyticsGrid} from "./MonthAnalyticsGrid.tsx";
 
@@ -32,10 +37,20 @@ const STORAGE_KEYS = {
 
 export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, currencies }) => {
 
-    // 1. Initialize state from localStorage to prevent fetching irrelevant default filters
-    const [currencyCode, setCurrencyCode] = useState<string>(() => {
-        return localStorage.getItem(STORAGE_KEYS.CURRENCY) || currencies[0]?.name || 'AMD';
+    const [selectedCurrency, setSelectedCurrency] = useState<Currency>(() => {
+        const savedCode = localStorage.getItem(STORAGE_KEYS.CURRENCY);
+        const found = currencies.find(c => c.name === savedCode);
+        return found || currencies[0];
     });
+
+    useEffect(() => {
+        if (currencies.length === 0) return;
+
+        const savedCode = localStorage.getItem(STORAGE_KEYS.CURRENCY);
+        const matched = currencies.find(c => c.name === savedCode) || currencies[0];
+
+        setSelectedCurrency(prev => (prev.name === matched.name ? prev : matched));
+    }, [currencies]);
 
     const [selectedMonth, setSelectedMonth] = useState<Date>(() => {
         const savedMonth = localStorage.getItem(STORAGE_KEYS.MONTH);
@@ -47,19 +62,24 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, c
 
     const [summary, setSummary] = useState<SummaryResponse | null>(null);
     const [monthlyData, setMonthlyData] = useState<MonthlyAnalyticsResponse | null>(null);
+    const [dailyData, setDailyData] = useState<SaveTransactionPayload[] | null>(null);
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
 
     const summaryCache = useRef<Record<string, SummaryResponse>>({});
     const monthlyCache = useRef<Record<string, MonthlyAnalyticsResponse>>({});
+    const dailyCache = useRef<Record<string, SaveTransactionPayload[]>>({});
     
     const abortControllerRef = useRef<AbortController | null>(null);
 
     // Persist filter changes to localStorage
-    const handleCurrencyChange = (newCurrency: string) => {
-        setCurrencyCode(newCurrency);
-        localStorage.setItem(STORAGE_KEYS.CURRENCY, newCurrency);
+    const handleCurrencyChange = (currencyName: string) => {
+        const targetCurrency = currencies.find(c => c.name === currencyName);
+        if (targetCurrency) {
+            setSelectedCurrency(targetCurrency);
+            localStorage.setItem(STORAGE_KEYS.CURRENCY, targetCurrency.name);
+        }
     };
 
     const handleMonthChange = (newMonth: Date) => {
@@ -68,11 +88,12 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, c
     };
 
     const fetchAnalytics = useCallback(async (forceRefresh = false) => {
-        if (viewMode === 'days') return;
+        const isSummaryMode = viewMode === 'summary';
+        const isDaysMode = viewMode === 'days';
 
         const monthKey = `${selectedMonth.getFullYear()}-${selectedMonth.getMonth() + 1}`;
-        const isSummaryMode = viewMode === 'summary';
-        const cacheKey = `${currencyCode}_${monthKey}`;
+        const dayKey = startDate.toISOString().slice(0, 10);
+        const cacheKey = isDaysMode ? `${selectedCurrency.name}_${dayKey}` : `${selectedCurrency.name}_${monthKey}`;
 
         // 1. Проверяем кэш до создания нового HTTP-запроса
         if (!forceRefresh) {
@@ -82,7 +103,13 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, c
                 setIsLoading(false);
                 return;
             }
-            if (!isSummaryMode && monthlyCache.current[cacheKey]) {
+            if (isDaysMode && dailyCache.current[cacheKey]) {
+                setDailyData(dailyCache.current[cacheKey]);
+                setError(null);
+                setIsLoading(false);
+                return;
+            }
+            if (!isSummaryMode && !isDaysMode && monthlyCache.current[cacheKey]) {
                 setMonthlyData(monthlyCache.current[cacheKey]);
                 setError(null);
                 setIsLoading(false);
@@ -99,24 +126,33 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, c
         abortControllerRef.current = controller;
 
         setIsLoading(true);
-        setError(null); // Важно: всегда сбрасываем ошибку при старте запроса!
+        setError(null); // Важно: всегда сбрасываем ошибку при старте запроса — для ЛЮБОГО viewMode
 
         try {
             if (isSummaryMode) {
                 const data = await financeApi.getSummary({
                     monthDate: selectedMonth,
-                    currency: currencyCode,
+                    currency: selectedCurrency.name,
                 }, controller.signal);
 
-                // Записываем только если запрос не был отменен
                 if (!controller.signal.aborted) {
                     summaryCache.current[cacheKey] = data;
                     setSummary(data);
                 }
+            } else if (isDaysMode) {
+                const data = await financeApi.getDailyAnalytics({
+                    date: startDate,
+                    currency: selectedCurrency.name,
+                }, controller.signal);
+
+                if (!controller.signal.aborted) {
+                    dailyCache.current[cacheKey] = data;
+                    setDailyData(data);
+                }
             } else {
                 const data = await financeApi.getMonthlyAnalytics({
                     startMonth: selectedMonth,
-                    currency: currencyCode,
+                    currency: selectedCurrency.name,
                 }, controller.signal);
 
                 if (!controller.signal.aborted) {
@@ -125,12 +161,10 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, c
                 }
             }
         } catch (err: unknown) {
-            // Если запрос отменен вручную — просто игнорируем и НЕ ставим setError
             if (err instanceof Error && (err.name === 'AbortError' || err.message === 'Request was canceled.')) {
                 return;
             }
 
-            // Показываем ошибку только если это был текущий актуальный контроллер
             if (abortControllerRef.current === controller) {
                 setError('Failed to load analytics');
                 console.error('Analytics fetch error:', err);
@@ -140,17 +174,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, c
                 setIsLoading(false);
             }
         }
-    }, [viewMode, currencyCode, selectedMonth]);
-
-    useEffect(() => {
-        fetchAnalytics();
-
-        return () => {
-            if (abortControllerRef.current) {
-                abortControllerRef.current.abort();
-            }
-        };
-    }, [fetchAnalytics]);
+    }, [viewMode, selectedCurrency, selectedMonth, startDate]);
 
     useEffect(() => {
         fetchAnalytics();
@@ -187,7 +211,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, c
                             )}
                         </div>
                         <select
-                            value={currencyCode}
+                            value={selectedCurrency.name}
                             onChange={(e) => handleCurrencyChange(e.target.value)}
                             style={{
                                 ...commonStyles.inputControl,
@@ -227,7 +251,6 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, c
                 </div>
             </div>
 
-            {/* View Mode Tabs */}
             {/* View Mode Tabs */}
             <div style={commonStyles.column6Full}>
                 {/* Upper row: Time periods */}
@@ -346,21 +369,23 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, c
             ) : (
                 <div style={{ opacity: isLoading ? 0.6 : 1, transition: 'opacity 0.2s ease' }}>
                     {viewMode === 'summary' && (
-                        <SummaryAnalyticsGrid summary={summary} isLoading={isLoading} />
+                        <SummaryAnalyticsGrid currency={selectedCurrency} summary={summary} isLoading={isLoading} />
                     )}
 
                     {viewMode === 'days' && (
                         <DayAnalyticsGrid
                             startDate={startDate}
-                            currency={currencies.find(x => x.name == currencyCode) || currencies[0]}
+                            currency={selectedCurrency}
                             categories={outcomeCategories}
+                            items={dailyData}
+                            isLoading={isLoading}
                         />
                     )}
 
                     {viewMode === 'months' && (
                         <MonthAnalyticsGrid
                             categories={outcomeCategories}
-                            currency={currencyCode}
+                            currency={selectedCurrency}
                             isLoading={isLoading}
                             monthlyData={monthlyData}
                         />
@@ -371,7 +396,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, c
                             categories={outcomeCategories}
                             startMonth={selectedMonth}
                             monthlyData={monthlyData}
-                            currency={currencyCode}
+                            currency={selectedCurrency}
                             isLoading={isLoading}
                         />
                     )}
@@ -380,7 +405,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, c
                         <SubCategoryAnalyticsGrid
                             categories={outcomeCategories.filter(x => x.subCategories.length > 0)}
                             monthlyData={monthlyData}
-                            currency={currencies.find(x => x.name == currencyCode) || currencies[0]}
+                            currency={selectedCurrency}
                             isLoading={isLoading}
                         />
                     )}
