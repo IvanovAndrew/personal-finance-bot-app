@@ -133,7 +133,10 @@ export interface DailyAnalyticsPayload {
 export interface MonthlyAnalyticsItem {
     month: string;
     total: number;
-    categories: CategoryAnalytics[];
+    totalOutcome: number;
+    totalIncome: number;
+    outcomeCategories: CategoryAnalytics[];
+    incomeCategories: CategoryAnalytics[];
 }
 
 export interface MonthlyAnalyticsResponse {
