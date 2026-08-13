@@ -31,7 +31,7 @@ export const SubCategoryAnalyticsGrid: FC<SubCategoryAnalyticsGridProps> = ({
         const catCode = selectedCategory?.code?.toLowerCase();
 
         monthlyData.months.forEach((m) => {
-            const catData = m.categories.find((c) => c.category.toLowerCase() === catCode);
+            const catData = m.outcomeCategories.find((c) => c.category.toLowerCase() === catCode);
             if (catData?.subCategories) {
                 catData.subCategories.forEach((sc) => {
                     const key = (sc.subCategory || 'other').toLowerCase();
@@ -55,7 +55,7 @@ export const SubCategoryAnalyticsGrid: FC<SubCategoryAnalyticsGridProps> = ({
         const monthData = monthlyData.months.find((m) => m.month === monthStr);
         if (!monthData) return 0;
 
-        const catData = monthData.categories.find(
+        const catData = monthData.outcomeCategories.find(
             (c) => c.category.toLowerCase() === selectedCategory?.code?.toLowerCase()
         );
 
@@ -79,7 +79,7 @@ export const SubCategoryAnalyticsGrid: FC<SubCategoryAnalyticsGridProps> = ({
     }
 
     const categoryMonthlyTrend = monthlyData.months.map((m) => {
-        const catData = m.categories.find((c) => c.category.toLowerCase() === selectedCategory.code?.toLowerCase());
+        const catData = m.outcomeCategories.find((c) => c.category.toLowerCase() === selectedCategory.code?.toLowerCase());
         return {
             monthStr: m.month,
             total: catData?.total || 0,

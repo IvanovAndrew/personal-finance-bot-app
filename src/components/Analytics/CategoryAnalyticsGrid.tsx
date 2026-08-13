@@ -27,7 +27,7 @@ export const CategoryAnalyticsGrid: FC<CategoryAnalyticsGridProps> = ({
     const [selectedMonthStr, setSelectedMonthStr] = useState<string | null>(null);
 
     const allUniqueCategoryCodes = Array.from(
-        new Set((monthlyData?.months|| []).flatMap((m) => m.categories.map((c) => c.category)))
+        new Set((monthlyData?.months|| []).flatMap((m) => m.outcomeCategories.map((c) => c.category)))
     );
     
     const availableCategories = useMemo(() => {
@@ -54,7 +54,7 @@ export const CategoryAnalyticsGrid: FC<CategoryAnalyticsGridProps> = ({
     const activeMeta = activeCode ? getCategoryMeta(categories, activeCode) : null;
 
     const categoryMonthlyTrend = monthlyData.months.map((m) => {
-        const catData = m.categories.find((c) => c.category.toLowerCase() === activeCode?.toLowerCase());
+        const catData = m.outcomeCategories.find((c) => c.category.toLowerCase() === activeCode?.toLowerCase());
         return {
             monthStr: m.month,
             total: catData?.total || 0,
