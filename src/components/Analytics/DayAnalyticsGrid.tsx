@@ -1,10 +1,11 @@
 ﻿import { type FC, useMemo } from "react";
-import { commonStyles, theme, receiptStyles } from "../../App.styles.ts";
+import { commonStyles, theme } from "../../App.styles.ts";
 import { type SaveTransactionPayload } from "../../services/api.ts";
 import { formatCurrencyValue } from "../../utils/numberformatter.ts";
 import type {Category, Currency} from "../../types/finance.ts";
-import {getCategoryMeta, getSubCategoryName} from "../../utils/categoryutils.ts";
+import {getCategoryMeta} from "../../utils/categoryutils.ts";
 import {LoadingData} from "../LoadingData.tsx";
+import {TransactionRow} from "../TransactionRow.tsx";
 
 interface DayAnalyticsGridProps {
     startDate: Date;
@@ -76,7 +77,6 @@ export const DayAnalyticsGrid: FC<DayAnalyticsGridProps> = ({
 
                     return (
                         <div key={group.category} style={commonStyles.card}>
-                            {/* Category Header */}
                             <div style={commonStyles.rowBetween}>
                                 <div style={commonStyles.rowStart}>
                                     <span style={{ fontSize: '16px' }}>{meta.icon}</span>
@@ -86,69 +86,21 @@ export const DayAnalyticsGrid: FC<DayAnalyticsGridProps> = ({
                                     {formatCurrencyValue(group.total)} {currency.symbol}
                                 </span>
                             </div>
-
-                            {/* Items inside this Category */}
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                                 {group.items.map((item, idx) => (
-                                    <div
+                                    <TransactionRow
                                         key={idx}
-                                        style={{
-                                            ...receiptStyles.subChip,
-                                            justifyContent: 'space-between',
-                                            padding: '8px 12px',
-                                            backgroundColor: theme.colors.bgElement,
-                                            borderRadius: theme.radius.md,
-                                            border: `1px solid ${theme.colors.border}`,
+                                        transaction={{
+                                            shop: item.shop,
+                                            category: item.category,
+                                            subcategory: item.subCategory,
+                                            description: item.description,
+                                            amount: item.amount,
+                                            isOutcome: true,
                                         }}
-                                    >
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', maxWidth: '70%' }}>
-                                            <span style={{
-                                                fontSize: '12px',
-                                                fontWeight: '600',
-                                                color: theme.colors.textPrimary,
-                                                whiteSpace: 'nowrap',
-                                                overflow: 'hidden',
-                                                textOverflow: 'ellipsis'
-                                            }}>
-                                                {item.description}
-                                            </span>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', marginTop: '2px' }}>
-                                                {item.subCategory && (
-                                                    <span style={{
-                                                        fontSize: '10px',
-                                                        fontWeight: '600',
-                                                        color: theme.colors.primary,
-                                                        backgroundColor: theme.colors.primaryLight,
-                                                        padding: '1px 6px',
-                                                        borderRadius: '4px',
-                                                    }}>
-                {getSubCategoryName(categories, item.category, item.subCategory)}
-            </span>
-                                                )}
-
-                                                {item.shop && (
-                                                    <span style={{
-                                                        fontSize: '10px',
-                                                        fontWeight: '500',
-                                                        color: theme.colors.textSecondary,
-                                                        backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                                                        border: `1px solid ${theme.colors.border}`,
-                                                        padding: '1px 6px',
-                                                        borderRadius: '4px',
-                                                        display: 'inline-flex',
-                                                        alignItems: 'center',
-                                                        gap: '3px'
-                                                    }}>
-                <span>🏪</span> {item.shop}
-            </span>
-                                                )}
-                                            </div>
-                                        </div>
-
-                                        <span style={{ fontSize: '12px', fontWeight: '700', color: theme.colors.textPrimary }}>
-                                            {formatCurrencyValue(item.amount)} {currency.symbol}
-                                        </span>
-                                    </div>
+                                        categories={categories}
+                                        currency={currency}
+                                    />
                                 ))}
                             </div>
                         </div>

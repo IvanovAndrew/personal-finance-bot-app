@@ -34,8 +34,8 @@ export const getSubCategoryName = (
     categories: Category[] = [],
     categoryCodeOrName: string | null | undefined,
     subCategoryCodeOrName: string | null | undefined
-): string => {
-    if (!subCategoryCodeOrName) return 'Other';
+): string | null => {
+    if (!subCategoryCodeOrName) return null;
 
     const categoryMeta = getCategoryMeta(categories, categoryCodeOrName);
     const normalizedSub = subCategoryCodeOrName.trim().toLowerCase();

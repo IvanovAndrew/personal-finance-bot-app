@@ -76,7 +76,7 @@ export const CategoryAnalyticsGrid: FC<CategoryAnalyticsGridProps> = ({
         m.subCategories.forEach((sc) => {
             const rawCode = sc.subCategory;
             const key = rawCode ? rawCode.toLowerCase() : 'other';
-            const displayName = getSubCategoryName(categories, activeCode, rawCode);
+            const displayName = getSubCategoryName(categories, activeCode, rawCode)?? 'other';
 
             const current = subCategoryTotalsMap.get(key) || { code: rawCode, name: displayName, total: 0 };
             subCategoryTotalsMap.set(key, { ...current, total: current.total + sc.total });
