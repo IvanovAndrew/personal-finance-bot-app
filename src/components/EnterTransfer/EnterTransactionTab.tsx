@@ -26,6 +26,7 @@ export const EnterTransactionTab: React.FC<EnterOutcomeTabProps> = ({ incomeCate
     const [selectedCurrency, setSelectedCurrency] = useState<Currency>(currencies[0]);
     const [date, setDate] = useState<Date>(new Date());
     const [showCurrencyPicker, setShowCurrencyPicker] = useState<boolean>(false);
+    const [shop, setShop] = useState<string>('');
     const [note, setNote] = useState<string>('');
 
     const [selectedIncomeCategory, setSelectedIncomeCategory] = useState<Category | null>(null);
@@ -57,6 +58,7 @@ export const EnterTransactionTab: React.FC<EnterOutcomeTabProps> = ({ incomeCate
                 currency: selectedCurrency.name,
                 category: (txType === 'income' ? selectedIncomeCategory?.code : selectedOutcomeCategory?.code) || '',
                 subCategory: selectedSubCat?.code,
+                shop: shop,
                 description: note,
             });
 
@@ -222,6 +224,14 @@ export const EnterTransactionTab: React.FC<EnterOutcomeTabProps> = ({ incomeCate
                 onClose={() => setShowSubModal(false)}
             />
         }
+
+        <input
+            type="text"
+            placeholder="Enter a shop name"
+            value={shop}
+            onChange={e => setShop(e.target.value)}
+            style={commonStyles.input}
+        />
 
         <input
             type="text"

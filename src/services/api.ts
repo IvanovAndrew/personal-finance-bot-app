@@ -50,8 +50,8 @@ export interface SaveTransactionPayload {
     date: string; // ISO String
     category: string;
     subCategory?: string | null;
-    shop?: string;
-    description?: string;
+    shop?: string | null;
+    description?: string | null;
     amount: number;
     currency: string;
 }
