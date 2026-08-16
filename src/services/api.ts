@@ -134,6 +134,7 @@ export interface MonthlyAnalyticsItem {
     month: string;
     total: number;
     totalOutcome: number;
+    realOutcomeTotal: number;
     totalIncome: number;
     outcomeCategories: CategoryAnalytics[];
     incomeCategories: CategoryAnalytics[];
