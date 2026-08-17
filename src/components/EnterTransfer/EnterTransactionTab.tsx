@@ -1,15 +1,14 @@
-﻿import React, {useState} from "react";
-import {ArrowUpRight, ArrowDownLeft} from 'lucide-react';
+﻿import React, { useState } from "react";
+import { ArrowUpRight, ArrowDownLeft } from 'lucide-react';
 import { Numpad } from '../Numpad.tsx';
-import { CategoryGrid } from '../CategoryGrid.tsx';
-import { commonStyles, appStyles, amountInputStyles} from '../../App.styles';
-import type {Category, Currency, SubCategory, TransactionType} from "../../types/finance.ts";
-import {SubCategoryModal} from "../SubCategoryModal.tsx";
-import {financeApi} from "../../services/api.ts";
-import {toDateOnlyString} from "../../utils/dateformatter.ts";
-import {CustomDatePicker} from "../CustomDatePicker.tsx";
-import {StatusModal} from "../StatusModal.tsx";
-import {CurrencyDropdown} from "../CurrencyDropdown.tsx";
+import { CategorySwitcherModal } from '../CategorySwitcherModal.tsx';
+import { commonStyles, appStyles, amountInputStyles } from '../../App.styles';
+import type { Category, Currency, SubCategory, TransactionType } from "../../types/finance.ts";
+import { financeApi } from "../../services/api.ts";
+import { toDateOnlyString } from "../../utils/dateformatter.ts";
+import { CustomDatePicker } from "../CustomDatePicker.tsx";
+import { StatusModal } from "../StatusModal.tsx";
+import { CurrencyDropdown } from "../CurrencyDropdown.tsx";
 
 interface EnterOutcomeTabProps {
     incomeCategories: Category[];
@@ -20,7 +19,6 @@ interface EnterOutcomeTabProps {
 export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
 export const EnterTransactionTab: React.FC<EnterOutcomeTabProps> = ({ incomeCategories, outcomeCategories, currencies }) => {
-    
     const [txType, setTxType] = useState<TransactionType>('expense');
     const [amountStr, setAmountStr] = useState<string>('0');
     const [selectedCurrency, setSelectedCurrency] = useState<Currency>(currencies[0]);
@@ -33,8 +31,6 @@ export const EnterTransactionTab: React.FC<EnterOutcomeTabProps> = ({ incomeCate
     const [selectedOutcomeCategory, setSelectedOutcomeCategory] = useState<Category | null>(null);
     const [selectedSubCat, setSelectedSubCat] = useState<SubCategory | null>(null);
 
-    const [showSubModal, setShowSubModal] = useState<boolean>(false);
-
     const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
     const [statusMessage, setStatusMessage] = useState<string>('');
 
@@ -42,8 +38,15 @@ export const EnterTransactionTab: React.FC<EnterOutcomeTabProps> = ({ incomeCate
         return <div style={{ color: '#fff', padding: '20px', textAlign: 'center' }}>Loading transaction data...</div>;
     }
 
+    const currentCategories = txType === 'income' ? incomeCategories : outcomeCategories;
+    const activeCategory = txType === 'income' ? selectedIncomeCategory : selectedOutcomeCategory;
+
+    const handleTxTypeChange = (type: TransactionType) => {
+        setTxType(type);
+        setSelectedSubCat(null);
+    };
+
     const handleSaveTransaction = async () => {
-        
         const numericAmount = parseFloat(amountStr);
         if (!numericAmount || numericAmount <= 0) return;
 
@@ -56,7 +59,7 @@ export const EnterTransactionTab: React.FC<EnterOutcomeTabProps> = ({ incomeCate
                 date: toDateOnlyString(date),
                 amount: numericAmount,
                 currency: selectedCurrency.name,
-                category: (txType === 'income' ? selectedIncomeCategory?.code : selectedOutcomeCategory?.code) || '',
+                category: activeCategory?.code || '',
                 subCategory: selectedSubCat?.code,
                 shop: shop,
                 description: note,
@@ -68,7 +71,6 @@ export const EnterTransactionTab: React.FC<EnterOutcomeTabProps> = ({ incomeCate
 
                 setSaveStatus('error');
                 setStatusMessage(error || 'Error, not saved');
-                
                 return;
             }
 
@@ -76,10 +78,13 @@ export const EnterTransactionTab: React.FC<EnterOutcomeTabProps> = ({ incomeCate
 
             setSaveStatus('saved');
             setStatusMessage('Saved');
-            
+
             setAmountStr('0');
+            setShop('');
             setNote('');
             setSelectedSubCat(null);
+            setSelectedOutcomeCategory(null);
+            setSelectedIncomeCategory(null);
 
             setTimeout(() => setSaveStatus('idle'), 2000);
         } catch (error) {
@@ -107,63 +112,64 @@ export const EnterTransactionTab: React.FC<EnterOutcomeTabProps> = ({ incomeCate
             }
         }
     };
-    
-    const saveButtonActive = () : boolean => {
-        return (txType == 'income' && selectedIncomeCategory !== null || txType == 'expense' && selectedOutcomeCategory !== null) && amountStr !== '0' && saveStatus === 'idle';
-    } 
-        
 
-    const handleCategorySelect = (cat: Category | null) => {
+    const saveButtonActive = () : boolean => {
+        return activeCategory !== null && amountStr !== '0' && saveStatus === 'idle';
+    };
+
+    const handleCategorySelect = (categoryCode: string, subCategoryCode?: string | null) => {
         window.Telegram?.WebApp?.HapticFeedback?.selectionChanged();
 
+        const catObj = currentCategories.find(c => c.code.toLowerCase() === categoryCode.toLowerCase()) || null;
+
         if (txType === 'income') {
-            setSelectedIncomeCategory(cat);
+            setSelectedIncomeCategory(catObj);
         } else {
-            setSelectedOutcomeCategory(cat);
+            setSelectedOutcomeCategory(catObj);
         }
 
-        setSelectedSubCat(null);
-
-        const subs = cat?.subCategories;
-        
-        if (subs && subs.length > 0) {
-            setShowSubModal(true);
+        if (subCategoryCode && catObj) {
+            const subs = catObj.subCategories || [];
+            const subObj = subs.find(s => s.code.toLowerCase() === subCategoryCode.toLowerCase()) || null;
+            setSelectedSubCat(subObj);
+        } else {
+            setSelectedSubCat(null);
         }
     };
 
-    return <div style={appStyles.tabContent}>
+    return (
+        <div style={appStyles.tabContent}>
+            <style>{`
+                @keyframes spin {
+                    from { transform: rotate(0deg); }
+                    to { transform: rotate(360deg); }
+                }
+            `}</style>
 
-        <style>{`
-            @keyframes spin {
-                from { transform: rotate(0deg); }
-                to { transform: rotate(360deg); }
-            }
-        `}</style>
-        
-        <div style={appStyles.typeToggleGroup}>
-            <button
-                onClick={() => setTxType('expense')}
-                style={{
-                    ...appStyles.typeBtn,
-                    ...(txType === 'expense' ? appStyles.typeBtnExpenseActive : {}),
-                }}
-            >
-                <ArrowUpRight size={14}/> Outcome
-            </button>
-            <button
-                onClick={() => setTxType('income')}
-                style={{
-                    ...appStyles.typeBtn,
-                    ...(txType === 'income' ? appStyles.typeBtnIncomeActive : {}),
-                }}
-            >
-                <ArrowDownLeft size={14}/> Income
-            </button>
-        </div>
+            {/* Toggle Income / Expense */}
+            <div style={appStyles.typeToggleGroup}>
+                <button
+                    onClick={() => handleTxTypeChange('expense')}
+                    style={{
+                        ...appStyles.typeBtn,
+                        ...(txType === 'expense' ? appStyles.typeBtnExpenseActive : {}),
+                    }}
+                >
+                    <ArrowUpRight size={14}/> Outcome
+                </button>
+                <button
+                    onClick={() => handleTxTypeChange('income')}
+                    style={{
+                        ...appStyles.typeBtn,
+                        ...(txType === 'income' ? appStyles.typeBtnIncomeActive : {}),
+                    }}
+                >
+                    <ArrowDownLeft size={14}/> Income
+                </button>
+            </div>
 
-        <div style={{ ...appStyles.heroCard, padding: '12px 16px' }}>
-            <div style={commonStyles.rowBetween}>
-
+            <div style={{...appStyles.heroCard, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', padding: '8px'}}>
+                {/* Date Card */}
                 <div>
                     <label style={commonStyles.label}>Date</label>
                     <CustomDatePicker
@@ -172,16 +178,21 @@ export const EnterTransactionTab: React.FC<EnterOutcomeTabProps> = ({ incomeCate
                     />
                 </div>
 
-                {/* Amount + Currency Input Group */}
+                {/* Amount Card */}
                 <div>
-                    <label style={commonStyles.label}>AMOUNT</label>
+                    <label style={commonStyles.label}>Amount</label>
                     <div style={amountInputStyles.group}>
                         <input
                             type="number"
                             value={amountStr}
                             onChange={(e) => setAmountStr(e.target.value)}
                             placeholder="0"
-                            style={amountInputStyles.input}
+                            style={{...amountInputStyles.input, 
+                                textAlign: 'right', 
+                                gap: '8px',
+                                width: `${Math.max(1, amountStr.length)}ch`,
+                                backgroundColor: 'transparent', 
+                                border: 'none'}}
                         />
 
                         <select
@@ -196,65 +207,68 @@ export const EnterTransactionTab: React.FC<EnterOutcomeTabProps> = ({ incomeCate
                             ))}
                         </select>
                     </div>
+
+                    {showCurrencyPicker && (
+                        <CurrencyDropdown
+                            currencies={currencies}
+                            setSelectedCurrency={setSelectedCurrency}
+                            setShowCurrencyPicker={setShowCurrencyPicker}
+                        />
+                    )}
                 </div>
+
+                {/* Category Switcher Modal Component */}
+                <CategorySwitcherModal
+                    label="CATEGORY"
+                    categories={currentCategories}
+                    selectedCategoryCode={activeCategory?.code || null}
+                    selectedSubCategoryCode={selectedSubCat?.code || null}
+                    enableSubCategorySelection={true}
+                    onSelectCategory={handleCategorySelect}
+                />
             </div>
-
-            {showCurrencyPicker && <CurrencyDropdown currencies={currencies} setSelectedCurrency={setSelectedCurrency} setShowCurrencyPicker={setShowCurrencyPicker}/>}
-        </div>
-
             
 
-        {/* Categories */}
-        <CategoryGrid
-            categories={txType === 'income' ? incomeCategories : outcomeCategories}
-            selectedCategory={txType === 'income' ? selectedIncomeCategory : selectedOutcomeCategory}
-            selectedSubCat={selectedSubCat}
-            onSelectCategory={handleCategorySelect}
-        />
+            {/* Inputs */}
+            <div>
+                <label style={commonStyles.label}>Shop</label>
+                <input
+                    type="text"
+                    placeholder="e.g. Yerevan-city"
+                    value={shop}
+                    onChange={e => setShop(e.target.value)}
+                    style={commonStyles.input}
+                />
+            </div>
+            
+            <div>
+                <label style={commonStyles.label}>Description</label>
+                <input
+                    type="text"
+                    placeholder="e.g. cat food"
+                    value={note}
+                    onChange={e => setNote(e.target.value)}
+                    style={commonStyles.input}
+                />
+            </div>
+            
 
-        {/* Subcategory Modal */}
-        {showSubModal && 
-            <SubCategoryModal
-                category={txType === 'income' ? selectedIncomeCategory : selectedOutcomeCategory}
-                selectedSubCat={selectedSubCat}
-                onSelectSubCat={sub => {
-                    setSelectedSubCat(sub);
-                    setShowSubModal(false);
+            {/* Numpad */}
+            <Numpad onInput={handleNumpad}/>
+
+            {/* Save Button */}
+            <button
+                onClick={handleSaveTransaction}
+                style={{
+                    ...commonStyles.primaryBtn,
+                    opacity: saveButtonActive() ? 1 : 0.4,
+                    cursor: saveButtonActive() ? 'pointer' : 'not-allowed',
                 }}
-                onClose={() => setShowSubModal(false)}
-            />
-        }
+                disabled={!saveButtonActive()}>
+                Save {amountStr} {selectedCurrency.symbol}
+            </button>
 
-        <input
-            type="text"
-            placeholder="Enter a shop name"
-            value={shop}
-            onChange={e => setShop(e.target.value)}
-            style={commonStyles.input}
-        />
-
-        <input
-            type="text"
-            placeholder="Enter a comment..."
-            value={note}
-            onChange={e => setNote(e.target.value)}
-            style={commonStyles.input}
-        />
-
-        <Numpad onInput={handleNumpad}/>
-
-        {/* Save Button */}
-        <button 
-            onClick={handleSaveTransaction}
-            style={{
-                ...commonStyles.primaryBtn,
-                opacity: saveButtonActive() ? 1 : 0.4,
-                cursor: saveButtonActive() ? 'pointer' : 'not-allowed',
-            }} 
-            disabled={!saveButtonActive()}>
-            Save {amountStr} {selectedCurrency.symbol}
-        </button>
-
-        {saveStatus !== 'idle' && <StatusModal status={saveStatus} statusMessage={statusMessage}/>}
-    </div>;
-}
+            {saveStatus !== 'idle' && <StatusModal status={saveStatus} statusMessage={statusMessage}/>}
+        </div>
+    );
+};

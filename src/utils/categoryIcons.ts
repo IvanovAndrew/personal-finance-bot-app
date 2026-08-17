@@ -5,11 +5,10 @@ export const CATEGORY_ICONS: Record<string, string> = {
 
     // Outcome
     Food: '🛒',
-    Pets: '🐾',
+    
     Bank: '🏦',
     Beauty: '✨',
     ClothesAndShoes: '🛍️',
-    CulturalLife: '🎬',
     CurrencyExchange: '🔱',
     Delivery: '📦',
     Documents: '📄',
@@ -19,7 +18,9 @@ export const CATEGORY_ICONS: Record<string, string> = {
     Gifts: '🎁',
     Health: '💊',
     Hobby: '🎨',
+    Leisure: '🎬',
     Onlineservice: '🔄',
+    Pets: '🐾',
     Phone: '📱',
     Psycologist: '🧠',
     Restaurants: '🍔',

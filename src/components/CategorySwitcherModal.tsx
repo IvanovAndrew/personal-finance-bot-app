@@ -1,8 +1,7 @@
 ﻿import { type FC, useState } from "react";
 import type { Category } from "../types/finance";
-import { commonStyles, theme } from "../App.styles";
-import { ChevronDown, X } from "lucide-react";
-import { formatCurrencyValue } from "../utils/numberformatter";
+import { theme } from "../App.styles";
+import { ChevronDown, ChevronLeft, X } from "lucide-react";
 import { CategoryGrid } from "./CategoryGrid";
 import { getCategoryMeta } from "../utils/categoryutils";
 
@@ -10,9 +9,9 @@ interface CategorySwitcherModalProps {
     categories: Category[];
     availableCategories?: Category[];
     selectedCategoryCode: string | null;
-    onSelectCategory: (categoryCode: string) => void;
-    totalAmount?: number;
-    currency?: string;
+    selectedSubCategoryCode?: string | null;
+    onSelectCategory: (categoryCode: string, subCategoryCode?: string | null) => void;
+    enableSubCategorySelection: boolean;
     label?: string;
 }
 
@@ -20,64 +19,114 @@ export const CategorySwitcherModal: FC<CategorySwitcherModalProps> = ({
                                                                           categories,
                                                                           availableCategories,
                                                                           selectedCategoryCode,
+                                                                          selectedSubCategoryCode,
                                                                           onSelectCategory,
-                                                                          totalAmount,
-                                                                          currency,
-                                                                          label = "TOTAL FOR CATEGORY",
+                                                                          enableSubCategorySelection,
+                                                                          label = "CATEGORY",
                                                                       }) => {
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+    
+    const [tempCategory, setTempCategory] = useState<Category | null>(null);
 
     const activeMeta = selectedCategoryCode ? getCategoryMeta(categories, selectedCategoryCode) : null;
+
     const activeCategoryObj = categories.find(
         (c) => c.code.toLowerCase() === selectedCategoryCode?.toLowerCase()
     ) || null;
 
+    const activeSubCategories = activeCategoryObj?.subCategories || [];
+    const activeSubCategoryObj = activeSubCategories.find(
+        (sub) => sub.code.toLowerCase() === selectedSubCategoryCode?.toLowerCase()
+    ) || null;
+
     const listToRender = availableCategories || categories;
+
+    const handleOpenModal = () => {
+        setTempCategory(null);
+        setIsModalOpen(true);
+    };
+
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+        setTempCategory(null);
+    };
+
+    const handleCategoryClick = (cat: Category | null) => {
+        if (!cat) return;
+
+        const subs = cat.subCategories || [];
+        if (enableSubCategorySelection && subs.length > 0) {
+            setTempCategory(cat);
+        } else {
+            onSelectCategory(cat.code, null);
+            handleCloseModal();
+        }
+    };
+
+    const handleSubCategorySelect = (subCode: string | null) => {
+        if (tempCategory) {
+            onSelectCategory(tempCategory.code, subCode);
+        }
+        handleCloseModal();
+    };
+
+    const tempSubCategories = tempCategory
+        ? (tempCategory.subCategories || [])
+        : [];
+    const tempMeta = tempCategory ? getCategoryMeta(categories, tempCategory.code) : null;
 
     return (
         <>
             {/* Header Card */}
-            <div style={{ ...commonStyles.card, padding: '14px 16px' }}>
-                <div style={commonStyles.rowBetween}>
-                    <div>
+            <div
+                onClick={handleOpenModal}
+                style={{
+                    padding: '14px 16px',
+                    cursor: 'pointer',
+                    userSelect: 'none',
+                }}
+            >
+                <div>
                         <div style={{ fontSize: '10px', color: theme.colors.textSecondary, fontWeight: '700', letterSpacing: '0.5px' }}>
                             {label}
                         </div>
-                        {activeMeta && (
-                            <button
-                                onClick={() => setIsModalOpen(true)}
-                                style={{
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    gap: '8px',
-                                    backgroundColor: theme.colors.bgElement,
-                                    border: `1px solid ${theme.colors.border}`,
-                                    borderRadius: theme.radius.md,
-                                    padding: '6px 10px',
-                                    marginTop: '6px',
-                                    cursor: 'pointer',
-                                    color: theme.colors.textPrimary,
-                                    transition: 'all 0.15s ease',
-                                }}
-                            >
-                                <span style={{ fontSize: '16px' }}>{activeMeta.icon}</span>
-                                <span style={{ fontSize: '13px', fontWeight: '700' }}>{activeMeta.name}</span>
-                                <ChevronDown size={14} color={theme.colors.textSecondary} />
-                            </button>
-                        )}
+                        <div
+                            style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                backgroundColor: theme.colors.bgElement,
+                                border: `1px solid ${theme.colors.border}`,
+                                borderRadius: theme.radius.md,
+                                padding: '6px 10px',
+                                marginTop: '6px',
+                                color: activeMeta ? theme.colors.textPrimary : theme.colors.textSecondary,
+                            }}
+                        >
+                            {activeMeta ? (
+                                <>
+                                    <span style={{ fontSize: '16px' }}>{activeMeta.icon}</span>
+                                    <span style={{ fontSize: '13px', fontWeight: '700' }}>
+                                        {activeMeta.name}
+                                        {activeSubCategoryObj && (
+                                            <span style={{ color: theme.colors.textSecondary, fontWeight: '500' }}>
+                                                {` - ${activeSubCategoryObj.name}`}
+                                            </span>
+                                        )}
+                                    </span>
+                                </>
+                            ) : (
+                                <span style={{ fontSize: '13px', fontWeight: '500' }}>Select Category...</span>
+                            )}
+                            <ChevronDown size={14} color={theme.colors.textSecondary} />
+                        </div>
                     </div>
-                    {totalAmount !== undefined && currency && (
-                        <span style={{ fontSize: '18px', fontWeight: '800', color: theme.colors.textPrimary }}>
-                            {formatCurrencyValue(totalAmount)} {currency}
-                        </span>
-                    )}
-                </div>
             </div>
 
             {/* Modal Dialog */}
             {isModalOpen && (
                 <div
-                    onClick={() => setIsModalOpen(false)}
+                    onClick={handleCloseModal}
                     style={{
                         position: 'fixed',
                         top: 0,
@@ -101,10 +150,14 @@ export const CategorySwitcherModal: FC<CategorySwitcherModalProps> = ({
                             position: 'relative',
                             maxHeight: '90vh',
                             overflowY: 'auto',
+                            backgroundColor: theme.colors.bgCard || '#1c1c1e',
+                            borderRadius: theme.radius.lg || '16px',
+                            padding: '20px 16px 16px 16px',
+                            border: `1px solid ${theme.colors.border}`,
                         }}
                     >
                         <button
-                            onClick={() => setIsModalOpen(false)}
+                            onClick={handleCloseModal}
                             style={{
                                 position: 'absolute',
                                 top: '14px',
@@ -123,17 +176,64 @@ export const CategorySwitcherModal: FC<CategorySwitcherModalProps> = ({
                             <X size={18} />
                         </button>
 
-                        <CategoryGrid
-                            categories={listToRender}
-                            selectedCategory={activeCategoryObj}
-                            selectedSubCat={null}
-                            onSelectCategory={(cat) => {
-                                if (cat) {
-                                    onSelectCategory(cat.code);
-                                }
-                                setIsModalOpen(false);
-                            }}
-                        />
+                        {/* Шаг 2: Выбор подкатегории */}
+                        {tempCategory ? (
+                            <div>
+                                <button
+                                    onClick={() => setTempCategory(null)}
+                                    style={{
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: '4px',
+                                        background: 'transparent',
+                                        border: 'none',
+                                        color: theme.colors.primary,
+                                        cursor: 'pointer',
+                                        fontSize: '13px',
+                                        fontWeight: '600',
+                                        padding: 0,
+                                        marginBottom: '16px',
+                                    }}
+                                >
+                                    <ChevronLeft size={16} /> Back to categories
+                                </button>
+
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+                                    <span style={{ fontSize: '20px' }}>{tempMeta?.icon}</span>
+                                    <span style={{ fontSize: '16px', fontWeight: '700', color: theme.colors.textPrimary }}>
+                                        {tempMeta?.name}
+                                    </span>
+                                </div>
+
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                    {tempSubCategories.map((sub) => (
+                                        <button
+                                            key={sub.code}
+                                            onClick={() => handleSubCategorySelect(sub.code)}
+                                            style={{
+                                                padding: '12px 14px',
+                                                borderRadius: theme.radius.md,
+                                                backgroundColor: theme.colors.bgElement,
+                                                border: `1px solid ${theme.colors.border}`,
+                                                color: theme.colors.textPrimary,
+                                                textAlign: 'left',
+                                                fontWeight: '500',
+                                                cursor: 'pointer',
+                                            }}
+                                        >
+                                            {sub.name}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        ) : (
+                            <CategoryGrid
+                                categories={listToRender}
+                                selectedCategory={activeCategoryObj}
+                                selectedSubCat={activeSubCategoryObj}
+                                onSelectCategory={handleCategoryClick}
+                            />
+                        )}
                     </div>
                 </div>
             )}

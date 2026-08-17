@@ -1,13 +1,13 @@
 ﻿import { useMemo, useState, type FC } from "react";
-import type {Category, Currency} from "../../types/finance.ts";
+import type { Category, Currency } from "../../types/finance.ts";
 import type { MonthlyAnalyticsResponse } from "../../services/api.ts";
 import { commonStyles, receiptStyles, theme } from "../../App.styles.ts";
 import { formatCurrencyValue } from "../../utils/numberformatter.ts";
 import { formatDateMMMMYYYY } from "../../utils/dateformatter.ts";
 import { getCategoryMeta, getSubCategoryName } from "../../utils/categoryutils.ts";
 import { CategorySwitcherModal } from "../CategorySwitcherModal.tsx";
-import {NoAvailableData} from "../NoAvailableData.tsx";
-import {LoadingData} from "../LoadingData.tsx";
+import { NoAvailableData } from "../NoAvailableData.tsx";
+import { LoadingData } from "../LoadingData.tsx";
 
 interface CategoryAnalyticsGridProps {
     categories: Category[];
@@ -27,9 +27,9 @@ export const CategoryAnalyticsGrid: FC<CategoryAnalyticsGridProps> = ({
     const [selectedMonthStr, setSelectedMonthStr] = useState<string | null>(null);
 
     const allUniqueCategoryCodes = Array.from(
-        new Set((monthlyData?.months|| []).flatMap((m) => m.outcomeCategories.map((c) => c.category)))
+        new Set((monthlyData?.months || []).flatMap((m) => m.outcomeCategories.map((c) => c.category)))
     );
-    
+
     const availableCategories = useMemo(() => {
         const matching = categories.filter((c) =>
             allUniqueCategoryCodes.some((code) => code.toLowerCase() === c.code.toLowerCase())
@@ -37,12 +37,12 @@ export const CategoryAnalyticsGrid: FC<CategoryAnalyticsGridProps> = ({
         return matching.length > 0 ? matching : categories;
     }, [categories, allUniqueCategoryCodes]);
 
-    if (isLoading){
-        return <LoadingData text={"Loading data..."}/>;
+    if (isLoading) {
+        return <LoadingData text={"Loading data..."} />;
     }
-    
+
     if (!monthlyData || !monthlyData.months || monthlyData.months.length === 0) {
-        return <NoAvailableData/>
+        return <NoAvailableData />;
     }
 
     const parseMonthString = (monthStr: string): Date => {
@@ -76,7 +76,7 @@ export const CategoryAnalyticsGrid: FC<CategoryAnalyticsGridProps> = ({
         m.subCategories.forEach((sc) => {
             const rawCode = sc.subCategory;
             const key = rawCode ? rawCode.toLowerCase() : 'other';
-            const displayName = getSubCategoryName(categories, activeCode, rawCode)?? 'other';
+            const displayName = getSubCategoryName(categories, activeCode, rawCode) ?? 'other';
 
             const current = subCategoryTotalsMap.get(key) || { code: rawCode, name: displayName, total: 0 };
             subCategoryTotalsMap.set(key, { ...current, total: current.total + sc.total });
@@ -91,18 +91,36 @@ export const CategoryAnalyticsGrid: FC<CategoryAnalyticsGridProps> = ({
 
     return (
         <div style={commonStyles.column12}>
-            {/* Category Switcher Header */}
-            <CategorySwitcherModal
-                categories={categories}
-                availableCategories={availableCategories}
-                selectedCategoryCode={activeCode}
-                onSelectCategory={(code) => {
-                    setSelectedCategoryCode(code);
-                    setSelectedMonthStr(null);
-                }}
-                totalAmount={categoryGrandTotal}
-                currency={currency.symbol}
-            />
+            {/* Unified Header Card: Свитчер категории слева + Сумма справа */}
+            <div style={{ ...commonStyles.card, padding: '12px 16px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+
+                    {/* Свитчер категории (слева) */}
+                    <div style={{ flex: 1 }}>
+                        <CategorySwitcherModal
+                            categories={categories}
+                            availableCategories={availableCategories}
+                            selectedCategoryCode={activeCode}
+                            enableSubCategorySelection={false}
+                            onSelectCategory={(code) => {
+                                setSelectedCategoryCode(code);
+                                setSelectedMonthStr(null);
+                            }}
+                        />
+                    </div>
+
+                    {/* Сумма трат (справа) */}
+                    <div style={{ textAlign: 'center', marginLeft: '16px' }}>
+                        <div style={{ fontSize: '10px', color: theme.colors.textSecondary, fontWeight: '700', letterSpacing: '0.5px' }}>
+                            {selectedMonthStr ? 'FILTERED TOTAL' : 'TOTAL'}
+                        </div>
+                        <div style={{ fontSize: '18px', fontWeight: '800', color: theme.colors.textPrimary, marginTop: '2px' }}>
+                            {formatCurrencyValue(selectedMonthStr ? activeSubcategoryTotal : categoryGrandTotal)} {currency.symbol}
+                        </div>
+                    </div>
+
+                </div>
+            </div>
 
             {activeMeta && (
                 <>

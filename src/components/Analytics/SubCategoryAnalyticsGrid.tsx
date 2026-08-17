@@ -24,6 +24,14 @@ export const SubCategoryAnalyticsGrid: FC<SubCategoryAnalyticsGridProps> = ({
     const [selectedSubCatId, setSelectedSubCatId] = useState<string | null>(null);
     const [subCatViewType, setSubCatViewType] = useState<'total' | 'monthly'>('total');
 
+    const parseMonthString = (monthStr: string): Date => {
+        const parts = monthStr.split('-');
+        if (parts.length >= 2) {
+            return new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, 1);
+        }
+        return new Date(monthStr);
+    };
+
     const subCategoryTotalsMap = useMemo(() => {
         const map = new Map<string, number>();
         if (!monthlyData?.months) return map;
@@ -48,7 +56,12 @@ export const SubCategoryAnalyticsGrid: FC<SubCategoryAnalyticsGridProps> = ({
         return subCategoryTotalsMap.get(subCode.toLowerCase()) || 0;
     };
 
-    // Хелпер для получения суммы подкатегории за конкретный месяц
+    // Сортировка подкатегорий по убыванию суммы
+    const sortedSubCategories = useMemo(() => {
+        const list = selectedCategory?.subCategories || [];
+        return [...list].sort((a, b) => getSubcategoryTotal(b.code) - getSubcategoryTotal(a.code));
+    }, [selectedCategory, subCategoryTotalsMap]);
+
     const getSubcategoryMonthlyTotal = (monthStr: string, subCode: string | null): number => {
         if (!subCode || !monthlyData?.months) return 0;
 
@@ -78,19 +91,12 @@ export const SubCategoryAnalyticsGrid: FC<SubCategoryAnalyticsGridProps> = ({
         );
     }
 
-    const categoryMonthlyTrend = monthlyData.months.map((m) => {
-        const catData = m.outcomeCategories.find((c) => c.category.toLowerCase() === selectedCategory.code?.toLowerCase());
-        return {
-            monthStr: m.month,
-            total: catData?.total || 0,
-            subCategories: catData?.subCategories || [],
-        };
-    });
+    const activeSubCatCode = selectedSubCatId || sortedSubCategories[0]?.code || null;
 
-    const categoryGrandTotal = categoryMonthlyTrend.reduce((acc, curr) => acc + curr.total, 0);
-
-    // Авто-выбор первой подкатегории, если ни одна не выбрана при переходе в 'monthly'
-    const activeSubCatCode = selectedSubCatId || selectedCategory?.subCategories?.[0]?.code || null;
+    const handleSelectSubCategory = (subCode: string) => {
+        setSelectedSubCatId(subCode);
+        setSubCatViewType('monthly');
+    };
 
     return (
         <div style={commonStyles.card}>
@@ -100,15 +106,14 @@ export const SubCategoryAnalyticsGrid: FC<SubCategoryAnalyticsGridProps> = ({
                 categories={categories}
                 availableCategories={categories}
                 selectedCategoryCode={selectedCategory.code}
+                enableSubCategorySelection={true}
                 onSelectCategory={(code) => {
                     const category = categories.find((c) => c.code === code);
                     if (category) {
                         setSelectedCategory(category);
-                        setSelectedSubCatId(null); // Сбрасываем выбранную подкатегорию
+                        setSelectedSubCatId(null);
                     }
                 }}
-                totalAmount={categoryGrandTotal}
-                currency={currency.symbol}
             />
 
             <div style={appStyles.typeToggleGroup}>
@@ -132,13 +137,23 @@ export const SubCategoryAnalyticsGrid: FC<SubCategoryAnalyticsGridProps> = ({
                 </button>
             </div>
 
-            {/* Total View */}
+            {/* Total View — отсортированный список */}
             {subCatViewType === 'total' && (
                 <div style={receiptStyles.manualList}>
-                    {(selectedCategory?.subCategories || []).map((sub) => {
+                    {sortedSubCategories.map((sub) => {
                         const total = getSubcategoryTotal(sub.code);
                         return (
-                            <div key={sub.code} style={{ ...receiptStyles.subChip, justifyContent: 'space-between', padding: '12px' }}>
+                            <div
+                                key={sub.code}
+                                onClick={() => handleSelectSubCategory(sub.code)}
+                                style={{
+                                    ...receiptStyles.subChip,
+                                    justifyContent: 'space-between',
+                                    padding: '12px',
+                                    cursor: 'pointer',
+                                    transition: 'background-color 0.2s ease',
+                                }}
+                            >
                                 <span style={{ color: theme.colors.textPrimary, fontWeight: '500' }}>{sub.name}</span>
                                 <span style={{ fontWeight: '700', color: theme.colors.textPrimary }}>
                                     {formatCurrencyValue(total)} {currency.symbol}
@@ -154,13 +169,14 @@ export const SubCategoryAnalyticsGrid: FC<SubCategoryAnalyticsGridProps> = ({
                 <div style={commonStyles.column10}>
                     <label style={commonStyles.label}>Choose a subcategory</label>
                     <div style={receiptStyles.subSelector}>
-                        {(selectedCategory?.subCategories || []).map((sub) => (
+                        {sortedSubCategories.map((sub) => (
                             <button
                                 key={sub.code}
                                 onClick={() => setSelectedSubCatId(sub.code)}
                                 style={{
                                     ...receiptStyles.subChip,
                                     ...(activeSubCatCode === sub.code ? receiptStyles.subChipActive : {}),
+                                    cursor: 'pointer',
                                 }}
                             >
                                 {sub.name}
@@ -170,7 +186,7 @@ export const SubCategoryAnalyticsGrid: FC<SubCategoryAnalyticsGridProps> = ({
 
                     <div style={receiptStyles.manualList}>
                         {monthlyData?.months?.map((m) => {
-                            const monthDate = new Date(m.month);
+                            const monthDate = parseMonthString(m.month);
                             const monthAmount = getSubcategoryMonthlyTotal(m.month, activeSubCatCode);
 
                             return (

@@ -6,6 +6,7 @@ import type { Category, Currency } from "../../types/finance.ts";
 import { getCategoryMeta } from "../../utils/categoryutils.ts";
 import { LoadingData } from "../LoadingData.tsx";
 import { TransactionRow } from "../TransactionRow.tsx";
+import {ShopLogo} from "../ShopLogo.tsx";
 
 interface DayAnalyticsGridProps {
     startDate: Date;
@@ -81,7 +82,6 @@ export const DayAnalyticsGrid: FC<DayAnalyticsGridProps> = ({
             categoryData.items.push(item);
         });
 
-        // Преобразуем Map в массивы и сортируем по убыванию сумм
         return Array.from(shopMap.values())
             .sort((a, b) => b.total - a.total)
             .map((shopData) => ({
@@ -143,8 +143,9 @@ export const DayAnalyticsGrid: FC<DayAnalyticsGridProps> = ({
                                     <span style={{ fontSize: '12px', color: theme.colors.textSecondary, marginRight: '4px' }}>
                                         {isExpanded ? '▼' : '►'}
                                     </span>
+                                    <ShopLogo shopName={shopGroup.shop} />
                                     <span style={{ ...commonStyles.cardTitle, fontSize: '15px' }}>
-                                        🛍️ {shopGroup.shop}
+                                        {shopGroup.shop}
                                     </span>
                                 </div>
                                 <span style={{ fontSize: '15px', fontWeight: '700', color: theme.colors.primary }}>

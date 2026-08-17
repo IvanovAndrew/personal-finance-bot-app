@@ -1,5 +1,4 @@
 ﻿import {
-    siSpotify,
     siAliexpress,
     siBoosty,
     siGooglehome,
@@ -9,13 +8,21 @@
     siKfc,
     siMcdonalds,
     siPatreon,
+    siSpotify,
     siTelegram,
     siUniqlo,
 } from 'simple-icons';
 
 // SVG for local brands (not in simple-icons)
-import yerevanCityLogo from '../assets/shops/yerevan-city.svg';
+import fixpriceLogo from '../assets/shops/fixprice.svg';
 import lentaLogo from '../assets/shops/lenta.svg';
+import royalcaninLogo from '../assets/shops/royalcanin.svg';
+import sixtyseconds from '../assets/shops/sixtyseconds.svg';
+import telcellLogo from '../assets/shops/telcell.svg';
+import wildberriesLogo from '../assets/shops/wildberries.svg';
+import yerevanCityLogo from '../assets/shops/yerevan-city.svg';
+import zoovetLogo from '../assets/shops/zoovet.svg';
+
 
 export interface ShopMeta {
     type: 'svg-path' | 'image';
@@ -29,6 +36,12 @@ export const normalizeShopName = (name: string): string => {
 
 const SHOPS_REGISTRY: Record<string, ShopMeta> = {
     
+    "60секунд": { type: 'image', src: sixtyseconds },
+    fixprice: { type: 'image', src: fixpriceLogo },
+    zoovet: { type: 'image', src: zoovetLogo },
+    royalcanin: { type: 'image', src: royalcaninLogo },
+    telcell: { type: 'image', src: telcellLogo },
+    wildberries: { type: 'image', src: wildberriesLogo },
     yerevancity: { type: 'image', src: yerevanCityLogo },
     еревансити: { type: 'image', src: yerevanCityLogo },
     лента: { type: 'image', src: lentaLogo },
