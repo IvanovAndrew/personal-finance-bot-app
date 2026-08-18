@@ -13,6 +13,7 @@ interface CategorySwitcherModalProps {
     onSelectCategory: (categoryCode: string, subCategoryCode?: string | null) => void;
     enableSubCategorySelection: boolean;
     label?: string;
+    textColor?: string;
 }
 
 export const CategorySwitcherModal: FC<CategorySwitcherModalProps> = ({
@@ -23,6 +24,7 @@ export const CategorySwitcherModal: FC<CategorySwitcherModalProps> = ({
                                                                           onSelectCategory,
                                                                           enableSubCategorySelection,
                                                                           label = "CATEGORY",
+                                                                          textColor
                                                                       }) => {
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     
@@ -75,52 +77,71 @@ export const CategorySwitcherModal: FC<CategorySwitcherModalProps> = ({
         : [];
     const tempMeta = tempCategory ? getCategoryMeta(categories, tempCategory.code) : null;
 
+    const finalTextColor = textColor || (activeMeta ? theme.colors.textPrimary : theme.colors.textSecondary);
+
     return (
         <>
-            {/* Header Card */}
+            {/* Header Card (Кнопка открытия модалки) */}
             <div
                 onClick={handleOpenModal}
                 style={{
-                    padding: '14px 16px',
+                    width: '100%',
+                    height: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
                     cursor: 'pointer',
                     userSelect: 'none',
+                    padding: '0 8px',
+                    boxSizing: 'border-box'
                 }}
             >
-                <div>
+                <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px',
+                    width: '100%',
+                    color: finalTextColor,
+                    overflow: 'hidden'
+                }}>
+                    {label && (
                         <div style={{ fontSize: '10px', color: theme.colors.textSecondary, fontWeight: '700', letterSpacing: '0.5px' }}>
                             {label}
                         </div>
-                        <div
-                            style={{
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '8px',
-                                backgroundColor: theme.colors.bgElement,
-                                border: `1px solid ${theme.colors.border}`,
-                                borderRadius: theme.radius.md,
-                                padding: '6px 10px',
-                                marginTop: '6px',
-                                color: activeMeta ? theme.colors.textPrimary : theme.colors.textSecondary,
-                            }}
-                        >
-                            {activeMeta ? (
-                                <>
-                                    <span style={{ fontSize: '16px' }}>{activeMeta.icon}</span>
-                                    <span style={{ fontSize: '13px', fontWeight: '700' }}>
-                                        {activeMeta.name}
-                                        {activeSubCategoryObj && (
-                                            <span style={{ color: theme.colors.textSecondary, fontWeight: '500' }}>
-                                                {` - ${activeSubCategoryObj.name}`}
-                                            </span>
-                                        )}
+                    )}
+
+                    {activeMeta ? (
+                        <>
+                            <span style={{ fontSize: '16px', flexShrink: 0 }}>{activeMeta.icon}</span>
+                            <span style={{
+                                fontSize: '13px',
+                                fontWeight: '700',
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis'
+                            }}>
+                                {activeMeta.name}
+                                {enableSubCategorySelection && activeSubCategoryObj && (
+                                    <span style={{ fontWeight: '500', opacity: 0.7 }}>
+                                        {` - ${activeSubCategoryObj.name}`}
                                     </span>
-                                </>
-                            ) : (
-                                <span style={{ fontSize: '13px', fontWeight: '500' }}>Select Category...</span>
-                            )}
-                            <ChevronDown size={14} color={theme.colors.textSecondary} />
-                        </div>
-                    </div>
+                                )}
+                            </span>
+                        </>
+                    ) : (
+                        <span style={{
+                            fontSize: '13px',
+                            fontWeight: '500',
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis'
+                        }}>
+                            Select Category...
+                        </span>
+                    )}
+                    <ChevronDown size={14} color={finalTextColor} style={{ flexShrink: 0 }} />
+                </div>
             </div>
 
             {/* Modal Dialog */}
@@ -176,7 +197,7 @@ export const CategorySwitcherModal: FC<CategorySwitcherModalProps> = ({
                             <X size={18} />
                         </button>
 
-                        {/* Шаг 2: Выбор подкатегории */}
+                        {/* Шаг 2: Выбор подкатегории (если включен) */}
                         {tempCategory ? (
                             <div>
                                 <button
