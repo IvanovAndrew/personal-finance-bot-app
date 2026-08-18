@@ -9,6 +9,7 @@ import { CustomDatePicker } from "../CustomDatePicker.tsx";
 import { StatusModal } from "../StatusModal.tsx";
 import { QUICK_CATEGORY_OUTCOME_CODES } from '../../constants/categories';
 import { QUICK_CATEGORY_INCOME_CODES } from '../../constants/categories';
+import {formatCurrencyValue} from "../../utils/numberformatter.ts";
 
 interface EnterOutcomeTabProps {
     incomeCategories: Category[];
@@ -119,8 +120,12 @@ export const EnterTransactionTab: React.FC<EnterOutcomeTabProps> = ({
 
             window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred('success');
 
+            const detailsArray = [shop.trim(), note.trim()].filter(Boolean);
+            const detailsText = detailsArray.length > 0 ? ` (${detailsArray.join(', ')})` : '';
+            const formattedAmount = `${selectedCurrency.symbol}${formatCurrencyValue(parseFloat(amountStr))}`;
+            
             setSaveStatus('saved');
-            setStatusMessage('Saved');
+            setStatusMessage(`Saved: ${formattedAmount}${detailsText}`);
 
             setAmountStr('');
             setShop('');
