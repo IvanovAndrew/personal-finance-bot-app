@@ -24,6 +24,8 @@ import semishagoffLogo from '../assets/shops/semishagoff.svg';
 import sixtysecondsLogo from '../assets/shops/sixtyseconds.svg';
 import telcellLogo from '../assets/shops/telcell.svg';
 import wildberriesLogo from '../assets/shops/wildberries.svg';
+import yandexeatsLogo from '../assets/shops/yandexeats.svg';
+import yandexgoLogo from '../assets/shops/yandexgo.svg';
 import yerevanCityLogo from '../assets/shops/yerevan-city.svg';
 import zoovetLogo from '../assets/shops/zoovet.svg';
 
@@ -47,6 +49,8 @@ const SHOPS_REGISTRY: Record<string, ShopMeta> = {
     telcell: { type: 'image', src: telcellLogo },
     wildberries: { type: 'image', src: wildberriesLogo },
     zoovet: { type: 'image', src: zoovetLogo },
+    yandexeats: { type: 'image', src: yandexeatsLogo },
+    yandexgo: { type: 'image', src: yandexgoLogo },
     yerevancity: { type: 'image', src: yerevanCityLogo },
     еревансити: { type: 'image', src: yerevanCityLogo },
     лента: { type: 'image', src: lentaLogo },
