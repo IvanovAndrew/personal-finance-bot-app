@@ -15,19 +15,23 @@
 
 // SVG for local brands (not in simple-icons)
 import fixpriceLogo from '../assets/shops/fixprice.svg';
+import hafhafLogo from '../assets/shops/hafhaf.svg';
 import lentaLogo from '../assets/shops/lenta.svg';
 import onexLogo from '../assets/shops/onex.svg';
+import ozonLogo from '../assets/shops/ozon.svg';
 import perekrestokLogo from '../assets/shops/perekrestok.svg';
 import pyaterochkaLogo from '../assets/shops/pyaterochka.svg';
 import royalcaninLogo from '../assets/shops/royalcanin.svg';
 import semishagoffLogo from '../assets/shops/semishagoff.svg';
 import sixtysecondsLogo from '../assets/shops/sixtyseconds.svg';
+import sorrisoLogo from '../assets/shops/sorriso.svg';
 import telcellLogo from '../assets/shops/telcell.svg';
 import wildberriesLogo from '../assets/shops/wildberries.svg';
 import yandexeatsLogo from '../assets/shops/yandexeats.svg';
 import yandexgoLogo from '../assets/shops/yandexgo.svg';
 import yerevanCityLogo from '../assets/shops/yerevan-city.svg';
 import zoovetLogo from '../assets/shops/zoovet.svg';
+import zovqLogo from '../assets/shops/zovqLogo.svg';
 
 
 export interface ShopMeta {
@@ -44,15 +48,21 @@ const SHOPS_REGISTRY: Record<string, ShopMeta> = {
     
     "60секунд": { type: 'image', src: sixtysecondsLogo },
     fixprice: { type: 'image', src: fixpriceLogo },
+    hafhaf: { type: 'image', src: hafhafLogo },
     onex: { type: 'image', src: onexLogo },
+    ozon: { type: 'image', src: ozonLogo },
+    озон: { type: 'image', src: ozonLogo },
     royalcanin: { type: 'image', src: royalcaninLogo },
+    sorriso: { type: 'image', src: sorrisoLogo },
     telcell: { type: 'image', src: telcellLogo },
     wildberries: { type: 'image', src: wildberriesLogo },
-    zoovet: { type: 'image', src: zoovetLogo },
     yandexeats: { type: 'image', src: yandexeatsLogo },
     yandexgo: { type: 'image', src: yandexgoLogo },
     yerevancity: { type: 'image', src: yerevanCityLogo },
     еревансити: { type: 'image', src: yerevanCityLogo },
+    zoovet: { type: 'image', src: zoovetLogo },
+    zoovetam: { type: 'image', src: zoovetLogo },
+    zovq: { type: 'image', src: zovqLogo },
     лента: { type: 'image', src: lentaLogo },
     перекрёсток: { type: 'image', src: perekrestokLogo },
     пятёрочка: { type: 'image', src: pyaterochkaLogo },
