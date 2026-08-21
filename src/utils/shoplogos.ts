@@ -31,7 +31,7 @@ import yandexeatsLogo from '../assets/shops/yandexeats.svg';
 import yandexgoLogo from '../assets/shops/yandexgo.svg';
 import yerevanCityLogo from '../assets/shops/yerevan-city.svg';
 import zoovetLogo from '../assets/shops/zoovet.svg';
-import zovqLogo from '../assets/shops/zovqLogo.svg';
+import zovqLogo from '../assets/shops/zovq.svg';
 
 
 export interface ShopMeta {
