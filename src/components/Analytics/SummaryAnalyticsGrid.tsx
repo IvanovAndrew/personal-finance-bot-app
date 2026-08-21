@@ -32,6 +32,7 @@ export const SummaryAnalyticsGrid: FC<SummaryAnalyticsGridProps> = ({
         futureExpenses,
         realFreeMoney,
         dailyBudgetLimit,
+        startPeriod,
         payday,
         daysUntilPayday,
     } = summary;
@@ -74,10 +75,7 @@ export const SummaryAnalyticsGrid: FC<SummaryAnalyticsGridProps> = ({
 
                 <div style={{ fontSize: '12px', color: theme.colors.textSecondary, display: 'flex', flexDirection: 'column', gap: '2px' }}>
                     <div>
-                        ⏱ <b>{daysUntilPayday} days</b> (including today) until Payday
-                    </div>
-                    <div style={{ fontSize: '11px', opacity: 0.7 }}>
-                        Payday: {formatDateDMMMMYYYY(new Date(payday))}
+                        ⏱ <b>{daysUntilPayday} budget days</b> ({formatDateDMMMMYYYY(new Date(startPeriod))} to {formatDateDMMMMYYYY(new Date(payday))})
                     </div>
                 </div>
             </div>
