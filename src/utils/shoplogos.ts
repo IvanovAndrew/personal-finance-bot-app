@@ -14,6 +14,7 @@
 } from 'simple-icons';
 
 // SVG for local brands (not in simple-icons)
+import dodoLogo from '../assets/shops/dodo.svg';
 import fixpriceLogo from '../assets/shops/fixprice.svg';
 import hafhafLogo from '../assets/shops/hafhaf.svg';
 import lentaLogo from '../assets/shops/lenta.svg';
@@ -47,6 +48,7 @@ export const normalizeShopName = (name: string): string => {
 const SHOPS_REGISTRY: Record<string, ShopMeta> = {
     
     "60секунд": { type: 'image', src: sixtysecondsLogo },
+    dodo: { type: 'image', src: dodoLogo },
     fixprice: { type: 'image', src: fixpriceLogo },
     hafhaf: { type: 'image', src: hafhafLogo },
     onex: { type: 'image', src: onexLogo },
