@@ -10,6 +10,7 @@ import { StatusModal } from "../StatusModal.tsx";
 import { QUICK_CATEGORY_OUTCOME_CODES } from '../../constants/categories';
 import { QUICK_CATEGORY_INCOME_CODES } from '../../constants/categories';
 import {formatCurrencyValue} from "../../utils/numberformatter.ts";
+import {ONE_SECOND} from "../../constants/time.ts";
 
 interface EnterOutcomeTabProps {
     incomeCategories: Category[];
@@ -134,7 +135,7 @@ export const EnterTransactionTab: React.FC<EnterOutcomeTabProps> = ({
             setSelectedOutcomeCategory(null);
             setSelectedIncomeCategory(null);
 
-            setTimeout(() => setSaveStatus('idle'), 2000);
+            setTimeout(() => setSaveStatus('idle'), 5 * ONE_SECOND);
         } catch (error) {
             console.error('Error:', error);
             window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred('error');
@@ -142,7 +143,7 @@ export const EnterTransactionTab: React.FC<EnterOutcomeTabProps> = ({
             setSaveStatus('error');
             setStatusMessage('Error, not saved');
 
-            setTimeout(() => setSaveStatus('idle'), 2000);
+            setTimeout(() => setSaveStatus('idle'), 5 * ONE_SECOND);
         }
     };
 
