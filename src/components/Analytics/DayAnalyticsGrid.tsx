@@ -63,8 +63,9 @@ export const DayAnalyticsGrid: FC<DayAnalyticsGridProps> = ({
         >();
 
         items.forEach((item) => {
-            const shopKey = item.shop?.trim() || "Unspecified Shop";
             const catKey = item.category?.trim() || "Others";
+            const shopKey = item.shop?.trim() || catKey;
+            
 
             if (!shopMap.has(shopKey)) {
                 shopMap.set(shopKey, { shop: shopKey, total: 0, categoryMap: new Map() });
