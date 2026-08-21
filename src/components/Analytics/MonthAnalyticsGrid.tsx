@@ -1,8 +1,8 @@
-﻿import { type FC, useState } from "react";
+﻿import { type FC, useState, useMemo, useCallback, useEffect } from "react";
 import {
-    ResponsiveContainer,
-    AreaChart,
-    Area,
+    BarChart,
+    Bar,
+    Cell,
     XAxis,
     YAxis,
     Tooltip,
@@ -13,7 +13,7 @@ import { formatDateMMMMYYYY } from "../../utils/dateformatter.ts";
 import type { Category, Currency } from "../../types/finance.ts";
 import type { MonthlyAnalyticsResponse, MonthlyAnalyticsItem } from "../../services/api.ts";
 import { formatCurrencyValue } from "../../utils/numberformatter.ts";
-import { X, TrendingUp, TrendingDown } from "lucide-react";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { LoadingData } from "../LoadingData.tsx";
 import { NoAvailableData } from "../NoAvailableData.tsx";
 import { getCategoryMeta } from "../../utils/categoryutils.ts";
@@ -31,8 +31,59 @@ export const MonthAnalyticsGrid: FC<MonthAnalyticsGridProps> = ({
                                                                     monthlyData,
                                                                     isLoading,
                                                                 }) => {
-    const [selectedMonth, setSelectedMonth] = useState<MonthlyAnalyticsItem | null>(null);
+    const [selectedIndex, setSelectedIndex] = useState<number>(0);
+    const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const [showRealOnly, setShowRealOnly] = useState<boolean>(false);
+
+    const sortedMonths = useMemo(() => {
+        if (!monthlyData?.months) return [];
+        return [...monthlyData.months].sort((a, b) => a.month.localeCompare(b.month));
+    }, [monthlyData]);
+
+    // При загрузке данных устанавливаем выделение на последний (самый свежий) месяц
+    useEffect(() => {
+        if (sortedMonths.length > 0) {
+            setSelectedIndex(sortedMonths.length - 1);
+        }
+    }, [sortedMonths.length]);
+
+    const activeMonth = sortedMonths[selectedIndex] || sortedMonths[sortedMonths.length - 1];
+
+    const formatAmount = useCallback(
+        (val: number) => `${formatCurrencyValue(val)} ${currency.symbol}`,
+        [currency.symbol]
+    );
+
+    const parseMonthString = (monthStr: string): Date => {
+        const parts = monthStr.split('-');
+        return new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, 1);
+    };
+
+    const getOutcome = useCallback(
+        (m: MonthlyAnalyticsItem) =>
+            showRealOnly ? (m.realOutcomeTotal ?? m.totalOutcome ?? 0) : (m.totalOutcome ?? 0),
+        [showRealOnly]
+    );
+
+    const totals = useMemo(() => {
+        if (!monthlyData?.months) return { income: 0, outcome: 0, net: 0 };
+        const income = monthlyData.months.reduce((acc, m) => acc + (m.totalIncome ?? 0), 0);
+        const outcome = monthlyData.months.reduce((acc, m) => acc + getOutcome(m), 0);
+        return { income, outcome, net: income - outcome };
+    }, [monthlyData, getOutcome]);
+
+    const chartData = useMemo(() => {
+        if (!sortedMonths.length) return [];
+        return sortedMonths.map((m) => {
+            const date = parseMonthString(m.month);
+            return {
+                name: formatDateMMMMYYYY(date),
+                shortName: date.toLocaleDateString('en-US', { month: 'short' }),
+                income: m.totalIncome ?? 0,
+                outcome: getOutcome(m),
+            };
+        });
+    }, [sortedMonths, getOutcome]);
 
     if (isLoading) {
         return <LoadingData text="Loading monthly data..." />;
@@ -42,59 +93,28 @@ export const MonthAnalyticsGrid: FC<MonthAnalyticsGridProps> = ({
         return <NoAvailableData />;
     }
 
-    const parseMonthString = (monthStr: string): Date => {
-        const parts = monthStr.split('-');
-        return new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, 1);
-    };
-
-    // Хелпер для получения нужной суммы расходов с учётом флага showRealOnly
-    const getOutcome = (m: MonthlyAnalyticsItem) =>
-        showRealOnly ? (m.realOutcomeTotal ?? m.totalOutcome ?? 0) : (m.totalOutcome ?? 0);
-
-    // Общие итоги за весь период
-    const grandTotalOutcome = monthlyData.months.reduce((acc, m) => acc + getOutcome(m), 0);
-    const grandTotalIncome = monthlyData.months.reduce((acc, m) => acc + (m.totalIncome ?? 0), 0);
-    const grandNetBalance = grandTotalIncome - grandTotalOutcome;
-
-    // Максимальное значение для масштабирования прогресс-баров в списке
-    const maxVal = Math.max(
-        ...monthlyData.months.map((m) => Math.max(getOutcome(m), m.totalIncome ?? 0)),
-        1
-    );
-
-    // Подготовка данных для Recharts (сортируем по возрастанию даты для корректного отображения тренда)
-    const chartData = [...monthlyData.months]
-        .sort((a, b) => a.month.localeCompare(b.month))
-        .map((m) => {
-            const date = parseMonthString(m.month);
-            return {
-                name: formatDateMMMMYYYY(date),
-                shortName: date.toLocaleDateString('en-US', { month: 'short' }),
-                income: m.totalIncome ?? 0,
-                outcome: getOutcome(m),
-            };
-        });
-
     return (
-        <div style={commonStyles.column12}>
+        <div style={{ ...commonStyles.column12, gap: '12px' }}>
 
-            {/* 1. Блок SVG Графика Recharts с Переключателем */}
+            {/* 1. HERO GRAPH CARD */}
             <div style={commonStyles.card}>
                 <div style={commonStyles.rowBetween}>
                     <div>
-                        <span style={commonStyles.cardTitle}>Income vs Expense Trend</span>
-                        <div style={{ fontSize: '11px', color: theme.colors.textSecondary, fontWeight: '600', marginTop: '2px' }}>
-                            {monthlyData.months.length} months
+                        <span style={{ fontSize: '11px', fontWeight: '700', color: theme.colors.textSecondary, textTransform: 'uppercase', letterSpacing: '0.8px' }}>
+                            Cash Flow ({sortedMonths.length} Months)
+                        </span>
+                        <div style={{ fontSize: '20px', fontWeight: '800', color: totals.net >= 0 ? theme.colors.success : theme.colors.danger, marginTop: '2px' }}>
+                            {totals.net >= 0 ? '+' : ''}{formatAmount(totals.net)}
                         </div>
                     </div>
 
-                    {/* Переключатель Total / Real */}
+                    {/* Filter Chip */}
                     <div
                         style={{
                             display: 'flex',
                             backgroundColor: theme.colors.bgElement,
-                            borderRadius: '8px',
-                            padding: '2px',
+                            borderRadius: '20px',
+                            padding: '3px',
                             border: `1px solid ${theme.colors.border}`,
                         }}
                     >
@@ -102,8 +122,8 @@ export const MonthAnalyticsGrid: FC<MonthAnalyticsGridProps> = ({
                             type="button"
                             onClick={() => setShowRealOnly(false)}
                             style={{
-                                padding: '4px 10px',
-                                borderRadius: '6px',
+                                padding: '4px 12px',
+                                borderRadius: '16px',
                                 fontSize: '11px',
                                 fontWeight: '700',
                                 border: 'none',
@@ -119,8 +139,8 @@ export const MonthAnalyticsGrid: FC<MonthAnalyticsGridProps> = ({
                             type="button"
                             onClick={() => setShowRealOnly(true)}
                             style={{
-                                padding: '4px 10px',
-                                borderRadius: '6px',
+                                padding: '4px 12px',
+                                borderRadius: '16px',
                                 fontSize: '11px',
                                 fontWeight: '700',
                                 border: 'none',
@@ -135,232 +155,186 @@ export const MonthAnalyticsGrid: FC<MonthAnalyticsGridProps> = ({
                     </div>
                 </div>
 
-                <div style={{ width: '100%', height: 180, marginTop: '8px' }}>
-                    <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                            <defs>
-                                <linearGradient id="incomeGradient" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor={theme.colors.success} stopOpacity={0.35} />
-                                    <stop offset="95%" stopColor={theme.colors.success} stopOpacity={0.0} />
-                                </linearGradient>
-                                <linearGradient id="outcomeGradient" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor={theme.colors.danger} stopOpacity={0.35} />
-                                    <stop offset="95%" stopColor={theme.colors.danger} stopOpacity={0.0} />
-                                </linearGradient>
-                            </defs>
-
-                            <CartesianGrid strokeDasharray="3 3" stroke={theme.colors.border} vertical={false} />
-
-                            <XAxis
-                                dataKey="shortName"
-                                stroke={theme.colors.textSecondary}
-                                fontSize={11}
-                                tickLine={false}
-                                axisLine={false}
-                            />
-
-                            <YAxis
-                                stroke={theme.colors.textSecondary}
-                                fontSize={10}
-                                tickLine={false}
-                                axisLine={false}
-                                tickFormatter={(val) => `${val >= 1000 ? (val / 1000).toFixed(0) + 'k' : val}`}
-                            />
-
-                            <Tooltip
-                                content={({ active, payload }) => {
-                                    if (active && payload && payload.length) {
-                                        const incomeVal = (payload.find((p) => p.dataKey === 'income')?.value as number) || 0;
-                                        const outcomeVal = (payload.find((p) => p.dataKey === 'outcome')?.value as number) || 0;
-
-                                        return (
-                                            <div
-                                                style={{
-                                                    backgroundColor: theme.colors.bgCard,
-                                                    border: `1px solid ${theme.colors.border}`,
-                                                    borderRadius: theme.radius.md,
-                                                    padding: '8px 12px',
-                                                    boxShadow: '0 4px 16px rgba(0,0,0,0.5)',
-                                                }}
-                                            >
-                                                <div style={{ fontSize: '11px', color: theme.colors.textSecondary, fontWeight: '700', marginBottom: '4px' }}>
-                                                    {payload[0]?.payload?.name}
-                                                </div>
-                                                <div style={{ fontSize: '12px', color: theme.colors.success, fontWeight: '700' }}>
-                                                    Income: +{formatCurrencyValue(incomeVal)} {currency.symbol}
-                                                </div>
-                                                <div style={{ fontSize: '12px', color: theme.colors.danger, fontWeight: '700' }}>
-                                                    Expense ({showRealOnly ? 'Real' : 'Total'}): -{formatCurrencyValue(outcomeVal)} {currency.symbol}
-                                                </div>
-                                            </div>
-                                        );
-                                    }
-                                    return null;
-                                }}
-                            />
-
-                            <Area
-                                type="monotone"
-                                dataKey="income"
-                                stroke={theme.colors.success}
-                                strokeWidth={2}
-                                fillOpacity={1}
-                                fill="url(#incomeGradient)"
-                            />
-
-                            <Area
-                                type="monotone"
-                                dataKey="outcome"
-                                stroke={theme.colors.danger}
-                                strokeWidth={2}
-                                fillOpacity={1}
-                                fill="url(#outcomeGradient)"
-                            />
-                        </AreaChart>
-                    </ResponsiveContainer>
+                {/* Sub-totals in Header */}
+                <div style={{ display: 'flex', gap: '16px', margin: '12px 0 16px 0', fontSize: '12px' }}>
+                    <div>
+                        <span style={{ color: theme.colors.textSecondary }}>Income: </span>
+                        <strong style={{ color: theme.colors.success }}>+{formatAmount(totals.income)}</strong>
+                    </div>
+                    <div>
+                        <span style={{ color: theme.colors.textSecondary }}>Expenses: </span>
+                        <strong style={{ color: theme.colors.danger }}>-{formatAmount(totals.outcome)}</strong>
+                    </div>
                 </div>
 
-                {/* Легенда */}
-                <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', marginTop: '8px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: theme.colors.success }} />
-                        <span style={{ fontSize: '11px', color: theme.colors.textSecondary, fontWeight: '600' }}>Income</span>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: theme.colors.danger }} />
-                        <span style={{ fontSize: '11px', color: theme.colors.textSecondary, fontWeight: '600' }}>
-                            Expense ({showRealOnly ? 'Real' : 'Total'})
-                        </span>
-                    </div>
+                {/* Scrollable BarChart */}
+                <div style={{ width: '100%', overflowX: 'auto', marginTop: '16px', paddingBottom: '8px' }}>
+                    <BarChart
+                        data={chartData}
+                        width={Math.max(chartData.length * 48, 300)}
+                        height={180}
+                        margin={{ top: 10, right: 10, left: -25, bottom: 0 }}
+                    >
+                        <CartesianGrid strokeDasharray="3 3" stroke={theme.colors.border} vertical={false} />
+                        <XAxis
+                            dataKey="shortName"
+                            stroke={theme.colors.textSecondary}
+                            fontSize={11}
+                            tickLine={false}
+                            axisLine={false}
+                        />
+                        <YAxis
+                            stroke={theme.colors.textSecondary}
+                            fontSize={10}
+                            tickLine={false}
+                            axisLine={false}
+                            tickFormatter={(val) => `${val >= 1000 ? (val / 1000).toFixed(0) + 'k' : val}`}
+                        />
+                        <Tooltip
+                            cursor={{ fill: 'rgba(255,255,255,0.03)' }}
+                            wrapperStyle={{ pointerEvents: 'none' }}
+                            content={({ active, payload }) => {
+                                if (active && payload && payload.length) {
+                                    const incomeVal = (payload.find((p) => p.dataKey === 'income')?.value as number) || 0;
+                                    const outcomeVal = (payload.find((p) => p.dataKey === 'outcome')?.value as number) || 0;
+
+                                    return (
+                                        <div
+                                            style={{
+                                                backgroundColor: theme.colors.bgCard,
+                                                border: `1px solid ${theme.colors.border}`,
+                                                borderRadius: theme.radius?.md || '8px',
+                                                padding: '8px 12px',
+                                                boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
+                                            }}
+                                        >
+                                            <div style={{ fontSize: '11px', color: theme.colors.textSecondary, fontWeight: '700', marginBottom: '4px' }}>
+                                                {payload[0]?.payload?.name}
+                                            </div>
+                                            <div style={{ fontSize: '12px', color: theme.colors.success, fontWeight: '700' }}>
+                                                Income: +{formatAmount(incomeVal)}
+                                            </div>
+                                            <div style={{ fontSize: '12px', color: theme.colors.danger, fontWeight: '700' }}>
+                                                Expense: -{formatAmount(outcomeVal)}
+                                            </div>
+                                        </div>
+                                    );
+                                }
+                                return null;
+                            }}
+                        />
+                        <Bar
+                            dataKey="income"
+                            radius={[4, 4, 0, 0]}
+                            barSize={10}
+                            onClick={(_, index) => setSelectedIndex(index)}
+                        >
+                            {chartData.map((_, index) => (
+                                <Cell
+                                    key={`inc-${index}`}
+                                    fill={theme.colors.success}
+                                    opacity={index === selectedIndex ? 1 : 0.35}
+                                    cursor="pointer"
+                                    onClick={() => setSelectedIndex(index)}
+                                />
+                            ))}
+                        </Bar>
+                        <Bar
+                            dataKey="outcome"
+                            radius={[4, 4, 0, 0]}
+                            barSize={10}
+                            onClick={(_, index) => setSelectedIndex(index)}
+                        >
+                            {chartData.map((_, index) => (
+                                <Cell
+                                    key={`out-${index}`}
+                                    fill={theme.colors.danger}
+                                    opacity={index === selectedIndex ? 1 : 0.35}
+                                    cursor="pointer"
+                                    onClick={() => setSelectedIndex(index)}
+                                />
+                            ))}
+                        </Bar>
+                    </BarChart>
                 </div>
             </div>
 
-            {/* 2. Общая сводка за период */}
-            <div style={{ ...commonStyles.card, padding: '14px 16px' }}>
-                <div style={commonStyles.column10}>
-                    <div style={commonStyles.label}>
-                        PERIOD SUMMARY ({showRealOnly ? 'REAL EXPENSES' : 'TOTAL EXPENSES'})
-                    </div>
-
+            {/* 2. ACTIVE MONTH CARD WITH CONTROLS */}
+            {activeMonth && (
+                <div style={commonStyles.card}>
                     <div style={commonStyles.rowBetween}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <TrendingUp size={16} color={theme.colors.success} />
-                            <span style={{ fontSize: '12px', color: theme.colors.textSecondary }}>Total Income</span>
-                        </div>
-                        <span style={{ fontSize: '13px', fontWeight: '700', color: theme.colors.success }}>
-                            +{formatCurrencyValue(grandTotalIncome)} {currency.symbol}
-                        </span>
-                    </div>
-
-                    <div style={commonStyles.rowBetween}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <TrendingDown size={16} color={theme.colors.danger} />
-                            <span style={{ fontSize: '12px', color: theme.colors.textSecondary }}>
-                                {showRealOnly ? 'Real Expense' : 'Total Expense'}
-                            </span>
-                        </div>
-                        <span style={{ fontSize: '13px', fontWeight: '700', color: theme.colors.danger }}>
-                            -{formatCurrencyValue(grandTotalOutcome)} {currency.symbol}
-                        </span>
-                    </div>
-
-                    <div style={{ height: '1px', backgroundColor: theme.colors.border, margin: '2px 0' }} />
-
-                    <div style={commonStyles.rowBetween}>
-                        <span style={{ fontSize: '12px', fontWeight: '700', color: theme.colors.textPrimary }}>Net Balance</span>
-                        <span
+                        <button
+                            type="button"
+                            disabled={selectedIndex === 0}
+                            onClick={() => setSelectedIndex((prev) => Math.max(prev - 1, 0))}
                             style={{
-                                fontSize: '15px',
-                                fontWeight: '800',
-                                color: grandNetBalance >= 0 ? theme.colors.success : theme.colors.danger,
+                                background: 'transparent',
+                                border: 'none',
+                                cursor: selectedIndex === 0 ? 'not-allowed' : 'pointer',
+                                color: selectedIndex === 0 ? theme.colors.border : theme.colors.textPrimary,
+                                display: 'flex',
+                                alignItems: 'center'
                             }}
                         >
-                            {grandNetBalance >= 0 ? '+' : ''}{formatCurrencyValue(grandNetBalance)} {currency.symbol}
+                            <ChevronLeft size={20} />
+                        </button>
+
+                        <span style={{ fontSize: '14px', fontWeight: '700', color: theme.colors.textPrimary }}>
+                            {formatDateMMMMYYYY(parseMonthString(activeMonth.month))}
                         </span>
+
+                        <button
+                            type="button"
+                            disabled={selectedIndex === sortedMonths.length - 1}
+                            onClick={() => setSelectedIndex((prev) => Math.min(prev + 1, sortedMonths.length - 1))}
+                            style={{
+                                background: 'transparent',
+                                border: 'none',
+                                cursor: selectedIndex === sortedMonths.length - 1 ? 'not-allowed' : 'pointer',
+                                color: selectedIndex === sortedMonths.length - 1 ? theme.colors.border : theme.colors.textPrimary,
+                                display: 'flex',
+                                alignItems: 'center'
+                            }}
+                        >
+                            <ChevronRight size={20} />
+                        </button>
                     </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-around', margin: '16px 0', padding: '12px', backgroundColor: theme.colors.bgElement, borderRadius: '8px' }}>
+                        <div>
+                            <span style={{ fontSize: '11px', color: theme.colors.textSecondary, display: 'block' }}>Income</span>
+                            <strong style={{ fontSize: '13px', color: theme.colors.success }}>+{formatAmount(activeMonth.totalIncome ?? 0)}</strong>
+                        </div>
+                        <div>
+                            <span style={{ fontSize: '11px', color: theme.colors.textSecondary, display: 'block' }}>Expenses</span>
+                            <strong style={{ fontSize: '13px', color: theme.colors.danger }}>-{formatAmount(getOutcome(activeMonth))}</strong>
+                        </div>
+                    </div>
+
+                    <button
+                        type="button"
+                        onClick={() => setIsModalOpen(true)}
+                        style={{
+                            width: '100%',
+                            padding: '10px',
+                            backgroundColor: theme.colors.primary,
+                            color: '#ffffff',
+                            border: 'none',
+                            borderRadius: '8px',
+                            fontWeight: '700',
+                            fontSize: '12px',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        View Categories Breakdown
+                    </button>
                 </div>
-            </div>
+            )}
 
-            {/* 3. Список месяцев */}
-            <div style={commonStyles.card}>
-                <span style={{ ...commonStyles.cardTitle, marginBottom: '8px', display: 'block' }}>
-                    Monthly Details
-                </span>
-
-                <div style={commonStyles.column10}>
-                    {monthlyData.months.map((m) => {
-                        const parsedDate = parseMonthString(m.month);
-                        const currentOutcome = getOutcome(m);
-                        const incomePct = ((m.totalIncome ?? 0) / maxVal) * 100;
-                        const outcomePct = (currentOutcome / maxVal) * 100;
-                        const isSelected = selectedMonth?.month === m.month;
-
-                        return (
-                            <div
-                                key={m.month}
-                                onClick={() => setSelectedMonth(m)}
-                                style={{
-                                    ...receiptStyles.subChip,
-                                    flexDirection: 'column',
-                                    alignItems: 'stretch',
-                                    padding: '12px',
-                                    gap: '8px',
-                                    backgroundColor: isSelected ? theme.colors.bgElement : theme.colors.bgCard,
-                                    borderColor: isSelected ? theme.colors.primary : theme.colors.border,
-                                    borderWidth: '1px',
-                                    borderStyle: 'solid',
-                                    cursor: 'pointer',
-                                    transition: 'all 0.15s ease',
-                                }}
-                            >
-                                <div style={commonStyles.rowBetween}>
-                                    <span style={{ fontWeight: '700', fontSize: '14px', color: theme.colors.textPrimary }}>
-                                        {formatDateMMMMYYYY(parsedDate)}
-                                    </span>
-                                    <span style={{ fontSize: '11px', color: theme.colors.textSecondary }}>
-                                        Net: <strong style={{ color: (m.totalIncome - currentOutcome) >= 0 ? theme.colors.success : theme.colors.danger }}>
-                                            {formatCurrencyValue(m.totalIncome - currentOutcome)} {currency.symbol}
-                                        </strong>
-                                    </span>
-                                </div>
-
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                                    {/* Income bar */}
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        <span style={{ fontSize: '10px', color: theme.colors.success, fontWeight: '700', width: '50px' }}>
-                                            INCOME
-                                        </span>
-                                        <div style={{ flex: 1, height: '6px', backgroundColor: theme.colors.bgCard, borderRadius: '3px', overflow: 'hidden' }}>
-                                            <div style={{ width: `${Math.min(incomePct, 100)}%`, height: '100%', backgroundColor: theme.colors.success, borderRadius: '3px' }} />
-                                        </div>
-                                        <span style={{ fontSize: '11px', fontWeight: '700', color: theme.colors.success, width: '75px', textAlign: 'right' }}>
-                                            +{formatCurrencyValue(m.totalIncome)}
-                                        </span>
-                                    </div>
-
-                                    {/* Outcome bar */}
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        <span style={{ fontSize: '10px', color: theme.colors.danger, fontWeight: '700', width: '50px' }}>
-                                            EXPENSE
-                                        </span>
-                                        <div style={{ flex: 1, height: '6px', backgroundColor: theme.colors.bgCard, borderRadius: '3px', overflow: 'hidden' }}>
-                                            <div style={{ width: `${Math.min(outcomePct, 100)}%`, height: '100%', backgroundColor: theme.colors.danger, borderRadius: '3px' }} />
-                                        </div>
-                                        <span style={{ fontSize: '11px', fontWeight: '700', color: theme.colors.danger, width: '75px', textAlign: 'right' }}>
-                                            -{formatCurrencyValue(currentOutcome)}
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        );
-                    })}
-                </div>
-            </div>
-
-            {/* 4. Модальное окно категорий выбранного месяца */}
-            {selectedMonth && (
+            {/* 3. MODAL BREAKDOWN */}
+            {isModalOpen && activeMonth && (
                 <div
-                    onClick={() => setSelectedMonth(null)}
+                    onClick={() => setIsModalOpen(false)}
                     style={{
                         position: 'fixed',
                         top: 0,
@@ -383,56 +357,47 @@ export const MonthAnalyticsGrid: FC<MonthAnalyticsGridProps> = ({
                             width: '100%',
                             maxWidth: '400px',
                             position: 'relative',
-                            padding: '16px',
+                            padding: '20px 16px',
                             maxHeight: '80vh',
                             overflowY: 'auto',
-                            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
                         }}
                     >
                         <button
-                            onClick={() => setSelectedMonth(null)}
+                            type="button"
+                            onClick={() => setIsModalOpen(false)}
                             style={{
                                 position: 'absolute',
-                                top: '14px',
-                                right: '14px',
+                                top: '16px',
+                                right: '16px',
                                 background: 'transparent',
                                 border: 'none',
                                 color: theme.colors.textSecondary,
                                 cursor: 'pointer',
-                                padding: '4px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                zIndex: 10,
                             }}
                         >
                             <X size={18} />
                         </button>
 
-                        <div style={{ marginBottom: '14px' }}>
-                            <span style={commonStyles.cardTitle}>
-                                Breakdown for {formatDateMMMMYYYY(parseMonthString(selectedMonth.month))}
+                        <div style={{ marginBottom: '16px' }}>
+                            <span style={{ fontSize: '15px', fontWeight: '700', color: theme.colors.textPrimary }}>
+                                Breakdown for {formatDateMMMMYYYY(parseMonthString(activeMonth.month))}
                             </span>
                         </div>
 
-                        {/* Секция расходов */}
-                        {selectedMonth.outcomeCategories && selectedMonth.outcomeCategories.length > 0 && (() => {
-                            const filteredCategories = selectedMonth.outcomeCategories
+                        {/* Expenses Breakdown */}
+                        {activeMonth.outcomeCategories && activeMonth.outcomeCategories.length > 0 && (() => {
+                            const filteredCategories = activeMonth.outcomeCategories
                                 .filter((cat) => !showRealOnly || !cat.category.toLowerCase().includes('savings'))
                                 .sort((a, b) => b.total - a.total);
 
-                            const modalTotalOutcome = showRealOnly
-                                ? (selectedMonth.realOutcomeTotal ?? getOutcome(selectedMonth))
-                                : selectedMonth.totalOutcome;
+                            const modalTotalOutcome = getOutcome(activeMonth);
 
                             return (
                                 <div style={{ marginBottom: '16px' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                                        <span style={{ fontSize: '11px', fontWeight: '700', color: theme.colors.danger }}>
-                                            EXPENSES ({formatCurrencyValue(modalTotalOutcome)} {currency.symbol})
-                                        </span>
+                                    <div style={{ fontSize: '11px', fontWeight: '700', color: theme.colors.danger, marginBottom: '8px', textTransform: 'uppercase' }}>
+                                        Expenses ({formatAmount(modalTotalOutcome)})
                                     </div>
-                                    <div style={commonStyles.column8}>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                                         {filteredCategories.map((cat) => {
                                             const meta = getCategoryMeta(categories, cat.category);
                                             const pct = modalTotalOutcome > 0 ? (cat.total / modalTotalOutcome) * 100 : 0;
@@ -445,7 +410,7 @@ export const MonthAnalyticsGrid: FC<MonthAnalyticsGridProps> = ({
                                                             <span style={{ fontWeight: '600', fontSize: '12px', color: theme.colors.textPrimary }}>{meta.name}</span>
                                                         </div>
                                                         <span style={{ fontWeight: '700', fontSize: '12px', color: theme.colors.textPrimary }}>
-                                                            {formatCurrencyValue(cat.total)} {currency.symbol}
+                                                            {formatAmount(cat.total)}
                                                         </span>
                                                     </div>
                                                     <div style={{ width: '100%', height: '3px', backgroundColor: theme.colors.bgCard, borderRadius: '2px', overflow: 'hidden', marginTop: '4px' }}>
@@ -459,18 +424,17 @@ export const MonthAnalyticsGrid: FC<MonthAnalyticsGridProps> = ({
                             );
                         })()}
 
-                        {/* Секция доходов */}
-                        {selectedMonth.incomeCategories && selectedMonth.incomeCategories.length > 0 && (
+                        {/* Income Breakdown */}
+                        {activeMonth.incomeCategories && activeMonth.incomeCategories.length > 0 && (
                             <div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                                    <span style={{ fontSize: '11px', fontWeight: '700', color: theme.colors.success }}>
-                                        INCOMES ({formatCurrencyValue(selectedMonth.totalIncome)} {currency.symbol})
-                                    </span>
+                                <div style={{ fontSize: '11px', fontWeight: '700', color: theme.colors.success, marginBottom: '8px', textTransform: 'uppercase' }}>
+                                    Income ({formatAmount(activeMonth.totalIncome ?? 0)})
                                 </div>
-                                <div style={commonStyles.column8}>
-                                    {[...selectedMonth.incomeCategories].sort((a, b) => b.total - a.total).map((cat) => {
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                    {[...activeMonth.incomeCategories].sort((a, b) => b.total - a.total).map((cat) => {
                                         const meta = getCategoryMeta(categories, cat.category);
-                                        const pct = selectedMonth.totalIncome > 0 ? (cat.total / selectedMonth.totalIncome) * 100 : 0;
+                                        const totalInc = activeMonth.totalIncome ?? 0;
+                                        const pct = totalInc > 0 ? (cat.total / totalInc) * 100 : 0;
 
                                         return (
                                             <div key={cat.category} style={{ ...receiptStyles.subChip, flexDirection: 'column', alignItems: 'stretch', padding: '8px 10px', backgroundColor: theme.colors.bgElement }}>
@@ -480,7 +444,7 @@ export const MonthAnalyticsGrid: FC<MonthAnalyticsGridProps> = ({
                                                         <span style={{ fontWeight: '600', fontSize: '12px', color: theme.colors.textPrimary }}>{meta.name}</span>
                                                     </div>
                                                     <span style={{ fontWeight: '700', fontSize: '12px', color: theme.colors.success }}>
-                                                        +{formatCurrencyValue(cat.total)} {currency.symbol}
+                                                        +{formatAmount(cat.total)}
                                                     </span>
                                                 </div>
                                                 <div style={{ width: '100%', height: '3px', backgroundColor: theme.colors.bgCard, borderRadius: '2px', overflow: 'hidden', marginTop: '4px' }}>
