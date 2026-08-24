@@ -17,6 +17,7 @@ import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { LoadingData } from "../LoadingData.tsx";
 import { NoAvailableData } from "../NoAvailableData.tsx";
 import { getCategoryMeta } from "../../utils/categoryutils.ts";
+import { NOT_EVERYDAY_OUTCOME_CATEGORIES, SALARY_CATEGORY_CODE } from "../../constants/categories.ts";
 
 interface MonthAnalyticsGridProps {
     outcomeCategories?: Category[];
@@ -25,6 +26,8 @@ interface MonthAnalyticsGridProps {
     monthlyData: MonthlyAnalyticsResponse | null;
     isLoading?: boolean;
 }
+
+export type MonthAnalyticsView = 'total' | 'real' | 'everyday';
 
 export const MonthAnalyticsGrid: FC<MonthAnalyticsGridProps> = ({
                                                                     outcomeCategories = [],
@@ -35,14 +38,13 @@ export const MonthAnalyticsGrid: FC<MonthAnalyticsGridProps> = ({
                                                                 }) => {
     const [selectedIndex, setSelectedIndex] = useState<number>(0);
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-    const [showRealOnly, setShowRealOnly] = useState<boolean>(false);
+    const [viewMode, setViewMode] = useState<MonthAnalyticsView>('real');
 
     const sortedMonths = useMemo(() => {
         if (!monthlyData?.months) return [];
         return [...monthlyData.months].sort((a, b) => a.month.localeCompare(b.month));
     }, [monthlyData]);
 
-    // При загрузке данных устанавливаем выделение на последний (самый свежий) месяц
     useEffect(() => {
         if (sortedMonths.length > 0) {
             setSelectedIndex(sortedMonths.length - 1);
@@ -61,31 +63,72 @@ export const MonthAnalyticsGrid: FC<MonthAnalyticsGridProps> = ({
         return new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, 1);
     };
 
-    const getOutcome = useCallback(
-        (m: MonthlyAnalyticsItem) =>
-            showRealOnly ? (m.realOutcomeTotal ?? m.totalOutcome ?? 0) : (m.totalOutcome ?? 0),
-        [showRealOnly]
+    // Функция расчёта доходов и расходов для месяца согласно выбранному viewMode
+    const getCalculatedMonthValues = useCallback(
+        (m: MonthlyAnalyticsItem) => {
+            if (viewMode === 'total') {
+                return {
+                    income: m.totalIncome ?? 0,
+                    outcome: m.totalOutcome ?? 0,
+                };
+            }
+
+            if (viewMode === 'real') {
+                return {
+                    income: m.totalIncome ?? 0,
+                    outcome: m.realOutcomeTotal ?? m.totalOutcome ?? 0,
+                };
+            }
+
+            // Everyday: только зарплата и только повседневные расходы
+            const everydayIncome = (m.incomeCategories ?? [])
+                .filter((cat) => cat.category === SALARY_CATEGORY_CODE)
+                .reduce((sum, cat) => sum + cat.total, 0);
+
+            const everydayOutcome = (m.outcomeCategories ?? [])
+                .filter((cat) => !NOT_EVERYDAY_OUTCOME_CATEGORIES.has(cat.category))
+                .reduce((sum, cat) => sum + cat.total, 0);
+
+            return {
+                income: everydayIncome,
+                outcome: everydayOutcome,
+            };
+        },
+        [viewMode]
     );
 
     const totals = useMemo(() => {
         if (!monthlyData?.months) return { income: 0, outcome: 0, net: 0 };
-        const income = monthlyData.months.reduce((acc, m) => acc + (m.totalIncome ?? 0), 0);
-        const outcome = monthlyData.months.reduce((acc, m) => acc + getOutcome(m), 0);
-        return { income, outcome, net: income - outcome };
-    }, [monthlyData, getOutcome]);
+        return monthlyData.months.reduce(
+            (acc, m) => {
+                const { income, outcome } = getCalculatedMonthValues(m);
+                acc.income += income;
+                acc.outcome += outcome;
+                acc.net += income - outcome;
+                return acc;
+            },
+            { income: 0, outcome: 0, net: 0 }
+        );
+    }, [monthlyData, getCalculatedMonthValues]);
 
     const chartData = useMemo(() => {
         if (!sortedMonths.length) return [];
         return sortedMonths.map((m) => {
             const date = parseMonthString(m.month);
+            const { income, outcome } = getCalculatedMonthValues(m);
             return {
                 name: formatDateMMMMYYYY(date),
                 shortName: date.toLocaleDateString('en-US', { month: 'short' }),
-                income: m.totalIncome ?? 0,
-                outcome: getOutcome(m),
+                income,
+                outcome,
             };
         });
-    }, [sortedMonths, getOutcome]);
+    }, [sortedMonths, getCalculatedMonthValues]);
+
+    const activeMonthValues = useMemo(() => {
+        if (!activeMonth) return { income: 0, outcome: 0 };
+        return getCalculatedMonthValues(activeMonth);
+    }, [activeMonth, getCalculatedMonthValues]);
 
     if (isLoading) {
         return <LoadingData text="Loading monthly data..." />;
@@ -110,7 +153,7 @@ export const MonthAnalyticsGrid: FC<MonthAnalyticsGridProps> = ({
                         </div>
                     </div>
 
-                    {/* Filter Chip */}
+                    {/* Filter Chip (Total / Real / Everyday) */}
                     <div
                         style={{
                             display: 'flex',
@@ -120,40 +163,30 @@ export const MonthAnalyticsGrid: FC<MonthAnalyticsGridProps> = ({
                             border: `1px solid ${theme.colors.border}`,
                         }}
                     >
-                        <button
-                            type="button"
-                            onClick={() => setShowRealOnly(false)}
-                            style={{
-                                padding: '4px 12px',
-                                borderRadius: '16px',
-                                fontSize: '11px',
-                                fontWeight: '700',
-                                border: 'none',
-                                cursor: 'pointer',
-                                transition: 'all 0.15s ease',
-                                backgroundColor: !showRealOnly ? theme.colors.primary : 'transparent',
-                                color: !showRealOnly ? '#ffffff' : theme.colors.textSecondary,
-                            }}
-                        >
-                            Total
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setShowRealOnly(true)}
-                            style={{
-                                padding: '4px 12px',
-                                borderRadius: '16px',
-                                fontSize: '11px',
-                                fontWeight: '700',
-                                border: 'none',
-                                cursor: 'pointer',
-                                transition: 'all 0.15s ease',
-                                backgroundColor: showRealOnly ? theme.colors.primary : 'transparent',
-                                color: showRealOnly ? '#ffffff' : theme.colors.textSecondary,
-                            }}
-                        >
-                            Real
-                        </button>
+                        {(['total', 'real', 'everyday'] as const).map((mode) => {
+                            const isActive = viewMode === mode;
+                            return (
+                                <button
+                                    key={mode}
+                                    type="button"
+                                    onClick={() => setViewMode(mode)}
+                                    style={{
+                                        padding: '4px 10px',
+                                        borderRadius: '16px',
+                                        fontSize: '11px',
+                                        fontWeight: '700',
+                                        border: 'none',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.15s ease',
+                                        textTransform: 'capitalize',
+                                        backgroundColor: isActive ? theme.colors.primary : 'transparent',
+                                        color: isActive ? '#ffffff' : theme.colors.textSecondary,
+                                    }}
+                                >
+                                    {mode}
+                                </button>
+                            );
+                        })}
                     </div>
                 </div>
 
@@ -305,11 +338,11 @@ export const MonthAnalyticsGrid: FC<MonthAnalyticsGridProps> = ({
                     <div style={{ display: 'flex', justifyContent: 'space-around', margin: '16px 0', padding: '12px', backgroundColor: theme.colors.bgElement, borderRadius: '8px' }}>
                         <div>
                             <span style={{ fontSize: '11px', color: theme.colors.textSecondary, display: 'block' }}>Income</span>
-                            <strong style={{ fontSize: '13px', color: theme.colors.success }}>+{formatAmount(activeMonth.totalIncome ?? 0)}</strong>
+                            <strong style={{ fontSize: '13px', color: theme.colors.success }}>+{formatAmount(activeMonthValues.income)}</strong>
                         </div>
                         <div>
                             <span style={{ fontSize: '11px', color: theme.colors.textSecondary, display: 'block' }}>Expenses</span>
-                            <strong style={{ fontSize: '13px', color: theme.colors.danger }}>-{formatAmount(getOutcome(activeMonth))}</strong>
+                            <strong style={{ fontSize: '13px', color: theme.colors.danger }}>-{formatAmount(activeMonthValues.outcome)}</strong>
                         </div>
                     </div>
 
@@ -389,10 +422,14 @@ export const MonthAnalyticsGrid: FC<MonthAnalyticsGridProps> = ({
                         {/* Expenses Breakdown */}
                         {activeMonth.outcomeCategories && activeMonth.outcomeCategories.length > 0 && (() => {
                             const filteredCategories = activeMonth.outcomeCategories
-                                .filter((cat) => !showRealOnly || !cat.category.toLowerCase().includes('savings'))
+                                .filter((cat) => {
+                                    if (viewMode === 'real') return cat.category !== 'Savings';
+                                    if (viewMode === 'everyday') return !NOT_EVERYDAY_OUTCOME_CATEGORIES.has(cat.category);
+                                    return true;
+                                })
                                 .sort((a, b) => b.total - a.total);
 
-                            const modalTotalOutcome = getOutcome(activeMonth);
+                            const modalTotalOutcome = activeMonthValues.outcome;
 
                             return (
                                 <div style={{ marginBottom: '16px' }}>
@@ -427,37 +464,47 @@ export const MonthAnalyticsGrid: FC<MonthAnalyticsGridProps> = ({
                         })()}
 
                         {/* Income Breakdown */}
-                        {activeMonth.incomeCategories && activeMonth.incomeCategories.length > 0 && (
-                            <div>
-                                <div style={{ fontSize: '11px', fontWeight: '700', color: theme.colors.success, marginBottom: '8px', textTransform: 'uppercase' }}>
-                                    Income ({formatAmount(activeMonth.totalIncome ?? 0)})
-                                </div>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                                    {[...activeMonth.incomeCategories].sort((a, b) => b.total - a.total).map((cat) => {
-                                        const meta = getCategoryMeta(incomeCategories, cat.category);
-                                        const totalInc = activeMonth.totalIncome ?? 0;
-                                        const pct = totalInc > 0 ? (cat.total / totalInc) * 100 : 0;
+                        {activeMonth.incomeCategories && activeMonth.incomeCategories.length > 0 && (() => {
+                            const filteredIncomeCategories = activeMonth.incomeCategories
+                                .filter((cat) => {
+                                    if (viewMode === 'everyday') return cat.category === SALARY_CATEGORY_CODE;
+                                    return true;
+                                })
+                                .sort((a, b) => b.total - a.total);
 
-                                        return (
-                                            <div key={cat.category} style={{ ...receiptStyles.subChip, flexDirection: 'column', alignItems: 'stretch', padding: '8px 10px', backgroundColor: theme.colors.bgElement }}>
-                                                <div style={commonStyles.rowBetween}>
-                                                    <div style={commonStyles.rowStart}>
-                                                        <span style={{ fontSize: '14px' }}>{meta.icon}</span>
-                                                        <span style={{ fontWeight: '600', fontSize: '12px', color: theme.colors.textPrimary }}>{meta.name}</span>
+                            const modalTotalIncome = activeMonthValues.income;
+
+                            return (
+                                <div>
+                                    <div style={{ fontSize: '11px', fontWeight: '700', color: theme.colors.success, marginBottom: '8px', textTransform: 'uppercase' }}>
+                                        Income ({formatAmount(modalTotalIncome)})
+                                    </div>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                        {filteredIncomeCategories.map((cat) => {
+                                            const meta = getCategoryMeta(incomeCategories, cat.category);
+                                            const pct = modalTotalIncome > 0 ? (cat.total / modalTotalIncome) * 100 : 0;
+
+                                            return (
+                                                <div key={cat.category} style={{ ...receiptStyles.subChip, flexDirection: 'column', alignItems: 'stretch', padding: '8px 10px', backgroundColor: theme.colors.bgElement }}>
+                                                    <div style={commonStyles.rowBetween}>
+                                                        <div style={commonStyles.rowStart}>
+                                                            <span style={{ fontSize: '14px' }}>{meta.icon}</span>
+                                                            <span style={{ fontWeight: '600', fontSize: '12px', color: theme.colors.textPrimary }}>{meta.name}</span>
+                                                        </div>
+                                                        <span style={{ fontWeight: '700', fontSize: '12px', color: theme.colors.success }}>
+                                                            +{formatAmount(cat.total)}
+                                                        </span>
                                                     </div>
-                                                    <span style={{ fontWeight: '700', fontSize: '12px', color: theme.colors.success }}>
-                                                        +{formatAmount(cat.total)}
-                                                    </span>
+                                                    <div style={{ width: '100%', height: '3px', backgroundColor: theme.colors.bgCard, borderRadius: '2px', overflow: 'hidden', marginTop: '4px' }}>
+                                                        <div style={{ width: `${Math.min(pct, 100)}%`, height: '100%', backgroundColor: theme.colors.success }} />
+                                                    </div>
                                                 </div>
-                                                <div style={{ width: '100%', height: '3px', backgroundColor: theme.colors.bgCard, borderRadius: '2px', overflow: 'hidden', marginTop: '4px' }}>
-                                                    <div style={{ width: `${Math.min(pct, 100)}%`, height: '100%', backgroundColor: theme.colors.success }} />
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
+                                            );
+                                        })}
+                                    </div>
                                 </div>
-                            </div>
-                        )}
+                            );
+                        })()}
                     </div>
                 </div>
             )}
