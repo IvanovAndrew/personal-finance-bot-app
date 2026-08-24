@@ -207,3 +207,12 @@ input[type="number"] {
 .react-datepicker__navigation:hover .react-datepicker__navigation-icon::before {
   border-color: #20B2AA !important;
 }
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
