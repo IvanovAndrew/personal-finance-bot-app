@@ -19,14 +19,16 @@ import { NoAvailableData } from "../NoAvailableData.tsx";
 import { getCategoryMeta } from "../../utils/categoryutils.ts";
 
 interface MonthAnalyticsGridProps {
-    categories?: Category[];
+    outcomeCategories?: Category[];
+    incomeCategories?: Category[];
     currency: Currency;
     monthlyData: MonthlyAnalyticsResponse | null;
     isLoading?: boolean;
 }
 
 export const MonthAnalyticsGrid: FC<MonthAnalyticsGridProps> = ({
-                                                                    categories = [],
+                                                                    outcomeCategories = [],
+                                                                    incomeCategories = [],
                                                                     currency,
                                                                     monthlyData,
                                                                     isLoading,
@@ -399,7 +401,7 @@ export const MonthAnalyticsGrid: FC<MonthAnalyticsGridProps> = ({
                                     </div>
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                                         {filteredCategories.map((cat) => {
-                                            const meta = getCategoryMeta(categories, cat.category);
+                                            const meta = getCategoryMeta(outcomeCategories, cat.category);
                                             const pct = modalTotalOutcome > 0 ? (cat.total / modalTotalOutcome) * 100 : 0;
 
                                             return (
@@ -432,7 +434,7 @@ export const MonthAnalyticsGrid: FC<MonthAnalyticsGridProps> = ({
                                 </div>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                                     {[...activeMonth.incomeCategories].sort((a, b) => b.total - a.total).map((cat) => {
-                                        const meta = getCategoryMeta(categories, cat.category);
+                                        const meta = getCategoryMeta(incomeCategories, cat.category);
                                         const totalInc = activeMonth.totalIncome ?? 0;
                                         const pct = totalInc > 0 ? (cat.total / totalInc) * 100 : 0;
 

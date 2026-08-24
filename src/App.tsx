@@ -96,7 +96,7 @@ export const App: React.FC = () => {
       <div style={appStyles.content}>
         {activeTab === 'add' && <EnterTransactionTab incomeCategories={incomeCategories} outcomeCategories={outcomeCategories} currencies={currencies} />}
         {activeTab === 'receipt' && <ReceiptTab categories={outcomeCategories} currencies={currencies} />}
-        {activeTab === 'analytics' && <AnalyticsTab outcomeCategories={outcomeCategories} currencies={currencies} />}
+        {activeTab === 'analytics' && <AnalyticsTab outcomeCategories={outcomeCategories} incomeCategories={incomeCategories} currencies={currencies} />}
       </div>
 
       <NavigationBar activeTab={activeTab} onChangeTab={setActiveTab} />

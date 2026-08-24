@@ -25,6 +25,7 @@ import {MonthAnalyticsGrid} from "./MonthAnalyticsGrid.tsx";
 
 interface AnalyticsTabProps {
     outcomeCategories: Category[];
+    incomeCategories: Category[];
     currencies: Currency[];
 }
 
@@ -35,7 +36,7 @@ const STORAGE_KEYS = {
     MONTH: 'analytics_selected_month',
 };
 
-export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, currencies }) => {
+export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, incomeCategories, currencies }) => {
 
     // 1. Store only the string code in state
     const [currencyCode, setCurrencyCode] = useState<string>(() => {
@@ -382,7 +383,8 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, c
 
                     {viewMode === 'months' && (
                         <MonthAnalyticsGrid
-                            categories={outcomeCategories}
+                            outcomeCategories={outcomeCategories}
+                            incomeCategories={incomeCategories}
                             currency={selectedCurrency}
                             isLoading={isLoading}
                             monthlyData={monthlyData}
