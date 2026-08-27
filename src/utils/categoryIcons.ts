@@ -9,11 +9,11 @@ export interface CategoryVisual {
 
 export const CATEGORY_ICONS: Record<string, CategoryVisual> = {
     // Outcome
-    Food: { icon: '🛒', color: '#4CAF50' },             // Сочный зеленый
+    Food: { icon: '🍏', color: '#4CAF50' },             // Сочный зеленый
     Bank: { icon: '🏦', color: '#3F51B5' },             // Глубокий синий
     Beauty: { icon: '✨', color: '#E91E63' },           // Розовый
     ClothesAndShoes: { icon: '🛍️', color: '#9C27B0' },  // Фиолетовый
-    CurrencyExchange: { icon: '🔱', color: '#00BCD4' }, // Бирюзовый
+    CurrencyExchange: { icon: '💱', color: '#00BCD4' }, // Бирюзовый
     Delivery: { icon: '📦', color: '#FF9800' },         // Оранжевый
     Documents: { icon: '📄', color: '#607D8B' },        // Серый Slate
     Education: { icon: '🎓', color: '#2196F3' },        // Синий
@@ -29,6 +29,7 @@ export const CATEGORY_ICONS: Record<string, CategoryVisual> = {
     Psycologist: { icon: '🧠', color: '#FF80AB' },       // Нежно-розовый
     Restaurants: { icon: '🍔', color: '#FF5722' },      // Красно-оранжевый
     Transport: { icon: '🚖', color: '#FFB300' },        // Желто-оранжевый
+    Travel: { icon: '✈️', color: '#00BCD4' },        // Желто-оранжевый
     Others: { icon: '📦', color: '#9E9E9E' },           // Нейтральный серый
 
     // Income (Доходы)
@@ -41,8 +42,6 @@ export const CATEGORY_ICONS: Record<string, CategoryVisual> = {
     Improvisation: { icon: '🎭', color: '#AB47BC' },     // Сиреневый
     IncomeOthers: { icon: '💵', color: '#66BB6A' },      // Мягкий зеленый
 };
-
-
 
 export const enrichCategory = (category: RawCategory): Category => ({
     ...category,
