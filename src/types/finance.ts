@@ -11,9 +11,10 @@ export interface SubCategory extends RawSubCategory {
 export interface Category extends Omit<RawCategory, 'subcategories' | 'subCategories'> {
     code: string;
     name: string;
-    icon: string;
     subCategories: SubCategory[];
     isPopular: boolean;
+    icon: string;
+    color: string;
 }
 
 export interface Currency {

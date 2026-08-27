@@ -18,6 +18,7 @@ export const NOT_EVERYDAY_OUTCOME_CATEGORIES = new Set([
 ]);
 
 export const SALARY_CATEGORY_CODE = 'Salary';
+export const SAVINGS_CATEGORY_CODE = 'Savings';
 
 export type QuickOutcomeCategoryCode = typeof QUICK_CATEGORY_OUTCOME_CODES[number];
 export type QuickIncomeCategoryCode = typeof QUICK_CATEGORY_INCOME_CODES[number];

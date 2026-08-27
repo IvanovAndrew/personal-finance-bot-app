@@ -3,16 +3,20 @@
 export interface CategoryMeta {
     code: string;
     name: string;
-    icon: string;
     subCategories: SubCategory[];
+    
+    icon: string;
+    color: string;
 }
+
+export const defaultColor = '#9E9E9E';
 
 export const getCategoryMeta = (
     categories: Category[] = [],
     codeOrName: string | null | undefined
 ): CategoryMeta => {
     if (!codeOrName) {
-        return { code: '', name: '—', icon: '📁', subCategories: [] };
+        return { code: '', name: '—', subCategories: [], icon: '📁', color: defaultColor };
     }
 
     const normalized = codeOrName.trim().toLowerCase();
@@ -24,8 +28,9 @@ export const getCategoryMeta = (
         found || {
             code: codeOrName,
             name: codeOrName,
-            icon: '📁',
             subCategories: [],
+            icon: '📁',
+            color: defaultColor
         }
     );
 };
