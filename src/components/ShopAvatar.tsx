@@ -4,7 +4,7 @@ import { getShopMeta } from '../utils/shoplogos';
 
 interface ShopAvatarProps {
     shopName?: string | null;
-    size?: number; // По умолчанию 32px
+    size?: number;
 }
 
 export const ShopAvatar: React.FC<ShopAvatarProps> = ({ shopName, size = 32 }) => {
@@ -20,11 +20,11 @@ export const ShopAvatar: React.FC<ShopAvatarProps> = ({ shopName, size = 32 }) =
         justifyContent: 'center',
         flexShrink: 0,
         overflow: 'hidden',
-        padding: '3px', // Небольшой отступ, чтобы картинка не липла к краям
+        padding: '3px',
         boxSizing: 'border-box',
     };
 
-    // Контейнер для SVG-векторных иконок (Spotify, Microsoft и т.д.)
+    // SVG
     const svgContainerStyle: React.CSSProperties = {
         width: `${size}px`,
         height: `${size}px`,
@@ -37,7 +37,7 @@ export const ShopAvatar: React.FC<ShopAvatarProps> = ({ shopName, size = 32 }) =
         flexShrink: 0,
     };
 
-    // 1. Картинка магазина (PNG/SVG файл из папки assets)
+    // SVG from assets
     if (meta?.type === 'image') {
         return (
             <div style={imageContainerStyle}>
@@ -54,7 +54,7 @@ export const ShopAvatar: React.FC<ShopAvatarProps> = ({ shopName, size = 32 }) =
         );
     }
 
-    // 2. Векторный SVG из simple-icons
+    // SVG from simple icons
     if (meta?.type === 'svg-path') {
         return (
             <div style={svgContainerStyle}>
@@ -70,7 +70,7 @@ export const ShopAvatar: React.FC<ShopAvatarProps> = ({ shopName, size = 32 }) =
         );
     }
 
-    // 3. Fallback (если логотипа нет)
+    // No logo
     return (
         <div
             style={{

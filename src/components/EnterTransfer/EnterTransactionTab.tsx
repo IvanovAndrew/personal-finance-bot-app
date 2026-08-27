@@ -135,7 +135,7 @@ export const EnterTransactionTab: React.FC<EnterOutcomeTabProps> = ({
             setSelectedOutcomeCategory(null);
             setSelectedIncomeCategory(null);
 
-            setTimeout(() => setSaveStatus('idle'), 5 * ONE_SECOND);
+            setTimeout(() => setSaveStatus('idle'), 3 * ONE_SECOND);
         } catch (error) {
             console.error('Error:', error);
             window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred('error');
@@ -143,7 +143,7 @@ export const EnterTransactionTab: React.FC<EnterOutcomeTabProps> = ({
             setSaveStatus('error');
             setStatusMessage('Error, not saved');
 
-            setTimeout(() => setSaveStatus('idle'), 5 * ONE_SECOND);
+            setTimeout(() => setSaveStatus('idle'), 3 * ONE_SECOND);
         }
     };
 

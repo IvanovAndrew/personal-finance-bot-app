@@ -62,7 +62,7 @@ export const DonutChart: FC<DonutChartProps> = ({
                             style={{
                                 cursor: 'pointer',
                                 transition: 'all 0.2s ease',
-                                opacity: selectedCode && !isSelected ? 0.4 : 1 // Затемняем невыбранные
+                                opacity: selectedCode && !isSelected ? 0.4 : 1 
                             }}
                             onClick={() => {
                                 if (onSelectSegment) {
@@ -85,7 +85,7 @@ export const DonutChart: FC<DonutChartProps> = ({
                 borderRadius: '50%',
                 width: '135px',
                 height: '135px',
-                pointerEvents: 'none', // Клик проходит насквозь к секциям, если нужно
+                pointerEvents: 'none',
                 padding: '8px',
                 boxSizing: 'border-box'
             }}>
