@@ -41,9 +41,31 @@ export const ExpensesBreakdownGrid: FC<ExpensesBreakdownGridProps>  = ({activeMo
         return {
             code: meta.code,
             percent,
-            color: meta.color || '#9E9E9E' // Добавили фолбэк на случай, если цвета нет
+            color: meta.color || '#9E9E9E'
         };
     });
+
+    const handlePrev = () => {
+        if (filteredCategories.length === 0) return;
+        const currentIndex = filteredCategories.findIndex((c) => c.category === selectedCategory);
+
+        if (currentIndex === -1 || currentIndex === 0) {
+            setSelectedCategory(filteredCategories[filteredCategories.length - 1].category);
+        } else {
+            setSelectedCategory(filteredCategories[currentIndex - 1].category);
+        }
+    };
+
+    const handleNext = () => {
+        if (filteredCategories.length === 0) return;
+        const currentIndex = filteredCategories.findIndex((c) => c.category === selectedCategory);
+
+        if (currentIndex === -1 || currentIndex === filteredCategories.length - 1) {
+            setSelectedCategory(filteredCategories[0].category);
+        } else {
+            setSelectedCategory(filteredCategories[currentIndex + 1].category);
+        }
+    };
 
     const selectedCat = filteredCategories.find((cat) => cat.category === selectedCategory);
     const selectedMeta = selectedCat ? getCategoryMeta(outcomeCategories, selectedCat.category) : null;
@@ -55,6 +77,14 @@ export const ExpensesBreakdownGrid: FC<ExpensesBreakdownGridProps>  = ({activeMo
         : formatAmount(activeMonthValues.outcome);
 
     return <div style={{ display: 'flex', justifyContent: 'center', width: '100%', margin: '20px 0' }}>
-        <DonutChart segments={segments} totalText={donutAmount} titleText={donutTitle} selectedCode={selectedCat?.category} onSelectSegment={setSelectedCategory} />
+        <DonutChart 
+            segments={segments} 
+            totalText={donutAmount} 
+            titleText={donutTitle} 
+            selectedCode={selectedCat?.category} 
+            onSelectSegment={setSelectedCategory}
+            onPrevSegment={handlePrev}
+            onNextSegment={handleNext}
+        />
     </div>;
 }

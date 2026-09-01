@@ -1,4 +1,4 @@
-﻿import type { FC } from 'react';
+﻿import type { FC, MouseEvent } from 'react';
 import { theme } from '../App.styles.ts';
 
 export interface PieSegment {
@@ -13,10 +13,12 @@ interface DonutChartProps {
     titleText?: string;
     selectedCode?: string | null;
     onSelectSegment?: (id: string | null) => void;
+    onPrevSegment?: () => void;
+    onNextSegment?: () => void;
 }
 
 const RADIUS = 36;
-const CIRCUMFERENCE = 2 * Math.PI * RADIUS; // ~251.32
+const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
 export const DonutChart: FC<DonutChartProps> = ({
                                                     segments,
@@ -24,8 +26,23 @@ export const DonutChart: FC<DonutChartProps> = ({
                                                     titleText = 'Total',
                                                     selectedCode,
                                                     onSelectSegment,
+                                                    onPrevSegment,
+                                                    onNextSegment
                                                 }) => {
     let accumulatedPercent = 0;
+
+    const navButtonStyle: React.CSSProperties = {
+        background: 'none',
+        border: 'none',
+        color: theme.colors.textSecondary || '#8E8E93',
+        fontSize: '18px',
+        fontWeight: 'bold',
+        cursor: 'pointer',
+        padding: '0 4px',
+        lineHeight: 1,
+        userSelect: 'none',
+        WebkitTapHighlightColor: 'transparent',
+    };
 
     return (
         <div style={{
@@ -35,7 +52,7 @@ export const DonutChart: FC<DonutChartProps> = ({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            margin: '0 auto' // Центрируем контейнер
+            margin: '0 auto'
         }}>
             <svg
                 viewBox="0 0 100 100"
@@ -56,13 +73,13 @@ export const DonutChart: FC<DonutChartProps> = ({
                             r={RADIUS}
                             fill="none"
                             stroke={seg.color}
-                            strokeWidth={isSelected ? 24 : 18} // Изменяем толщину выбранной секции
+                            strokeWidth={isSelected ? 24 : 18}
                             strokeDasharray={strokeDasharray}
                             strokeDashoffset={strokeDashoffset}
                             style={{
                                 cursor: 'pointer',
                                 transition: 'all 0.2s ease',
-                                opacity: selectedCode && !isSelected ? 0.4 : 1 
+                                opacity: selectedCode && !isSelected ? 0.4 : 1
                             }}
                             onClick={() => {
                                 if (onSelectSegment) {
@@ -74,38 +91,75 @@ export const DonutChart: FC<DonutChartProps> = ({
                 })}
             </svg>
 
-            {/* Внутренний круг с текстом по центру */}
+            {/* Внутренний круг со строчной (row) версткой */}
             <div style={{
                 position: 'absolute',
                 display: 'flex',
-                flexDirection: 'column',
+                flexDirection: 'row',
                 alignItems: 'center',
-                justifyContent: 'center',
+                justifyContent: 'space-between',
                 backgroundColor: theme.colors.bgCard,
                 borderRadius: '50%',
                 width: '135px',
                 height: '135px',
-                pointerEvents: 'none',
-                padding: '8px',
+                padding: '0 8px',
                 boxSizing: 'border-box'
             }}>
-                <span style={{
-                    fontSize: '11px',
-                    color: theme.colors.textSecondary || '#8E8E93',
-                    marginBottom: '2px',
-                    textAlign: 'center'
+                <button
+                    type="button"
+                    style={{ ...navButtonStyle, visibility: segments.length > 1 ? 'visible' : 'hidden' }}
+                    onClick={(e: MouseEvent<HTMLButtonElement>) => {
+                        e.stopPropagation();
+                        onPrevSegment?.();
+                    }}
+                >
+                    ‹
+                </button>
+
+                <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flex: 1,
+                    minWidth: 0,
+                    pointerEvents: 'none'
                 }}>
-                    {titleText}
-                </span>
-                <span style={{
-                    fontSize: '14px',
-                    fontWeight: '700',
-                    color: theme.colors.textPrimary,
-                    textAlign: 'center',
-                    lineHeight: '1.2'
-                }}>
-                    {totalText}
-                </span>
+                    <span style={{
+                        fontSize: '11px',
+                        color: theme.colors.textSecondary || '#8E8E93',
+                        marginBottom: '2px',
+                        textAlign: 'center',
+                        width: '100%',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis'
+                    }}>
+                        {titleText}
+                    </span>
+                    <span style={{
+                        fontSize: '13px',
+                        fontWeight: '700',
+                        color: theme.colors.textPrimary,
+                        textAlign: 'center',
+                        lineHeight: '1.2',
+                        width: '100%',
+                        wordBreak: 'break-word'
+                    }}>
+                        {totalText}
+                    </span>
+                </div>
+
+                <button
+                    type="button"
+                    style={{ ...navButtonStyle, visibility: segments.length > 1 ? 'visible' : 'hidden' }}
+                    onClick={(e: MouseEvent<HTMLButtonElement>) => {
+                        e.stopPropagation();
+                        onNextSegment?.();
+                    }}
+                >
+                    ›
+                </button>
             </div>
         </div>
     );
