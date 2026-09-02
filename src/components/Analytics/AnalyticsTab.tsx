@@ -368,7 +368,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, i
             ) : (
                 <div style={{ opacity: isLoading ? 0.6 : 1, transition: 'opacity 0.2s ease' }}>
                     {viewMode === 'summary' && (
-                        <SummaryAnalyticsGrid currency={selectedCurrency} summary={summary} isLoading={isLoading} />
+                        <SummaryAnalyticsGrid currency={selectedCurrency} summary={summary} categories={outcomeCategories} isLoading={isLoading} />
                     )}
 
                     {viewMode === 'days' && (

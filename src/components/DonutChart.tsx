@@ -92,7 +92,7 @@ export const DonutChart: FC<DonutChartProps> = ({
                 })}
             </svg>
 
-            {/* Внутренний круг со строчной (row) версткой */}
+            {/* Inner circle */}
             <div style={{
                 position: 'absolute',
                 display: 'flex',

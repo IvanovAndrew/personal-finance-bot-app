@@ -79,11 +79,20 @@ export interface DailySpendingResponse {
     categories: { name: string; amount: number; icon: string }[];
 }
 
+export interface FutureExpense {
+    name: string;
+    category: string;
+    subCategory?: string | null;
+    amount: number;
+    currency: string;
+}
+
 export interface SummaryResponse {
     totalIncome: number;
     totalOutcome: number;
     totalBalance: number;
-    futureExpenses: number;
+    futureExpenses: FutureExpense[];
+    futureExpensesTotal: number;
     realFreeMoney: number;
     startPeriod: string;
     payday: string;
