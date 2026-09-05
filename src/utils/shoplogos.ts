@@ -24,6 +24,7 @@ import ozonLogo from '../assets/shops/ozon.svg';
 import perekrestokLogo from '../assets/shops/perekrestok.svg';
 import pyaterochkaLogo from '../assets/shops/pyaterochka.svg';
 import royalcaninLogo from '../assets/shops/royalcanin.svg';
+import rtcleaningLogo from '../assets/shops/rtcleaning.svg';
 import semishagoffLogo from '../assets/shops/semishagoff.svg';
 import sixtysecondsLogo from '../assets/shops/sixtyseconds.svg';
 import sorrisoLogo from '../assets/shops/sorriso.svg';
@@ -58,6 +59,7 @@ const SHOPS_REGISTRY: Record<string, ShopMeta> = {
     ozon: { type: 'image', src: ozonLogo },
     озон: { type: 'image', src: ozonLogo },
     royalcanin: { type: 'image', src: royalcaninLogo },
+    rtcleaning: { type: 'image', src: rtcleaningLogo },
     sorriso: { type: 'image', src: sorrisoLogo },
     telcell: { type: 'image', src: telcellLogo },
     ucom: { type: 'image', src: ucomLogo },
