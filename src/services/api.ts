@@ -83,6 +83,7 @@ export interface FutureExpense {
     name: string;
     category: string;
     subCategory?: string | null;
+    shop?: string | null;
     amount: number;
     currency: string;
 }

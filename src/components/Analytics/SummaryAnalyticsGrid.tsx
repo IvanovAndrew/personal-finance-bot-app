@@ -6,6 +6,8 @@ import { LoadingData } from "../LoadingData.tsx";
 import { NoAvailableData } from "../NoAvailableData.tsx";
 import type {Category, Currency} from "../../types/finance.ts";
 import {getCategoryMeta, getSubCategoryName} from "../../utils/categoryutils.ts";
+import {getShopMeta} from "../../utils/shoplogos.ts";
+import {ShopAvatar} from "../ShopAvatar.tsx";
 
 interface SummaryAnalyticsGridProps {
     currency: Currency;
@@ -227,6 +229,8 @@ export const SummaryAnalyticsGrid: FC<SummaryAnalyticsGridProps> = ({
                                 const subName = exp.subCategory
                                     ? getSubCategoryName(categories, exp.category || '', exp.subCategory)
                                     : null;
+                                const shopMeta = getShopMeta(exp.shop);
+                                const hasShopLogo = Boolean(shopMeta);
 
                                 return (
                                     <div
@@ -239,6 +243,10 @@ export const SummaryAnalyticsGrid: FC<SummaryAnalyticsGridProps> = ({
                                             borderBottom: idx < futureExpenses.length - 1 ? `1px solid ${theme.colors.border}40` : 'none'
                                         }}
                                     >
+                                        {hasShopLogo ? (
+                                                <ShopAvatar shopName={exp.shop} size={32} />
+                                            ) : (<div/>)}
+                                        
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                     <span style={{ fontSize: '14px', fontWeight: '600', color: theme.colors.textPrimary }}>
                         {exp.name}
