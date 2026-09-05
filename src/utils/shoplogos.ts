@@ -15,6 +15,7 @@
 
 // SVG for local brands (not in simple-icons)
 import ardshinkbankLogo from '../assets/shops/ardshinbank.svg';
+import chgkLogo from '../assets/shops/chgk.svg';
 import coffeehouseLogo from '../assets/shops/coffeehouse.svg';
 import dodoLogo from '../assets/shops/dodo.svg';
 import fixpriceLogo from '../assets/shops/fixprice.svg';
@@ -91,6 +92,7 @@ const RAW_SHOPS_REGISTRY: Record<string, ShopMeta> = {
     пятёрочка: { type: 'image', src: pyaterochkaLogo },
     семишагофф: { type: 'image', src: semishagoffLogo },
     тбанк: { type: 'image', src: tbankLogo },
+    чгк: { type: 'image', src: chgkLogo },
 
     // global brands from simple-icons
     aliexpress: { type: 'svg-path', src: siAliexpress.path, hexColor: `#${siAliexpress.hex}` },
