@@ -19,6 +19,7 @@ import fixpriceLogo from '../assets/shops/fixprice.svg';
 import hafhafLogo from '../assets/shops/hafhaf.svg';
 import lentaLogo from '../assets/shops/lenta.svg';
 import onexLogo from '../assets/shops/onex.svg';
+import ovioLogo from '../assets/shops/ovio.svg';
 import ozonLogo from '../assets/shops/ozon.svg';
 import perekrestokLogo from '../assets/shops/perekrestok.svg';
 import pyaterochkaLogo from '../assets/shops/pyaterochka.svg';
@@ -27,6 +28,7 @@ import semishagoffLogo from '../assets/shops/semishagoff.svg';
 import sixtysecondsLogo from '../assets/shops/sixtyseconds.svg';
 import sorrisoLogo from '../assets/shops/sorriso.svg';
 import telcellLogo from '../assets/shops/telcell.svg';
+import ucomLogo from '../assets/shops/ucomLogo.svg';
 import wildberriesLogo from '../assets/shops/wildberries.svg';
 import yandexeatsLogo from '../assets/shops/yandexeats.svg';
 import yandexgoLogo from '../assets/shops/yandexgo.svg';
@@ -52,11 +54,13 @@ const SHOPS_REGISTRY: Record<string, ShopMeta> = {
     fixprice: { type: 'image', src: fixpriceLogo },
     hafhaf: { type: 'image', src: hafhafLogo },
     onex: { type: 'image', src: onexLogo },
+    ovio: { type: 'image', src: ovioLogo },
     ozon: { type: 'image', src: ozonLogo },
     озон: { type: 'image', src: ozonLogo },
     royalcanin: { type: 'image', src: royalcaninLogo },
     sorriso: { type: 'image', src: sorrisoLogo },
     telcell: { type: 'image', src: telcellLogo },
+    ucomLogo: { type: 'image', src: ucomLogo },
     wildberries: { type: 'image', src: wildberriesLogo },
     yandexeats: { type: 'image', src: yandexeatsLogo },
     yandexgo: { type: 'image', src: yandexgoLogo },
