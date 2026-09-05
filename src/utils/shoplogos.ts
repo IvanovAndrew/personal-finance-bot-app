@@ -28,8 +28,10 @@ import rtcleaningLogo from '../assets/shops/rtcleaning.svg';
 import semishagoffLogo from '../assets/shops/semishagoff.svg';
 import sixtysecondsLogo from '../assets/shops/sixtyseconds.svg';
 import sorrisoLogo from '../assets/shops/sorriso.svg';
+import tbankLogo from '../assets/shops/tbank.svg';
 import telcellLogo from '../assets/shops/telcell.svg';
 import ucomLogo from '../assets/shops/ucom.svg';
+import vkusnoitochkaLogo from '../assets/shops/vkusnoitochka.svg';
 import wildberriesLogo from '../assets/shops/wildberries.svg';
 import yandexeatsLogo from '../assets/shops/yandexeats.svg';
 import yandexgoLogo from '../assets/shops/yandexgo.svg';
@@ -45,10 +47,13 @@ export interface ShopMeta {
 }
 
 export const normalizeShopName = (name: string): string => {
-    return name.toLowerCase().replace(/[^a-zа-я0-9]/g, '');
+    return name
+        .toLowerCase()
+        .replace(/ё/g, 'е')
+        .replace(/[^a-zа-я0-9]/g, '');
 };
 
-const SHOPS_REGISTRY: Record<string, ShopMeta> = {
+const RAW_SHOPS_REGISTRY: Record<string, ShopMeta> = {
     
     "60секунд": { type: 'image', src: sixtysecondsLogo },
     dodo: { type: 'image', src: dodoLogo },
@@ -61,6 +66,7 @@ const SHOPS_REGISTRY: Record<string, ShopMeta> = {
     royalcanin: { type: 'image', src: royalcaninLogo },
     rtcleaning: { type: 'image', src: rtcleaningLogo },
     sorriso: { type: 'image', src: sorrisoLogo },
+    tbank: { type: 'image', src: tbankLogo },
     telcell: { type: 'image', src: telcellLogo },
     ucom: { type: 'image', src: ucomLogo },
     wildberries: { type: 'image', src: wildberriesLogo },
@@ -71,10 +77,12 @@ const SHOPS_REGISTRY: Record<string, ShopMeta> = {
     zoovet: { type: 'image', src: zoovetLogo },
     zoovetam: { type: 'image', src: zoovetLogo },
     zovq: { type: 'image', src: zovqLogo },
+    вкусноиточка: { type: 'image', src: vkusnoitochkaLogo },
     лента: { type: 'image', src: lentaLogo },
     перекрёсток: { type: 'image', src: perekrestokLogo },
     пятёрочка: { type: 'image', src: pyaterochkaLogo },
     семишагофф: { type: 'image', src: semishagoffLogo },
+    тбанк: { type: 'image', src: tbankLogo },
 
     // global brands from simple-icons
     aliexpress: { type: 'svg-path', src: siAliexpress.path, hexColor: `#${siAliexpress.hex}` },
@@ -90,6 +98,10 @@ const SHOPS_REGISTRY: Record<string, ShopMeta> = {
     telegram: { type: 'svg-path', src: siTelegram.path, hexColor: `#${siTelegram.hex}` },
     uniqlo: { type: 'svg-path', src: siUniqlo.path, hexColor: `#${siUniqlo.hex}` },
 };
+
+const SHOPS_REGISTRY: Record<string, ShopMeta> = Object.fromEntries(
+    Object.entries(RAW_SHOPS_REGISTRY).map(([key, value]) => [normalizeShopName(key), value])
+);
 
 export const getShopMeta = (shopName?: string | null): ShopMeta | null => {
     if (!shopName) return null;
