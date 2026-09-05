@@ -308,7 +308,7 @@ export const receiptStyles: { [key: string]: React.CSSProperties } = {
 
   mainTabs: {
     display: 'grid',
-    gridTemplateColumns: '1fr 1fr 1fr',
+    gridTemplateColumns: '1fr 1fr',
     gap: '6px',
     backgroundColor: theme.colors.bgCard,
     padding: '4px',

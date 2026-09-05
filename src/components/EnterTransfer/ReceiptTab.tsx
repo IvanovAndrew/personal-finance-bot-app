@@ -1,5 +1,5 @@
 ﻿import React, {useState} from 'react';
-import {Building2, Code, Link, Plus, QrCode, Trash2} from 'lucide-react';
+import {Building2, Link, Plus, QrCode, Trash2} from 'lucide-react';
 import {appStyles, receiptStyles, commonStyles} from '../../App.styles';
 import {YerevanCityGrid} from "./YerevanCityGrid.tsx";
 import {JsonGrid} from "./JsonGrid.tsx";
@@ -261,17 +261,6 @@ export const ReceiptTab: React.FC<ReceiptTabProps> = ({ categories, currencies }
                         >
                             <Link size={13} />
                             <span>QR Link</span>
-                        </button>
-
-                        <button
-                            onClick={() => setRuSubMode('json')}
-                            style={{
-                                ...receiptStyles.subChip,
-                                ...(ruSubMode === 'json' ? receiptStyles.subChipActive : {})
-                            }}
-                        >
-                            <Code size={13} />
-                            <span>JSON</span>
                         </button>
                     </div>
 

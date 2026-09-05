@@ -23,6 +23,7 @@ import {
 } from "../../services/api.ts";
 import { SummaryAnalyticsGrid } from "./SummaryAnalyticsGrid.tsx";
 import { MonthAnalyticsGrid } from "./MonthAnalyticsGrid.tsx";
+import {EARLIEST_DATA_DATE} from "../../constants/data.ts";
 
 interface AnalyticsTabProps {
     outcomeCategories: Category[];
@@ -75,6 +76,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, i
     // Infinitive scroll
     const [dailyGroups, setDailyGroups] = useState<DailyGroup[]>([]);
     const [isFetchingMoreDays, setIsFetchingMoreDays] = useState<boolean>(false);
+    const [hasMoreDays, setHasMoreDays] = useState<boolean>(true);
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
@@ -93,6 +95,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, i
         setCurrencyCode(currencyName);
         localStorage.setItem(STORAGE_KEYS.CURRENCY, currencyName);
         setDailyGroups([]);
+        setHasMoreDays(true);
     };
 
     const handleMonthChange = (newMonth: Date) => {
@@ -103,6 +106,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, i
     const resetDailyToToday = () => {
         setDailyGroups([]);
         setDailyAnchorDate(new Date());
+        setHasMoreDays(true);
     };
 
     // ----------------------------------------------------
@@ -198,11 +202,21 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, i
         }
 
         const lastGroup = dailyGroups[dailyGroups.length - 1];
+
+        if (lastGroup.date <= EARLIEST_DATA_DATE) {
+            setHasMoreDays(false);
+            return;
+        }
+        
         const nextDate = new Date(lastGroup.date);
-        nextDate.setDate(nextDate.getDate() - 1); // Шаг назад на 1 день
+        nextDate.setDate(nextDate.getDate() - 1);
 
         const dayKey = nextDate.toISOString().slice(0, 10);
         const cacheKey = `${currencyCode}_${dayKey}`;
+
+        // фиксируем параметры запроса, чтобы проверить актуальность после await
+        const requestCurrency = currencyCode;
+        const requestAnchorKey = dailyAnchorDate.toISOString().slice(0, 10);
 
         if (dailyCache.current[cacheKey]) {
             setDailyGroups(prev => [...prev, { date: nextDate, items: dailyCache.current[cacheKey] }]);
@@ -214,17 +228,24 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, i
         try {
             const data = await financeApi.getDailyAnalytics({
                 date: nextDate,
-                currency: currencyCode,
+                currency: requestCurrency,
             });
 
-            dailyCache.current[cacheKey] = data;
-            setDailyGroups(prev => [...prev, { date: nextDate, items: data }]);
+            // если за время запроса сменились валюта или якорная дата — результат больше не актуален
+            const stillRelevant =
+                requestCurrency === currencyCode &&
+                requestAnchorKey === dailyAnchorDate.toISOString().slice(0, 10);
+
+            if (stillRelevant) {
+                dailyCache.current[cacheKey] = data;
+                setDailyGroups(prev => [...prev, { date: nextDate, items: data }]);
+            }
         } catch (err) {
             console.error('Failed to fetch next day analytics:', err);
         } finally {
             setIsFetchingMoreDays(false);
         }
-    }, [dailyGroups, isFetchingMoreDays, isLoading, viewMode, currencyCode]);
+    }, [dailyGroups, isFetchingMoreDays, isLoading, viewMode, currencyCode, dailyAnchorDate]);
 
     useEffect(() => {
         fetchAnalytics();
@@ -238,7 +259,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, i
 
     // Observer для подгрузки при прокрутке
     useEffect(() => {
-        if (viewMode !== 'days') return;
+        if (viewMode !== 'days' || !hasMoreDays) return;
 
         const observer = new IntersectionObserver(
             (entries) => {
@@ -313,8 +334,9 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, i
                             selectedDate={viewMode === 'days' ? dailyAnchorDate : selectedMonth}
                             onChange={(newDate) => {
                                 if (viewMode === 'days') {
-                                    setDailyGroups([]); // Очищаем старую ленту
-                                    setDailyAnchorDate(newDate); // Ставим новый «якорь»
+                                    setDailyGroups([]);
+                                    setHasMoreDays(true);
+                                    setDailyAnchorDate(newDate);
                                 } else {
                                     handleMonthChange(newDate);
                                 }
@@ -476,6 +498,9 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, i
                                         color={theme.colors.primary}
                                         style={{ animation: 'spin 1s linear infinite' }}
                                     />
+                                )}
+                                {!hasMoreDays && !isFetchingMoreDays && (
+                                    <span style={{ fontSize: '12px', color: theme.colors.textSecondary }}>No earlier data</span>
                                 )}
                             </div>
                         </div>

@@ -8,6 +8,7 @@ import type {Category, Currency} from "../../types/finance.ts";
 import {getCategoryMeta, getSubCategoryName} from "../../utils/categoryutils.ts";
 import {getShopMeta} from "../../utils/shoplogos.ts";
 import {ShopAvatar} from "../ShopAvatar.tsx";
+import {formatCurrencyValue} from "../../utils/numberformatter.ts";
 
 interface SummaryAnalyticsGridProps {
     currency: Currency;
@@ -25,7 +26,7 @@ export const SummaryAnalyticsGrid: FC<SummaryAnalyticsGridProps> = ({
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     const formatAmount = useCallback(
-        (val: number) => `${val.toLocaleString('ru-RU')} ${currency.symbol}`,
+        (val: number) => `${formatCurrencyValue(val)} ${currency.symbol}`,
         [currency.symbol]
     );
     

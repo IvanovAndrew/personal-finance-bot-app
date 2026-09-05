@@ -1,0 +1,1 @@
+﻿export const EARLIEST_DATA_DATE = new Date(2022, 0, 1);

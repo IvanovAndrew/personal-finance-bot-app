@@ -20,7 +20,12 @@ export const SubCategoryAnalyticsGrid: FC<SubCategoryAnalyticsGridProps> = ({
                                                                                 monthlyData,
                                                                                 isLoading
                                                                             }) => {
-    const [selectedCategory, setSelectedCategory] = useState<Category>(categories[0]);
+    const [selectedCategoryCode, setSelectedCategoryCode] = useState<string | null>(null);
+
+    const selectedCategory = useMemo(
+        () => categories.find(c => c.code === selectedCategoryCode) || categories[0] || null,
+        [categories, selectedCategoryCode]
+    );
     const [selectedSubCatId, setSelectedSubCatId] = useState<string | null>(null);
     const [subCatViewType, setSubCatViewType] = useState<'total' | 'monthly'>('total');
 
@@ -91,6 +96,14 @@ export const SubCategoryAnalyticsGrid: FC<SubCategoryAnalyticsGridProps> = ({
         );
     }
 
+    if (categories.length === 0) {
+        return (
+            <div style={{ ...commonStyles.card, textAlign: 'center', padding: '20px', color: theme.colors.textSecondary }}>
+                No categories with subcategories available
+            </div>
+        );
+    }
+
     const activeSubCatCode = selectedSubCatId || sortedSubCategories[0]?.code || null;
 
     const handleSelectSubCategory = (subCode: string) => {
@@ -105,14 +118,11 @@ export const SubCategoryAnalyticsGrid: FC<SubCategoryAnalyticsGridProps> = ({
             <CategorySwitcherModal
                 categories={categories}
                 availableCategories={categories}
-                selectedCategoryCode={selectedCategory.code}
+                selectedCategoryCode={selectedCategory?.code}
                 enableSubCategorySelection={true}
                 onSelectCategory={(code) => {
-                    const category = categories.find((c) => c.code === code);
-                    if (category) {
-                        setSelectedCategory(category);
-                        setSelectedSubCatId(null);
-                    }
+                    setSelectedCategoryCode(code);
+                    setSelectedSubCatId(null);
                 }}
             />
 
