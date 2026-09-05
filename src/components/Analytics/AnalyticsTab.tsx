@@ -1,4 +1,4 @@
-﻿import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+﻿import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
     Calendar,
     PieChart,
@@ -7,6 +7,7 @@ import {
     Loader2,
     AlertCircle,
     RefreshCw,
+    RotateCcw
 } from 'lucide-react';
 import { commonStyles, appStyles, receiptStyles, theme } from '../../App.styles';
 import type { Category, Currency } from '../../types/finance';
@@ -21,12 +22,17 @@ import {
     type SaveTransactionPayload
 } from "../../services/api.ts";
 import { SummaryAnalyticsGrid } from "./SummaryAnalyticsGrid.tsx";
-import {MonthAnalyticsGrid} from "./MonthAnalyticsGrid.tsx";
+import { MonthAnalyticsGrid } from "./MonthAnalyticsGrid.tsx";
 
 interface AnalyticsTabProps {
     outcomeCategories: Category[];
     incomeCategories: Category[];
     currencies: Currency[];
+}
+
+export interface DailyGroup {
+    date: Date;
+    items: SaveTransactionPayload[];
 }
 
 type ViewMode = 'summary' | 'days' | 'months' | 'categories' | 'subcategories';
@@ -38,12 +44,10 @@ const STORAGE_KEYS = {
 
 export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, incomeCategories, currencies }) => {
 
-    // 1. Store only the string code in state
     const [currencyCode, setCurrencyCode] = useState<string>(() => {
         return localStorage.getItem(STORAGE_KEYS.CURRENCY) || currencies[0]?.name || 'AMD';
     });
 
-    // 2. Derive the active Currency object synchronously on render
     const selectedCurrency = useMemo(() => {
         const found = currencies.find(c => c.name === currencyCode);
         return found || currencies[0] || {
@@ -60,25 +64,35 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, i
     });
 
     const [viewMode, setViewMode] = useState<ViewMode>('summary');
-    const [startDate, setStartDate] = useState<Date>(new Date());
 
+    // ----------------------------------------------------
+    // Data states
+    // ----------------------------------------------------
     const [summary, setSummary] = useState<SummaryResponse | null>(null);
     const [monthlyData, setMonthlyData] = useState<MonthlyAnalyticsResponse | null>(null);
-    const [dailyData, setDailyData] = useState<SaveTransactionPayload[] | null>(null);
+    const [dailyAnchorDate, setDailyAnchorDate] = useState<Date>(new Date());
+
+    // Infinitive scroll
+    const [dailyGroups, setDailyGroups] = useState<DailyGroup[]>([]);
+    const [isFetchingMoreDays, setIsFetchingMoreDays] = useState<boolean>(false);
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
 
+    // Cache
     const summaryCache = useRef<Record<string, SummaryResponse>>({});
     const monthlyCache = useRef<Record<string, MonthlyAnalyticsResponse>>({});
     const dailyCache = useRef<Record<string, SaveTransactionPayload[]>>({});
-    
-    const abortControllerRef = useRef<AbortController | null>(null);
 
-    // Persist filter changes to localStorage
+    const abortControllerRef = useRef<AbortController | null>(null);
+    const loadMoreRef = useRef<HTMLDivElement | null>(null);
+
+    const isToday = (day: Date) => day.toDateString() === new Date().toDateString();
+
     const handleCurrencyChange = (currencyName: string) => {
         setCurrencyCode(currencyName);
         localStorage.setItem(STORAGE_KEYS.CURRENCY, currencyName);
+        setDailyGroups([]);
     };
 
     const handleMonthChange = (newMonth: Date) => {
@@ -86,29 +100,26 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, i
         localStorage.setItem(STORAGE_KEYS.MONTH, newMonth.toISOString());
     };
 
+    const resetDailyToToday = () => {
+        setDailyGroups([]);
+        setDailyAnchorDate(new Date());
+    };
+
+    // ----------------------------------------------------
+    // Загрузка стартовых данных для режимов
+    // ----------------------------------------------------
     const fetchAnalytics = useCallback(async (forceRefresh = false) => {
-        const isSummaryMode = viewMode === 'summary';
-        const isDaysMode = viewMode === 'days';
-
         const monthKey = `${selectedMonth.getFullYear()}-${selectedMonth.getMonth() + 1}`;
-        const dayKey = startDate.toISOString().slice(0, 10);
-        const cacheKey = isDaysMode ? `${currencyCode}_${dayKey}` : `${currencyCode}_${monthKey}`;
+        const cacheKey = `${currencyCode}_${monthKey}`;
 
-        // 1. Проверяем кэш до создания нового HTTP-запроса
         if (!forceRefresh) {
-            if (isSummaryMode && summaryCache.current[cacheKey]) {
+            if (viewMode === 'summary' && summaryCache.current[cacheKey]) {
                 setSummary(summaryCache.current[cacheKey]);
                 setError(null);
                 setIsLoading(false);
                 return;
             }
-            if (isDaysMode && dailyCache.current[cacheKey]) {
-                setDailyData(dailyCache.current[cacheKey]);
-                setError(null);
-                setIsLoading(false);
-                return;
-            }
-            if (!isSummaryMode && !isDaysMode && monthlyCache.current[cacheKey]) {
+            if (viewMode !== 'summary' && viewMode !== 'days' && monthlyCache.current[cacheKey]) {
                 setMonthlyData(monthlyCache.current[cacheKey]);
                 setError(null);
                 setIsLoading(false);
@@ -116,7 +127,6 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, i
             }
         }
 
-        // 2. Отменяем ПРЕДЫДУЩИЙ незавершенный сетевой запрос
         if (abortControllerRef.current) {
             abortControllerRef.current.abort();
         }
@@ -125,10 +135,10 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, i
         abortControllerRef.current = controller;
 
         setIsLoading(true);
-        setError(null); // Важно: всегда сбрасываем ошибку при старте запроса — для ЛЮБОГО viewMode
+        setError(null);
 
         try {
-            if (isSummaryMode) {
+            if (viewMode === 'summary') {
                 const data = await financeApi.getSummary({
                     monthDate: selectedMonth,
                     currency: currencyCode,
@@ -138,15 +148,19 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, i
                     summaryCache.current[cacheKey] = data;
                     setSummary(data);
                 }
-            } else if (isDaysMode) {
+            } else if (viewMode === 'days') {
+                // В режиме 'days' инициализируем ленту с сегодняшнего дня
+                const dayKey = dailyAnchorDate.toISOString().slice(0, 10);
+                const dailyKey = `${currencyCode}_${dayKey}`;
+
                 const data = await financeApi.getDailyAnalytics({
-                    date: startDate,
+                    date: dailyAnchorDate,
                     currency: currencyCode,
                 }, controller.signal);
 
                 if (!controller.signal.aborted) {
-                    dailyCache.current[cacheKey] = data;
-                    setDailyData(data);
+                    dailyCache.current[dailyKey] = data;
+                    setDailyGroups([{ date: dailyAnchorDate, items: data }]);
                 }
             } else {
                 const data = await financeApi.getMonthlyAnalytics({
@@ -173,7 +187,44 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, i
                 setIsLoading(false);
             }
         }
-    }, [viewMode, currencyCode, selectedMonth, startDate]);
+    }, [viewMode, currencyCode, selectedMonth, dailyAnchorDate]);
+
+    // ----------------------------------------------------
+    // Подгрузка следующего (предыдущего по календарю) дня
+    // ----------------------------------------------------
+    const fetchNextDay = useCallback(async () => {
+        if (isFetchingMoreDays || isLoading || viewMode !== 'days' || dailyGroups.length === 0) {
+            return;
+        }
+
+        const lastGroup = dailyGroups[dailyGroups.length - 1];
+        const nextDate = new Date(lastGroup.date);
+        nextDate.setDate(nextDate.getDate() - 1); // Шаг назад на 1 день
+
+        const dayKey = nextDate.toISOString().slice(0, 10);
+        const cacheKey = `${currencyCode}_${dayKey}`;
+
+        if (dailyCache.current[cacheKey]) {
+            setDailyGroups(prev => [...prev, { date: nextDate, items: dailyCache.current[cacheKey] }]);
+            return;
+        }
+
+        setIsFetchingMoreDays(true);
+
+        try {
+            const data = await financeApi.getDailyAnalytics({
+                date: nextDate,
+                currency: currencyCode,
+            });
+
+            dailyCache.current[cacheKey] = data;
+            setDailyGroups(prev => [...prev, { date: nextDate, items: data }]);
+        } catch (err) {
+            console.error('Failed to fetch next day analytics:', err);
+        } finally {
+            setIsFetchingMoreDays(false);
+        }
+    }, [dailyGroups, isFetchingMoreDays, isLoading, viewMode, currencyCode]);
 
     useEffect(() => {
         fetchAnalytics();
@@ -185,19 +236,40 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, i
         };
     }, [fetchAnalytics]);
 
+    // Observer для подгрузки при прокрутке
+    useEffect(() => {
+        if (viewMode !== 'days') return;
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting) {
+                    fetchNextDay();
+                }
+            },
+            { rootMargin: '300px' }
+        );
+
+        const currentTarget = loadMoreRef.current;
+        if (currentTarget) observer.observe(currentTarget);
+
+        return () => {
+            if (currentTarget) observer.unobserve(currentTarget);
+        };
+    }, [viewMode, fetchNextDay]);
+
     return (
         <div style={appStyles.tabContent}>
 
-            {/* Filter controls card */}
+            {/* Top Bar: Фильтры */}
             <div style={{ ...commonStyles.card, padding: '14px 16px' }}>
                 <div style={{
                     display: 'grid',
                     gridTemplateColumns: '1fr 1fr',
                     gap: '12px',
-                    alignItems: 'end', // Выравнивает инпуты строго по нижней линии
+                    alignItems: 'end',
                     width: '100%',
                 }}>
-                    {/* Currency */}
+                    {/* Currency Select */}
                     <div style={commonStyles.column6Full}>
                         <div style={commonStyles.rowBetween}>
                             <label style={commonStyles.label}>Currency</label>
@@ -230,18 +302,21 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, i
                         </select>
                     </div>
 
-                    {/* Start Day / Month */}
+                    {/* Month Picker (Скрываем на вкладке Daily, так как там единая лента) */}
                     <div style={commonStyles.column6Full}>
                         <label style={commonStyles.label}>
-                            {viewMode === 'days' ? 'Start Day' : 'Start Month'}
+                            {viewMode === 'days'
+                                ? (isToday(dailyAnchorDate) ? 'Jump to date' : `Viewing from ${dailyAnchorDate.toLocaleDateString()}`)
+                                : 'Start Month'}
                         </label>
                         <CustomDatePicker
-                            selectedDate={viewMode === 'days' ? startDate : selectedMonth}
-                            onChange={(date) => {
+                            selectedDate={viewMode === 'days' ? dailyAnchorDate : selectedMonth}
+                            onChange={(newDate) => {
                                 if (viewMode === 'days') {
-                                    setStartDate(date);
+                                    setDailyGroups([]); // Очищаем старую ленту
+                                    setDailyAnchorDate(newDate); // Ставим новый «якорь»
                                 } else {
-                                    handleMonthChange(date);
+                                    handleMonthChange(newDate);
                                 }
                             }}
                             showMonthPicker={viewMode !== 'days'}
@@ -252,7 +327,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, i
 
             {/* View Mode Tabs */}
             <div style={commonStyles.column6Full}>
-                {/* Upper row: Time periods */}
+                {/* Upper row */}
                 <div style={{
                     ...receiptStyles.mainTabs,
                     display: 'grid',
@@ -296,7 +371,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, i
                     </button>
                 </div>
 
-                {/* Lower row: Category breakdowns */}
+                {/* Lower row */}
                 <div style={{
                     ...receiptStyles.mainTabs,
                     display: 'grid',
@@ -371,14 +446,39 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, i
                         <SummaryAnalyticsGrid currency={selectedCurrency} summary={summary} categories={outcomeCategories} isLoading={isLoading} />
                     )}
 
+                    {/* Чистая бесконечная лента */}
                     {viewMode === 'days' && (
-                        <DayAnalyticsGrid
-                            startDate={startDate}
-                            currency={selectedCurrency}
-                            categories={outcomeCategories}
-                            items={dailyData}
-                            isLoading={isLoading}
-                        />
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                            {dailyGroups.map((group) => (
+                                <DayAnalyticsGrid
+                                    key={group.date.toISOString()}
+                                    startDate={group.date}
+                                    currency={selectedCurrency}
+                                    categories={outcomeCategories}
+                                    items={group.items}
+                                    isLoading={false}
+                                />
+                            ))}
+
+                            <div
+                                ref={loadMoreRef}
+                                style={{
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    padding: '16px 0',
+                                    minHeight: '40px',
+                                }}
+                            >
+                                {isFetchingMoreDays && (
+                                    <Loader2
+                                        size={20}
+                                        color={theme.colors.primary}
+                                        style={{ animation: 'spin 1s linear infinite' }}
+                                    />
+                                )}
+                            </div>
+                        </div>
                     )}
 
                     {viewMode === 'months' && (
@@ -410,6 +510,35 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, i
                         />
                     )}
                 </div>
+            )}
+
+            {/* Sticky Reset Pill */}
+            {viewMode === 'days' && !isToday(dailyAnchorDate) && (
+                <button
+                    onClick={resetDailyToToday}
+                    style={{
+                        position: 'fixed',
+                        bottom: '24px',
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        backgroundColor: theme.colors.primary,
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: '20px',
+                        padding: '10px 18px',
+                        fontSize: '13px',
+                        fontWeight: '600',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        cursor: 'pointer',
+                        zIndex: 100,
+                    }}
+                >
+                    <RotateCcw size={14} />
+                    <span>Jump to Today</span>
+                </button>
             )}
         </div>
     );

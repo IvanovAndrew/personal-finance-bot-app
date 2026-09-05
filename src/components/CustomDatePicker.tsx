@@ -14,7 +14,7 @@ interface CustomDatePickerProps {
 
 export const CustomDatePicker: React.FC<CustomDatePickerProps> = ({ selectedDate, onChange, showMonthPicker = false, minDate = new Date('2022-01-01'), maxDate = new Date() }) => {
     return (
-        <div style={{ position: 'relative', width: '100%' }}>
+        <div style={{ position: 'relative', width: '100%', zIndex: 1000 }}>
             <style>{datePickerStyles.popupThemeCss as string}</style>
 
             <DatePicker

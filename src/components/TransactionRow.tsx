@@ -17,12 +17,19 @@ interface TransactionRowProps {
     };
     categories: Category[];
     currency: Currency;
+
+    isLast?: boolean;
+    isInsideGroup?: boolean;
+    variant?: 'card' | 'flat';
 }
 
 export const TransactionRow: React.FC<TransactionRowProps> = ({
                                                                   transaction,
                                                                   categories,
                                                                   currency,
+                                                                  isLast = false,
+                                                                  isInsideGroup = false,
+                                                                  variant = 'card',
                                                               }) => {
     const shopMeta = getShopMeta(transaction.shop);
     const categoryMeta = getCategoryMeta(categories, transaction.category);
@@ -39,7 +46,7 @@ export const TransactionRow: React.FC<TransactionRowProps> = ({
     const titleText = rawDescription || rawShop || rawSubCategory || categoryMeta.name;
 
     // 2. Флаги для подстроки (чтобы не дублировать название, если оно ушло в заголовок)
-    const showShopInSubtitle = Boolean(rawDescription && rawShop);
+    const showShopInSubtitle = Boolean(rawDescription && rawShop) && !isInsideGroup;
     const showSubCategoryInSubtitle = Boolean(rawSubCategory && (rawDescription || rawShop));
 
     const hasSubtitle = showShopInSubtitle || showSubCategoryInSubtitle;
@@ -48,10 +55,11 @@ export const TransactionRow: React.FC<TransactionRowProps> = ({
         <div
             style={{
                 ...receiptStyles.subChip,
-                padding: '10px 12px',
-                backgroundColor: theme.colors.bgElement,
-                borderRadius: theme.radius.md || '10px',
-                border: `1px solid ${theme.colors.border}`,
+                backgroundColor: variant === 'flat' ? 'transparent' : theme.colors.bgElement,
+                borderRadius: variant === 'flat' ? '0px' : (theme.radius.md || '10px'),
+                border: variant === 'flat' ? 'none' : `1px solid ${theme.colors.border}`,
+                borderBottom: (variant === 'flat' && !isLast) ? `1px solid ${theme.colors.border}` : 'none',
+                padding: variant === 'flat' ? '8px 0px' : '10px 12px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
@@ -62,7 +70,7 @@ export const TransactionRow: React.FC<TransactionRowProps> = ({
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', overflow: 'hidden', minWidth: 0 }}>
 
                 {/* Аватар магазина или Иконка категории */}
-                {hasShopLogo ? (
+                {hasShopLogo && !isInsideGroup ? (
                     <ShopAvatar shopName={transaction.shop} size={32} />
                 ) : (
                     <div
