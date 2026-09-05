@@ -40,7 +40,8 @@ import vsedomaLogo from '../assets/shops/vsedoma.svg';
 import wildberriesLogo from '../assets/shops/wildberries.svg';
 import yandexeatsLogo from '../assets/shops/yandexeats.svg';
 import yandexgoLogo from '../assets/shops/yandexgo.svg';
-import yerevanCityLogo from '../assets/shops/yerevan-city.svg';
+import yerevanCityLogo from '../assets/shops/yerevancity.svg';
+import yerevanSwimLogo from '../assets/shops/yerevanswim.svg';
 import zoovetLogo from '../assets/shops/zoovet.svg';
 import zovqLogo from '../assets/shops/zovq.svg';
 
@@ -81,12 +82,14 @@ const RAW_SHOPS_REGISTRY: Record<string, ShopMeta> = {
     yandexeats: { type: 'image', src: yandexeatsLogo },
     yandexgo: { type: 'image', src: yandexgoLogo },
     yerevancity: { type: 'image', src: yerevanCityLogo },
-    еревансити: { type: 'image', src: yerevanCityLogo },
+    yerevanswim: { type: 'image', src: yerevanSwimLogo },
+    
     zoovet: { type: 'image', src: zoovetLogo },
     zoovetam: { type: 'image', src: zoovetLogo },
     zovq: { type: 'image', src: zovqLogo },
     вкусноиточка: { type: 'image', src: vkusnoitochkaLogo },
     вседома: { type: 'image', src: vsedomaLogo },
+    еревансити: { type: 'image', src: yerevanCityLogo },
     лента: { type: 'image', src: lentaLogo },
     перекрёсток: { type: 'image', src: perekrestokLogo },
     пятёрочка: { type: 'image', src: pyaterochkaLogo },
