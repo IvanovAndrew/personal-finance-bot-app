@@ -76,7 +76,6 @@ export const ShopAvatar: React.FC<ShopAvatarProps> = ({ shopName, size = 32 }) =
             style={{
                 width: `${size}px`,
                 height: `${size}px`,
-                borderRadius: '8px',
                 backgroundColor: theme.colors.bgCard,
                 border: `1px solid ${theme.colors.border}`,
                 display: 'flex',

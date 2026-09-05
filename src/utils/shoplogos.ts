@@ -15,6 +15,7 @@
 
 // SVG for local brands (not in simple-icons)
 import ardshinkbankLogo from '../assets/shops/ardshinbank.svg';
+import coffeehouseLogo from '../assets/shops/coffeehouse.svg';
 import dodoLogo from '../assets/shops/dodo.svg';
 import fixpriceLogo from '../assets/shops/fixprice.svg';
 import hafhafLogo from '../assets/shops/hafhaf.svg';
@@ -34,6 +35,7 @@ import tbankLogo from '../assets/shops/tbank.svg';
 import telcellLogo from '../assets/shops/telcell.svg';
 import ucomLogo from '../assets/shops/ucom.svg';
 import vkusnoitochkaLogo from '../assets/shops/vkusnoitochka.svg';
+import vsedomaLogo from '../assets/shops/vsedoma.svg';
 import wildberriesLogo from '../assets/shops/wildberries.svg';
 import yandexeatsLogo from '../assets/shops/yandexeats.svg';
 import yandexgoLogo from '../assets/shops/yandexgo.svg';
@@ -59,6 +61,7 @@ const RAW_SHOPS_REGISTRY: Record<string, ShopMeta> = {
     
     "60секунд": { type: 'image', src: sixtysecondsLogo },
     ardshinbank: { type: 'image', src: ardshinkbankLogo },
+    coffeehouse: { type: 'image', src: coffeehouseLogo },
     dodo: { type: 'image', src: dodoLogo },
     fixprice: { type: 'image', src: fixpriceLogo },
     hafhaf: { type: 'image', src: hafhafLogo },
@@ -82,6 +85,7 @@ const RAW_SHOPS_REGISTRY: Record<string, ShopMeta> = {
     zoovetam: { type: 'image', src: zoovetLogo },
     zovq: { type: 'image', src: zovqLogo },
     вкусноиточка: { type: 'image', src: vkusnoitochkaLogo },
+    вседома: { type: 'image', src: vsedomaLogo },
     лента: { type: 'image', src: lentaLogo },
     перекрёсток: { type: 'image', src: perekrestokLogo },
     пятёрочка: { type: 'image', src: pyaterochkaLogo },
