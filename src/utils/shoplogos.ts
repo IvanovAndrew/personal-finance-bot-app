@@ -28,7 +28,7 @@ import semishagoffLogo from '../assets/shops/semishagoff.svg';
 import sixtysecondsLogo from '../assets/shops/sixtyseconds.svg';
 import sorrisoLogo from '../assets/shops/sorriso.svg';
 import telcellLogo from '../assets/shops/telcell.svg';
-import ucomLogo from '../assets/shops/ucomLogo.svg';
+import ucomLogo from '../assets/shops/ucom.svg';
 import wildberriesLogo from '../assets/shops/wildberries.svg';
 import yandexeatsLogo from '../assets/shops/yandexeats.svg';
 import yandexgoLogo from '../assets/shops/yandexgo.svg';
@@ -60,7 +60,7 @@ const SHOPS_REGISTRY: Record<string, ShopMeta> = {
     royalcanin: { type: 'image', src: royalcaninLogo },
     sorriso: { type: 'image', src: sorrisoLogo },
     telcell: { type: 'image', src: telcellLogo },
-    ucomLogo: { type: 'image', src: ucomLogo },
+    ucom: { type: 'image', src: ucomLogo },
     wildberries: { type: 'image', src: wildberriesLogo },
     yandexeats: { type: 'image', src: yandexeatsLogo },
     yandexgo: { type: 'image', src: yandexgoLogo },
