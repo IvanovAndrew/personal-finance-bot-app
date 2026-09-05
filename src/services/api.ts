@@ -136,8 +136,26 @@ export interface CategoryAnalytics {
 }
 
 export interface DailyAnalyticsPayload {
-    date: Date;
+    startDate: Date;
+    endDate: Date;
     currency: string;
+}
+
+export interface DailyAnalyticsResponse {
+    currency: string;
+    days: DaySpendingItem[];
+}
+
+export interface DaySpendingItem {
+    day: string,
+    total: number;
+    shops: ShopSpendingItem[];
+}
+
+export interface ShopSpendingItem {
+    name: string;
+    amount: number;
+    categories: CategoryAnalytics[];
 }
 
 export interface MonthlyAnalyticsItem {
@@ -222,9 +240,9 @@ export const financeApi = {
         return apiFetch<SummaryResponse>(`/analytics/summary?${params.toString()}`, {}, signal);
     },
 
-    async getDailyAnalytics(payload: DailyAnalyticsPayload, signal?: AbortSignal): Promise<SaveTransactionPayload[]> {
-        const params = new URLSearchParams({ day: toDateOnlyString(payload.date), currency: payload.currency });
-        return apiFetch<SaveTransactionPayload[]>(`/moneytransfer/outcomes?${params.toString()}`, {}, signal);
+    async getDailyAnalytics(payload: DailyAnalyticsPayload, signal?: AbortSignal): Promise<DailyAnalyticsResponse> {
+        const params = new URLSearchParams({ currency: payload.currency, startDate: toDateOnlyString(payload.startDate), endDate: toDateOnlyString(payload.endDate) });
+        return apiFetch<DailyAnalyticsResponse>(`/analytics/history/daily?${params.toString()}`, {}, signal);
     },
 
     async getMonthlyAnalytics(payload: SpendingHistoryMonthlyPayload, signal?: AbortSignal): Promise<MonthlyAnalyticsResponse> {

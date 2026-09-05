@@ -19,11 +19,12 @@ import {
     financeApi,
     type SummaryResponse,
     type MonthlyAnalyticsResponse,
-    type SaveTransactionPayload
+    type SaveTransactionPayload,
+    type DailyAnalyticsResponse
 } from "../../services/api.ts";
 import { SummaryAnalyticsGrid } from "./SummaryAnalyticsGrid.tsx";
 import { MonthAnalyticsGrid } from "./MonthAnalyticsGrid.tsx";
-import {EARLIEST_DATA_DATE} from "../../constants/data.ts";
+import { EARLIEST_DATA_DATE } from "../../constants/data.ts";
 
 interface AnalyticsTabProps {
     outcomeCategories: Category[];
@@ -41,6 +42,43 @@ type ViewMode = 'summary' | 'days' | 'months' | 'categories' | 'subcategories';
 const STORAGE_KEYS = {
     CURRENCY: 'analytics_selected_currency',
     MONTH: 'analytics_selected_month',
+};
+
+// Хелпер для маппинга ответа API в формат DailyGroup[]
+const mapDailyResponseToGroups = (response: DailyAnalyticsResponse): DailyGroup[] => {
+    if (!response || !Array.isArray(response.days)) {
+        return [];
+    }
+
+    // Сортируем дни по убыванию (от свежих к старым)
+    const sortedDays = [...response.days].sort(
+        (a, b) => new Date(b.day).getTime() - new Date(a.day).getTime()
+    );
+
+    return sortedDays.map((dayItem) => {
+        const items: SaveTransactionPayload[] = [];
+
+        dayItem.shops?.forEach((shop) => {
+            shop.categories?.forEach((cat) => {
+                cat.subCategories?.forEach((sub) => {
+                    items.push({
+                        isOutcome: true,
+                        date: dayItem.day,
+                        category: cat.category,
+                        subCategory: sub.subCategory,
+                        shop: shop.name,
+                        amount: sub.total,
+                        currency: response.currency,
+                    });
+                });
+            });
+        });
+
+        return {
+            date: new Date(dayItem.day),
+            items,
+        };
+    });
 };
 
 export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, incomeCategories, currencies }) => {
@@ -73,7 +111,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, i
     const [monthlyData, setMonthlyData] = useState<MonthlyAnalyticsResponse | null>(null);
     const [dailyAnchorDate, setDailyAnchorDate] = useState<Date>(new Date());
 
-    // Infinitive scroll
+    // Infinite scroll
     const [dailyGroups, setDailyGroups] = useState<DailyGroup[]>([]);
     const [isFetchingMoreDays, setIsFetchingMoreDays] = useState<boolean>(false);
     const [hasMoreDays, setHasMoreDays] = useState<boolean>(true);
@@ -84,7 +122,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, i
     // Cache
     const summaryCache = useRef<Record<string, SummaryResponse>>({});
     const monthlyCache = useRef<Record<string, MonthlyAnalyticsResponse>>({});
-    const dailyCache = useRef<Record<string, SaveTransactionPayload[]>>({});
+    const dailyCache = useRef<Record<string, DailyGroup[]>>({});
 
     const abortControllerRef = useRef<AbortController | null>(null);
     const loadMoreRef = useRef<HTMLDivElement | null>(null);
@@ -153,18 +191,30 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, i
                     setSummary(data);
                 }
             } else if (viewMode === 'days') {
-                // В режиме 'days' инициализируем ленту с сегодняшнего дня
-                const dayKey = dailyAnchorDate.toISOString().slice(0, 10);
-                const dailyKey = `${currencyCode}_${dayKey}`;
+                // Запрашиваем батч в 7 дней назад от dailyAnchorDate
+                const endDate = dailyAnchorDate;
+                const startDate = new Date(dailyAnchorDate);
+                startDate.setDate(startDate.getDate() - 6);
 
-                const data = await financeApi.getDailyAnalytics({
-                    date: dailyAnchorDate,
+                const rangeKey = `${currencyCode}_${startDate.toISOString().slice(0, 10)}_${endDate.toISOString().slice(0, 10)}`;
+
+                if (!forceRefresh && dailyCache.current[rangeKey]) {
+                    setDailyGroups(dailyCache.current[rangeKey]);
+                    setError(null);
+                    setIsLoading(false);
+                    return;
+                }
+
+                const response = await financeApi.getDailyAnalytics({
+                    startDate,
+                    endDate,
                     currency: currencyCode,
                 }, controller.signal);
 
                 if (!controller.signal.aborted) {
-                    dailyCache.current[dailyKey] = data;
-                    setDailyGroups([{ date: dailyAnchorDate, items: data }]);
+                    const mappedGroups = mapDailyResponseToGroups(response);
+                    dailyCache.current[rangeKey] = mappedGroups;
+                    setDailyGroups(mappedGroups);
                 }
             } else {
                 const data = await financeApi.getMonthlyAnalytics({
@@ -194,54 +244,83 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, i
     }, [viewMode, currencyCode, selectedMonth, dailyAnchorDate]);
 
     // ----------------------------------------------------
-    // Подгрузка следующего (предыдущего по календарю) дня
+    // Подгрузка следующего недельного блока (7 дней)
     // ----------------------------------------------------
-    const fetchNextDay = useCallback(async () => {
+    const fetchNextChunk = useCallback(async () => {
         if (isFetchingMoreDays || isLoading || viewMode !== 'days' || dailyGroups.length === 0) {
             return;
         }
 
+        // Берём самую последнюю группу из массива (это самая старая загруженная дата благодаря сортировке)
         const lastGroup = dailyGroups[dailyGroups.length - 1];
+        const lastDate = new Date(lastGroup.date);
 
-        if (lastGroup.date <= EARLIEST_DATA_DATE) {
+        if (lastDate <= EARLIEST_DATA_DATE) {
             setHasMoreDays(false);
             return;
         }
-        
-        const nextDate = new Date(lastGroup.date);
-        nextDate.setDate(nextDate.getDate() - 1);
 
-        const dayKey = nextDate.toISOString().slice(0, 10);
-        const cacheKey = `${currencyCode}_${dayKey}`;
+        // Новая верхняя граница = 1 день ДО самой старой даты из текущего списка
+        const endDate = new Date(lastDate);
+        endDate.setDate(endDate.getDate() - 1);
 
-        // фиксируем параметры запроса, чтобы проверить актуальность после await
+        // Ниже граница = ещё минус 6 дней (итого 7 дней)
+        let startDate = new Date(endDate);
+        startDate.setDate(startDate.getDate() - 6);
+
+        if (startDate < EARLIEST_DATA_DATE) {
+            startDate = new Date(EARLIEST_DATA_DATE);
+        }
+
+        // Если диапазон схлопнулся или вышел за границы
+        if (endDate < startDate) {
+            setHasMoreDays(false);
+            return;
+        }
+
+        const startKey = startDate.toISOString().slice(0, 10);
+        const endKey = endDate.toISOString().slice(0, 10);
+        const cacheKey = `${currencyCode}_${startKey}_${endKey}`;
+
         const requestCurrency = currencyCode;
         const requestAnchorKey = dailyAnchorDate.toISOString().slice(0, 10);
 
         if (dailyCache.current[cacheKey]) {
-            setDailyGroups(prev => [...prev, { date: nextDate, items: dailyCache.current[cacheKey] }]);
+            setDailyGroups(prev => [...(Array.isArray(prev) ? prev : []), ...dailyCache.current[cacheKey]]);
             return;
         }
 
         setIsFetchingMoreDays(true);
 
         try {
-            const data = await financeApi.getDailyAnalytics({
-                date: nextDate,
+            const response = await financeApi.getDailyAnalytics({
+                startDate,
+                endDate,
                 currency: requestCurrency,
             });
 
-            // если за время запроса сменились валюта или якорная дата — результат больше не актуален
             const stillRelevant =
                 requestCurrency === currencyCode &&
                 requestAnchorKey === dailyAnchorDate.toISOString().slice(0, 10);
 
             if (stillRelevant) {
-                dailyCache.current[cacheKey] = data;
-                setDailyGroups(prev => [...prev, { date: nextDate, items: data }]);
+                const newGroups = mapDailyResponseToGroups(response);
+
+                // Если API вернул пустой массив дней за период — останавливаем подгрузку дальше
+                if (newGroups.length === 0 && startDate <= EARLIEST_DATA_DATE) {
+                    setHasMoreDays(false);
+                }
+
+                dailyCache.current[cacheKey] = newGroups;
+
+                setDailyGroups(prev => [...(Array.isArray(prev) ? prev : []), ...newGroups]);
+
+                if (startDate <= EARLIEST_DATA_DATE) {
+                    setHasMoreDays(false);
+                }
             }
         } catch (err) {
-            console.error('Failed to fetch next day analytics:', err);
+            console.error('Failed to fetch next week analytics:', err);
         } finally {
             setIsFetchingMoreDays(false);
         }
@@ -264,10 +343,10 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, i
         const observer = new IntersectionObserver(
             (entries) => {
                 if (entries[0].isIntersecting) {
-                    fetchNextDay();
+                    fetchNextChunk();
                 }
             },
-            { rootMargin: '300px' }
+            { rootMargin: '400px' }
         );
 
         const currentTarget = loadMoreRef.current;
@@ -276,7 +355,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, i
         return () => {
             if (currentTarget) observer.unobserve(currentTarget);
         };
-    }, [viewMode, fetchNextDay]);
+    }, [viewMode, fetchNextChunk, hasMoreDays]);
 
     return (
         <div style={appStyles.tabContent}>
@@ -323,7 +402,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, i
                         </select>
                     </div>
 
-                    {/* Month Picker (Скрываем на вкладке Daily, так как там единая лента) */}
+                    {/* Month / Date Picker */}
                     <div style={commonStyles.column6Full}>
                         <label style={commonStyles.label}>
                             {viewMode === 'days'
@@ -468,16 +547,16 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, i
                         <SummaryAnalyticsGrid currency={selectedCurrency} summary={summary} categories={outcomeCategories} isLoading={isLoading} />
                     )}
 
-                    {/* Чистая бесконечная лента */}
+                    {/* Бесконечная недельная лента */}
                     {viewMode === 'days' && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                            {dailyGroups.map((group) => (
+                            {(dailyGroups || []).map((group) => (
                                 <DayAnalyticsGrid
-                                    key={group.date.toISOString()}
-                                    startDate={group.date}
+                                    key={group.date instanceof Date ? group.date.toISOString() : String(group.date)}
+                                    startDate={new Date(group.date)}
                                     currency={selectedCurrency}
                                     categories={outcomeCategories}
-                                    items={group.items}
+                                    items={group.items || []}
                                     isLoading={false}
                                 />
                             ))}
