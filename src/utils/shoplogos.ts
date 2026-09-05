@@ -14,9 +14,11 @@
 } from 'simple-icons';
 
 // SVG for local brands (not in simple-icons)
+import ardshinkbankLogo from '../assets/shops/ardshinbank.svg';
 import dodoLogo from '../assets/shops/dodo.svg';
 import fixpriceLogo from '../assets/shops/fixprice.svg';
 import hafhafLogo from '../assets/shops/hafhaf.svg';
+import inecobankLogo from '../assets/shops/inecobank.svg';
 import lentaLogo from '../assets/shops/lenta.svg';
 import onexLogo from '../assets/shops/onex.svg';
 import ovioLogo from '../assets/shops/ovio.svg';
@@ -56,9 +58,11 @@ export const normalizeShopName = (name: string): string => {
 const RAW_SHOPS_REGISTRY: Record<string, ShopMeta> = {
     
     "60секунд": { type: 'image', src: sixtysecondsLogo },
+    ardshinbank: { type: 'image', src: ardshinkbankLogo },
     dodo: { type: 'image', src: dodoLogo },
     fixprice: { type: 'image', src: fixpriceLogo },
     hafhaf: { type: 'image', src: hafhafLogo },
+    inecobank: { type: 'image', src: inecobankLogo },
     onex: { type: 'image', src: onexLogo },
     ovio: { type: 'image', src: ovioLogo },
     ozon: { type: 'image', src: ozonLogo },
