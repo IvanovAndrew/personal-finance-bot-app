@@ -1,10 +1,6 @@
 ﻿import {
     AlertCircle,
-    Calendar,
-    Layers,
-    LayoutDashboard,
     Loader2,
-    PieChart,
     RefreshCw,
     RotateCcw
 } from 'lucide-react';
@@ -19,12 +15,13 @@ import {
     type SaveTransactionPayload,
     type SummaryResponse } from "../../services/api.ts";
 import type { Category, Currency } from '../../types/finance';
-import { CustomDatePicker } from "../CustomDatePicker.tsx";
 import { CategoryAnalyticsGrid } from "./CategoryAnalyticsGrid.tsx";
 import { DayAnalyticsGrid } from "./DayAnalyticsGrid.tsx";
 import { MonthAnalyticsGrid } from "./MonthAnalyticsGrid.tsx";
 import { SubCategoryAnalyticsGrid } from "./SubCategoryAnalyticsGrid.tsx";
 import { SummaryAnalyticsGrid } from "./SummaryAnalyticsGrid.tsx";
+import {AnalyticsHeader} from "./AnalyticsHeader.tsx";
+import {AnalyticsSegmentedControl} from "../SegmentedControl.tsx";
 
 interface AnalyticsTabProps {
     outcomeCategories: Category[];
@@ -44,7 +41,6 @@ const STORAGE_KEYS = {
     MONTH: 'analytics_selected_month',
 };
 
-// Хелпер для маппинга ответа API в формат DailyGroup[]
 const mapDailyResponseToGroups = (response: DailyAnalyticsResponse): DailyGroup[] => {
     if (!response || !Array.isArray(response.days)) {
         return [];
@@ -129,9 +125,9 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, i
 
     const isToday = (day: Date) => day.toDateString() === new Date().toDateString();
 
-    const handleCurrencyChange = (currencyName: string) => {
-        setCurrencyCode(currencyName);
-        localStorage.setItem(STORAGE_KEYS.CURRENCY, currencyName);
+    const handleCurrencyChange = (currency: Currency) => {
+        setCurrencyCode(currency.name);
+        localStorage.setItem(STORAGE_KEYS.CURRENCY, currency.name);
         setDailyGroups([]);
         setHasMoreDays(true);
     };
@@ -336,7 +332,6 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, i
         };
     }, [fetchAnalytics]);
 
-    // Observer для подгрузки при прокрутке
     useEffect(() => {
         if (viewMode !== 'days' || !hasMoreDays) return;
 
@@ -360,151 +355,14 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, i
     return (
         <div style={appStyles.tabContent}>
 
-            {/* Top Bar: Фильтры */}
-            <div style={{ ...commonStyles.card, padding: '14px 16px' }}>
-                <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: '1fr 1fr',
-                    gap: '12px',
-                    alignItems: 'end',
-                    width: '100%',
-                }}>
-                    {/* Currency Select */}
-                    <div style={commonStyles.column6Full}>
-                        <div style={commonStyles.rowBetween}>
-                            <label style={commonStyles.label}>Currency</label>
-                            {isLoading && (
-                                <Loader2
-                                    size={12}
-                                    color={theme.colors.primary}
-                                    style={{ animation: 'spin 1s linear infinite' }}
-                                />
-                            )}
-                        </div>
-                        <select
-                            value={currencyCode}
-                            onChange={(e) => handleCurrencyChange(e.target.value)}
-                            style={{
-                                ...commonStyles.inputControl,
-                                appearance: 'none',
-                                WebkitAppearance: 'none',
-                                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`,
-                                backgroundRepeat: 'no-repeat',
-                                backgroundPosition: 'right 12px center',
-                                paddingRight: '32px',
-                            }}
-                        >
-                            {currencies?.map(c => (
-                                <option key={c.name} value={c.name}>
-                                    {c.name} {c.symbol ? `(${c.symbol})` : ''}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
+            <AnalyticsHeader 
+                selectedCurrency={selectedCurrency} 
+                currencies={currencies} 
+                onCurrencyChange={handleCurrencyChange}
+                selectedDate={selectedMonth} 
+                onDateChange={handleMonthChange} />
 
-                    {/* Month / Date Picker */}
-                    <div style={commonStyles.column6Full}>
-                        <label style={commonStyles.label}>
-                            {viewMode === 'days'
-                                ? (isToday(dailyAnchorDate) ? 'Jump to date' : `Viewing from ${dailyAnchorDate.toLocaleDateString()}`)
-                                : 'Start Month'}
-                        </label>
-                        <CustomDatePicker
-                            selectedDate={viewMode === 'days' ? dailyAnchorDate : selectedMonth}
-                            onChange={(newDate) => {
-                                if (viewMode === 'days') {
-                                    setDailyGroups([]);
-                                    setHasMoreDays(true);
-                                    setDailyAnchorDate(newDate);
-                                } else {
-                                    handleMonthChange(newDate);
-                                }
-                            }}
-                            showMonthPicker={viewMode !== 'days'}
-                        />
-                    </div>
-                </div>
-            </div>
-
-            {/* View Mode Tabs */}
-            <div style={commonStyles.column6Full}>
-                {/* Upper row */}
-                <div style={{
-                    ...receiptStyles.mainTabs,
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(3, 1fr)',
-                    gap: '4px',
-                    padding: '4px',
-                    boxSizing: 'border-box',
-                    width: '100%'
-                }}>
-                    <button
-                        onClick={() => setViewMode('summary')}
-                        style={{
-                            ...receiptStyles.mainTabBtn,
-                            ...(viewMode === 'summary' ? receiptStyles.mainTabActive : {}),
-                        }}
-                    >
-                        <LayoutDashboard size={14} />
-                        <span>Summary</span>
-                    </button>
-
-                    <button
-                        onClick={() => setViewMode('days')}
-                        style={{
-                            ...receiptStyles.mainTabBtn,
-                            ...(viewMode === 'days' ? receiptStyles.mainTabActive : {}),
-                        }}
-                    >
-                        <Calendar size={14} />
-                        <span>Daily</span>
-                    </button>
-
-                    <button
-                        onClick={() => setViewMode('months')}
-                        style={{
-                            ...receiptStyles.mainTabBtn,
-                            ...(viewMode === 'months' ? receiptStyles.mainTabActive : {}),
-                        }}
-                    >
-                        <Calendar size={14} />
-                        <span>Monthly</span>
-                    </button>
-                </div>
-
-                {/* Lower row */}
-                <div style={{
-                    ...receiptStyles.mainTabs,
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(2, 1fr)',
-                    gap: '4px',
-                    padding: '4px',
-                    boxSizing: 'border-box',
-                    width: '100%'
-                }}>
-                    <button
-                        onClick={() => setViewMode('categories')}
-                        style={{
-                            ...receiptStyles.mainTabBtn,
-                            ...(viewMode === 'categories' ? receiptStyles.mainTabActive : {}),
-                        }}
-                    >
-                        <PieChart size={14} />
-                        <span>Categories</span>
-                    </button>
-
-                    <button
-                        onClick={() => setViewMode('subcategories')}
-                        style={{
-                            ...receiptStyles.mainTabBtn,
-                            ...(viewMode === 'subcategories' ? receiptStyles.mainTabActive : {}),
-                        }}
-                    >
-                        <Layers size={14} />
-                        <span>Subcategories</span>
-                    </button>
-                </div>
-            </div>
+            <AnalyticsSegmentedControl value={viewMode} onChange={setViewMode} />
 
             {/* Content Display */}
             {error && !isLoading ? (
@@ -547,7 +405,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, i
                         <SummaryAnalyticsGrid currency={selectedCurrency} summary={summary} categories={outcomeCategories} isLoading={isLoading} />
                     )}
 
-                    {/* Бесконечная недельная лента */}
+                    {/* Endless timeline */}
                     {viewMode === 'days' && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                             {(dailyGroups || []).map((group) => (

@@ -11,18 +11,21 @@ interface CurrencyDropdownProps {
 
 export const CurrencyDropdown: React.FC<CurrencyDropdownProps> = ({ currencies, setSelectedCurrency, setShowCurrencyPicker }) => {
 
-    return (<div style={{
-            position: 'absolute',
-            right: '16px',
-            top: '50px',
-            backgroundColor: theme.colors.bgCard,
-            border: `1px solid ${theme.colors.border}`,
-            borderRadius: theme.radius.md,
-            zIndex: 10,
-            display: 'flex',
-            flexDirection: 'column',
-            padding: '4px'
-        }}>
+    return (
+            <div style={{
+                position: 'absolute',
+                right: 0,            
+                top: 'calc(100% + 4px)',
+                backgroundColor: theme.colors.bgCard,
+                border: `1px solid ${theme.colors.border}`,
+                borderRadius: theme.radius.md,
+                zIndex: 100,         
+                display: 'flex',
+                flexDirection: 'column',
+                padding: '4px',
+                minWidth: '110px',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+            }}>
             {currencies.map(curr => (
                 <button
                     key={curr.name}
