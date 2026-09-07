@@ -27,6 +27,7 @@ import ovioLogo from '../assets/shops/ovio.svg';
 import ozonLogo from '../assets/shops/ozon.svg';
 import perekrestokLogo from '../assets/shops/perekrestok.svg';
 import pyaterochkaLogo from '../assets/shops/pyaterochka.svg';
+import raupoolLogo from '../assets/shops/raupool.svg';
 import royalcaninLogo from '../assets/shops/royalcanin.svg';
 import rtcleaningLogo from '../assets/shops/rtcleaning.svg';
 import semishagoffLogo from '../assets/shops/semishagoff.svg';
@@ -50,6 +51,7 @@ export interface ShopMeta {
     type: 'svg-path' | 'image';
     src: string;
     hexColor?: string;
+    hasOwnBackground?: boolean;
 }
 
 export const normalizeShopName = (name: string): string => {
@@ -72,6 +74,7 @@ const RAW_SHOPS_REGISTRY: Record<string, ShopMeta> = {
     ovio: { type: 'image', src: ovioLogo },
     ozon: { type: 'image', src: ozonLogo },
     озон: { type: 'image', src: ozonLogo },
+    raupool: { type: 'image', src: raupoolLogo },
     royalcanin: { type: 'image', src: royalcaninLogo },
     rtcleaning: { type: 'image', src: rtcleaningLogo },
     sorriso: { type: 'image', src: sorrisoLogo },

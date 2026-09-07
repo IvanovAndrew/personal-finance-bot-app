@@ -25,6 +25,15 @@ export const ShopAvatar: React.FC<ShopAvatarProps> = ({ shopName, size = 32 }) =
         boxSizing: 'border-box',
     };
 
+    // SVG-ассет с собственным непрозрачным фоном/скруглением — без доп. подложки
+    const imageOwnBackgroundStyle: React.CSSProperties = {
+        width: `${size}px`,
+        height: `${size}px`,
+        borderRadius: '8px',
+        flexShrink: 0,
+        overflow: 'hidden',
+    };
+
     // SVG
     const svgContainerStyle: React.CSSProperties = {
         width: `${size}px`,
@@ -40,6 +49,22 @@ export const ShopAvatar: React.FC<ShopAvatarProps> = ({ shopName, size = 32 }) =
 
     // SVG from assets
     if (meta?.type === 'image') {
+        if (meta.hasOwnBackground) {
+            return (
+                <div style={imageOwnBackgroundStyle}>
+                    <img
+                        src={meta.src}
+                        alt={shopName || 'Shop'}
+                        style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'contain',
+                        }}
+                    />
+                </div>
+            );
+        }
+
         return (
             <div style={imageContainerStyle}>
                 <img
@@ -77,6 +102,7 @@ export const ShopAvatar: React.FC<ShopAvatarProps> = ({ shopName, size = 32 }) =
             style={{
                 width: `${size}px`,
                 height: `${size}px`,
+                borderRadius: '8px',
                 backgroundColor: theme.colors.bgCard,
                 border: `1px solid ${theme.colors.border}`,
                 display: 'flex',
