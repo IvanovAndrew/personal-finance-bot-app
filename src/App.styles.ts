@@ -301,6 +301,19 @@ export const appStyles: { [key: string]: React.CSSProperties } = {
     cursor: 'pointer',
   },
   navTabActive: { color: theme.colors.primary },
+
+  serverWakingBannerStyle: {
+    backgroundColor: '#2A2312',
+    color: '#FFD700',
+    border: '1px solid #554411',
+    padding: '8px 12px',
+    margin: '8px 12px 0 12px',
+    borderRadius: '8px',
+    fontSize: '12px',
+    textAlign: 'center',
+    lineHeight: '1.4',
+    animation: 'fadeIn 0.3s ease-in-out',
+  },
 };
 
 export const receiptStyles: { [key: string]: React.CSSProperties } = {

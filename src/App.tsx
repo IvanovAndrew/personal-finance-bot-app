@@ -16,12 +16,20 @@ const CACHE_KEYS = {
 
 export const App: React.FC = () => {
 
+    const [isServerWakingUp, setIsServerWakingUp] = useState<boolean>(true);
+
     useEffect(() => {
-        financeApi.health().then((isHealthy) => {
-            if (!isHealthy) {
-                console.error('API is not healthy');
-            }
-        });
+        financeApi.health()
+            .then((isHealthy) => {
+                if (!isHealthy) {
+                    console.error('API is not healthy');
+                }
+            })
+            .catch(() => console.error('Health check failed'))
+            .finally(() => {
+                // Сервер ответил — значит он проснулся
+                setIsServerWakingUp(false);
+            });
     }, []);
     
     const [activeTab, setActiveTab] = useState<TabType>('add');
@@ -93,6 +101,13 @@ export const App: React.FC = () => {
 
   return (
     <div style={appStyles.appContainer}>
+
+      {isServerWakingUp && (
+          <div style={appStyles.serverWakingBannerStyle}>
+              ⚡ The server is waking up... Requests may take longer than usual.
+          </div>
+      )}
+        
       <div style={appStyles.content}>
         {activeTab === 'add' && <EnterTransactionTab incomeCategories={incomeCategories} outcomeCategories={outcomeCategories} currencies={currencies} />}
         {activeTab === 'receipt' && <ReceiptTab categories={outcomeCategories} currencies={currencies} />}
