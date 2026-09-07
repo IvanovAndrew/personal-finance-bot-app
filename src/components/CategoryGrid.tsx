@@ -1,7 +1,8 @@
-﻿import React, {useMemo, useState} from 'react';
+﻿import { ChevronLeft, ChevronRight } from "lucide-react";
+import React, { useMemo, useState } from 'react';
+
+import { appStyles, commonStyles, receiptStyles,theme } from '../App.styles';
 import type { Category, SubCategory } from '../types/finance';
-import { theme, commonStyles, appStyles, receiptStyles } from '../App.styles';
-import {ChevronLeft, ChevronRight} from "lucide-react";
 
 interface CategoryGridProps {
     categories: Category[];

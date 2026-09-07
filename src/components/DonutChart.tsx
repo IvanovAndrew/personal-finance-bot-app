@@ -1,6 +1,7 @@
-﻿import React, { type FC, type MouseEvent } from 'react';
+﻿import { ChevronLeft, ChevronRight } from "lucide-react";
+import React, { type FC, type MouseEvent } from 'react';
+
 import { theme } from '../App.styles.ts';
-import {ChevronLeft, ChevronRight} from "lucide-react";
 
 export interface PieSegment {
     code: string;

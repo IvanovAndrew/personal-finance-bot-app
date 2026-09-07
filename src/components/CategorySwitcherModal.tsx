@@ -1,9 +1,10 @@
-﻿import { type FC, useState } from "react";
-import type { Category } from "../types/finance";
+﻿import { ChevronDown, ChevronLeft, X } from "lucide-react";
+import { type FC, useState } from "react";
+
 import { theme } from "../App.styles";
-import { ChevronDown, ChevronLeft, X } from "lucide-react";
-import { CategoryGrid } from "./CategoryGrid";
+import type { Category } from "../types/finance";
 import { getCategoryMeta } from "../utils/categoryutils";
+import { CategoryGrid } from "./CategoryGrid";
 
 interface CategorySwitcherModalProps {
     categories: Category[];

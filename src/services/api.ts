@@ -1,6 +1,6 @@
-﻿import type {Category, Currency} from '../types/finance';
-import {enrichCategory} from "../utils/categoryIcons.ts";
-import {toDateOnlyString} from "../utils/dateformatter.ts";
+﻿import type { Category, Currency } from '../types/finance';
+import { enrichCategory } from "../utils/categoryIcons.ts";
+import { toDateOnlyString } from "../utils/dateformatter.ts";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 

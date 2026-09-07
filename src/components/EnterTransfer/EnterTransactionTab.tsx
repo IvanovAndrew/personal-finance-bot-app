@@ -1,16 +1,17 @@
-﻿import React, { useState } from "react";
-import { ArrowUpRight, ArrowDownLeft } from 'lucide-react';
-import { CategorySwitcherModal } from '../CategorySwitcherModal.tsx';
-import { commonStyles, appStyles } from '../../App.styles';
-import type { Category, Currency, SubCategory, TransactionType } from "../../types/finance.ts";
-import { financeApi } from "../../services/api.ts";
-import { toDateOnlyString } from "../../utils/dateformatter.ts";
-import { CustomDatePicker } from "../CustomDatePicker.tsx";
-import { StatusModal } from "../StatusModal.tsx";
+﻿import { ArrowDownLeft,ArrowUpRight } from 'lucide-react';
+import React, { useState } from "react";
+
+import { appStyles,commonStyles } from '../../App.styles';
 import { QUICK_CATEGORY_OUTCOME_CODES } from '../../constants/categories';
 import { QUICK_CATEGORY_INCOME_CODES } from '../../constants/categories';
-import {formatCurrencyValue} from "../../utils/numberformatter.ts";
-import {ONE_SECOND} from "../../constants/time.ts";
+import { ONE_SECOND } from "../../constants/time.ts";
+import { financeApi } from "../../services/api.ts";
+import type { Category, Currency, SubCategory, TransactionType } from "../../types/finance.ts";
+import { toDateOnlyString } from "../../utils/dateformatter.ts";
+import { formatCurrencyValue } from "../../utils/numberformatter.ts";
+import { CategorySwitcherModal } from '../CategorySwitcherModal.tsx';
+import { CustomDatePicker } from "../CustomDatePicker.tsx";
+import { StatusModal } from "../StatusModal.tsx";
 
 interface EnterOutcomeTabProps {
     incomeCategories: Category[];
@@ -64,7 +65,7 @@ export const EnterTransactionTab: React.FC<EnterOutcomeTabProps> = ({
     };
 
     const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        let val = e.target.value.replace(',', '.');
+        const val = e.target.value.replace(',', '.');
         if (val === '' || /^\d*\.?\d*$/.test(val)) {
             setAmountStr(val);
         }

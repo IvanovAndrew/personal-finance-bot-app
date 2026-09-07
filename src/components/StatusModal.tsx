@@ -1,6 +1,7 @@
-﻿import React from "react";
-import {statusModalStyles, theme} from "../App.styles.ts";
-import {CheckCircle2, Loader2, XCircle} from "lucide-react";
+﻿import { CheckCircle2, Loader2, XCircle } from "lucide-react";
+import React from "react";
+
+import { statusModalStyles, theme } from "../App.styles.ts";
 
 export type StatusModalType = 'loading' | 'saving' | 'success' | 'saved' | 'error';
 

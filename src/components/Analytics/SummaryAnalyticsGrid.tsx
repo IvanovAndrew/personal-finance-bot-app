@@ -1,14 +1,15 @@
-﻿import {type FC, useCallback, useState} from "react";
+﻿import { type FC, useCallback, useState } from "react";
+
 import { commonStyles, theme } from "../../App.styles.ts";
-import type {FutureExpense, SummaryResponse} from "../../services/api.ts";
+import type { FutureExpense, SummaryResponse } from "../../services/api.ts";
+import type { Category, Currency } from "../../types/finance.ts";
+import { getCategoryMeta, getSubCategoryName } from "../../utils/categoryutils.ts";
 import { formatDateDMMMMYYYY } from "../../utils/dateformatter.ts";
+import { formatCurrencyValue } from "../../utils/numberformatter.ts";
+import { getShopMeta } from "../../utils/shoplogos.ts";
 import { LoadingData } from "../LoadingData.tsx";
 import { NoAvailableData } from "../NoAvailableData.tsx";
-import type {Category, Currency} from "../../types/finance.ts";
-import {getCategoryMeta, getSubCategoryName} from "../../utils/categoryutils.ts";
-import {getShopMeta} from "../../utils/shoplogos.ts";
-import {ShopAvatar} from "../ShopAvatar.tsx";
-import {formatCurrencyValue} from "../../utils/numberformatter.ts";
+import { ShopAvatar } from "../ShopAvatar.tsx";
 
 interface SummaryAnalyticsGridProps {
     currency: Currency;

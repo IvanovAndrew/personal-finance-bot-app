@@ -1,6 +1,6 @@
-﻿import type {Category} from "../types/finance.ts";
-import type {RawCategory} from "../services/api.ts";
-import {defaultColor} from "./categoryutils.ts";
+﻿import type { RawCategory } from "../services/api.ts";
+import type { Category } from "../types/finance.ts";
+import { defaultColor } from "./categoryutils.ts";
 
 export interface CategoryVisual {
     icon: string;

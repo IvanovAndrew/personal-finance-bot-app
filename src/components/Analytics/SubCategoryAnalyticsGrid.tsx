@@ -1,11 +1,12 @@
 ﻿import { type FC, useMemo, useState } from "react";
-import { commonStyles, theme, receiptStyles, appStyles } from "../../App.styles.ts";
+
+import { appStyles,commonStyles, receiptStyles, theme } from "../../App.styles.ts";
+import type { MonthlyAnalyticsResponse } from "../../services/api.ts";
 import type { Category, Currency } from "../../types/finance.ts";
 import { formatDateMMMMYYYY } from "../../utils/dateformatter.ts";
-import type { MonthlyAnalyticsResponse } from "../../services/api.ts";
+import { formatCurrencyValue } from "../../utils/numberformatter.ts";
 import { CategorySwitcherModal } from "../CategorySwitcherModal.tsx";
 import { LoadingData } from "../LoadingData.tsx";
-import { formatCurrencyValue } from "../../utils/numberformatter.ts";
 
 interface SubCategoryAnalyticsGridProps {
     categories: Category[];
@@ -61,7 +62,6 @@ export const SubCategoryAnalyticsGrid: FC<SubCategoryAnalyticsGridProps> = ({
         return subCategoryTotalsMap.get(subCode.toLowerCase()) || 0;
     };
 
-    // Сортировка подкатегорий по убыванию суммы
     const sortedSubCategories = useMemo(() => {
         const list = selectedCategory?.subCategories || [];
         return [...list].sort((a, b) => getSubcategoryTotal(b.code) - getSubcategoryTotal(a.code));

@@ -1,7 +1,8 @@
-﻿import React from 'react';
-import { PlusCircle, Receipt, PieChart as PieChartIcon } from 'lucide-react';
-import type {TabType} from '../types/finance';
+﻿import { PieChart as PieChartIcon,PlusCircle, Receipt } from 'lucide-react';
+import React from 'react';
+
 import { appStyles } from '../App.styles';
+import type { TabType } from '../types/finance';
 
 interface NavigationBarProps {
     activeTab: TabType;

@@ -1,9 +1,11 @@
-﻿import React from 'react';
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
-import { datePickerStyles, theme } from '../App.styles';
+﻿import 'react-datepicker/dist/react-datepicker.css';
+
 import { Calendar } from "lucide-react";
-import {EARLIEST_DATA_DATE} from "../constants/data.ts";
+import React from 'react';
+import DatePicker from 'react-datepicker';
+
+import { datePickerStyles, theme } from '../App.styles';
+import { EARLIEST_DATA_DATE } from "../constants/data.ts";
 
 interface CustomDatePickerProps {
     selectedDate: Date;

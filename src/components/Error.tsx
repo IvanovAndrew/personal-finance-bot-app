@@ -1,6 +1,7 @@
-﻿import React from "react";
-import {AlertCircle} from "lucide-react";
-import {commonStyles, theme} from "../App.styles.ts";
+﻿import { AlertCircle } from "lucide-react";
+import React from "react";
+
+import { commonStyles, theme } from "../App.styles.ts";
 
 interface ErrorDataProps {
     error: string;

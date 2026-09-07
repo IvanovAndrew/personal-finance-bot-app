@@ -1,4 +1,4 @@
-﻿import {ONE_WEEK} from "../constants/time.ts";
+﻿import { ONE_WEEK } from "../constants/time.ts";
 
 interface CacheItem<T> {
     timestamp: number;

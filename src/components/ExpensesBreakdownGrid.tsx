@@ -1,11 +1,12 @@
-﻿import {type FC, useCallback, useState} from "react";
-import type {MonthAnalyticsView} from "./Analytics/MonthAnalyticsGrid.tsx";
-import {NOT_EVERYDAY_OUTCOME_CATEGORIES, SAVINGS_CATEGORY_CODE} from "../constants/categories.ts";
-import type {MonthlyAnalyticsItem} from "../services/api.ts";
-import type {Category, Currency} from "../types/finance.ts";
-import {getCategoryMeta} from "../utils/categoryutils.ts";
-import {formatCurrencyValue} from "../utils/numberformatter.ts";
-import {DonutChart} from "./DonutChart.tsx";
+﻿import { type FC, useCallback, useState } from "react";
+
+import { NOT_EVERYDAY_OUTCOME_CATEGORIES, SAVINGS_CATEGORY_CODE } from "../constants/categories.ts";
+import type { MonthlyAnalyticsItem } from "../services/api.ts";
+import type { Category, Currency } from "../types/finance.ts";
+import { getCategoryMeta } from "../utils/categoryutils.ts";
+import { formatCurrencyValue } from "../utils/numberformatter.ts";
+import type { MonthAnalyticsView } from "./Analytics/MonthAnalyticsGrid.tsx";
+import { DonutChart } from "./DonutChart.tsx";
 
 interface ExpensesBreakdownGridProps {
     activeMonth: MonthlyAnalyticsItem;
@@ -16,7 +17,7 @@ interface ExpensesBreakdownGridProps {
     currency: Currency;
 }
 
-export const ExpensesBreakdownGrid: FC<ExpensesBreakdownGridProps>  = ({activeMonth, viewMode, outcomeCategories, activeMonthValues, currency}) => {
+export const ExpensesBreakdownGrid: FC<ExpensesBreakdownGridProps>  = ({ activeMonth, viewMode, outcomeCategories, activeMonthValues, currency }) => {
 
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     

@@ -1,6 +1,7 @@
 ﻿import React from "react";
-import {CustomDatePicker} from "../CustomDatePicker.tsx";
+
 import { commonStyles } from '../../App.styles';
+import { CustomDatePicker } from "../CustomDatePicker.tsx";
 
 interface YerevanCityGridProps {
     date: Date,

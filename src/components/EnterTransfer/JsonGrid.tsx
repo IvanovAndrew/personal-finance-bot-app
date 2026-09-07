@@ -1,4 +1,5 @@
 ﻿import React from "react";
+
 import { receiptStyles } from '../../App.styles';
 
 interface JsonGridProps {

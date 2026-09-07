@@ -1,6 +1,7 @@
 ﻿import React from "react";
-import {theme} from "../App.styles.ts";
-import type {Currency} from "../types/finance.ts";
+
+import { theme } from "../App.styles.ts";
+import type { Currency } from "../types/finance.ts";
 
 interface CurrencyDropdownProps {
     currencies: Currency[];

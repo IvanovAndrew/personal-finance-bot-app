@@ -1,30 +1,30 @@
-﻿import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import {
+﻿import {
+    AlertCircle,
     Calendar,
-    PieChart,
     Layers,
     LayoutDashboard,
     Loader2,
-    AlertCircle,
+    PieChart,
     RefreshCw,
     RotateCcw
 } from 'lucide-react';
-import { commonStyles, appStyles, receiptStyles, theme } from '../../App.styles';
-import type { Category, Currency } from '../../types/finance';
-import { DayAnalyticsGrid } from "./DayAnalyticsGrid.tsx";
-import { CategoryAnalyticsGrid } from "./CategoryAnalyticsGrid.tsx";
-import { CustomDatePicker } from "../CustomDatePicker.tsx";
-import { SubCategoryAnalyticsGrid } from "./SubCategoryAnalyticsGrid.tsx";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+
+import { appStyles, commonStyles, receiptStyles, theme } from '../../App.styles';
+import { EARLIEST_DATA_DATE } from "../../constants/data.ts";
 import {
+    type DailyAnalyticsResponse,
     financeApi,
-    type SummaryResponse,
     type MonthlyAnalyticsResponse,
     type SaveTransactionPayload,
-    type DailyAnalyticsResponse
-} from "../../services/api.ts";
-import { SummaryAnalyticsGrid } from "./SummaryAnalyticsGrid.tsx";
+    type SummaryResponse } from "../../services/api.ts";
+import type { Category, Currency } from '../../types/finance';
+import { CustomDatePicker } from "../CustomDatePicker.tsx";
+import { CategoryAnalyticsGrid } from "./CategoryAnalyticsGrid.tsx";
+import { DayAnalyticsGrid } from "./DayAnalyticsGrid.tsx";
 import { MonthAnalyticsGrid } from "./MonthAnalyticsGrid.tsx";
-import { EARLIEST_DATA_DATE } from "../../constants/data.ts";
+import { SubCategoryAnalyticsGrid } from "./SubCategoryAnalyticsGrid.tsx";
+import { SummaryAnalyticsGrid } from "./SummaryAnalyticsGrid.tsx";
 
 interface AnalyticsTabProps {
     outcomeCategories: Category[];

@@ -1,11 +1,12 @@
-﻿import React, { useState, useEffect } from 'react';
-import type {Category, Currency, TabType} from './types/finance';
-import { NavigationBar } from './components/NavigationBar';
-import { ReceiptTab } from './components/EnterTransfer/ReceiptTab';
+﻿import React, { useEffect,useState } from 'react';
+
 import { appStyles, theme } from './App.styles';
-import {EnterTransactionTab} from "./components/EnterTransfer/EnterTransactionTab.tsx";
-import {AnalyticsTab} from "./components/Analytics/AnalyticsTab.tsx";
+import { AnalyticsTab } from "./components/Analytics/AnalyticsTab.tsx";
+import { EnterTransactionTab } from "./components/EnterTransfer/EnterTransactionTab.tsx";
+import { ReceiptTab } from './components/EnterTransfer/ReceiptTab';
+import { NavigationBar } from './components/NavigationBar';
 import { financeApi } from './services/api';
+import type { Category, Currency, TabType } from './types/finance';
 import { cacheService } from './utils/cache';
 
 const CACHE_KEYS = {

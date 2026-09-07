@@ -1,5 +1,5 @@
 ﻿import { NOT_EVERYDAY_OUTCOME_CATEGORIES, SALARY_CATEGORY_CODE } from '../constants/categories';
-import type { MonthlyAnalyticsItem, CategoryAnalytics } from '../services/api';
+import type { CategoryAnalytics,MonthlyAnalyticsItem } from '../services/api';
 
 export function getEverydayOutcomeTotal(categories: CategoryAnalytics[]): number {
     return categories

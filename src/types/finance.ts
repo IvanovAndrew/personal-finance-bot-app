@@ -1,4 +1,4 @@
-﻿import type {RawCategory, RawSubCategory} from "../services/api.ts";
+﻿import type { RawCategory, RawSubCategory } from "../services/api.ts";
 
 export type TabType = 'add' | 'receipt' | 'analytics';
 export type TransactionType = 'expense' | 'income';

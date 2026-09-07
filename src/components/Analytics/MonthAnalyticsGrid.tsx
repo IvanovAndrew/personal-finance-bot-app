@@ -1,26 +1,27 @@
-﻿import { type FC, useState, useMemo, useCallback, useEffect } from "react";
+﻿import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { type FC, useCallback, useEffect,useMemo, useState } from "react";
 import {
-    BarChart,
     Bar,
+    BarChart,
+    CartesianGrid,
     Cell,
+    Tooltip,
     XAxis,
     YAxis,
-    Tooltip,
-    CartesianGrid,
 } from "recharts";
+
 import { commonStyles, theme } from "../../App.styles.ts";
-import { formatDateMMMMYYYY } from "../../utils/dateformatter.ts";
-import type { Category, Currency } from "../../types/finance.ts";
-import type { MonthlyAnalyticsResponse, MonthlyAnalyticsItem } from "../../services/api.ts";
-import { formatCurrencyValue } from "../../utils/numberformatter.ts";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
-import { LoadingData } from "../LoadingData.tsx";
-import { NoAvailableData } from "../NoAvailableData.tsx";
 import {
     NOT_EVERYDAY_OUTCOME_CATEGORIES,
     SALARY_CATEGORY_CODE,
 } from "../../constants/categories.ts";
-import {ExpensesBreakdownGrid} from "../ExpensesBreakdownGrid.tsx";
+import type { MonthlyAnalyticsItem,MonthlyAnalyticsResponse } from "../../services/api.ts";
+import type { Category, Currency } from "../../types/finance.ts";
+import { formatDateMMMMYYYY } from "../../utils/dateformatter.ts";
+import { formatCurrencyValue } from "../../utils/numberformatter.ts";
+import { ExpensesBreakdownGrid } from "../ExpensesBreakdownGrid.tsx";
+import { LoadingData } from "../LoadingData.tsx";
+import { NoAvailableData } from "../NoAvailableData.tsx";
 
 interface MonthAnalyticsGridProps {
     outcomeCategories?: Category[];

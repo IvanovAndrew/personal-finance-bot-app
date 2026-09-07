@@ -1,12 +1,13 @@
-﻿import { type FC, useMemo, useState } from "react";
+﻿import { ChevronDown, ChevronRight } from "lucide-react";
+import { type FC, useMemo, useState } from "react";
+
 import { commonStyles, theme } from "../../App.styles.ts";
 import { type SaveTransactionPayload } from "../../services/api.ts";
-import { formatCurrencyValue } from "../../utils/numberformatter.ts";
 import type { Category, Currency } from "../../types/finance.ts";
+import { formatCurrencyValue } from "../../utils/numberformatter.ts";
 import { LoadingData } from "../LoadingData.tsx";
+import { ShopLogo } from "../ShopLogo.tsx";
 import { TransactionRow } from "../TransactionRow.tsx";
-import {ShopLogo} from "../ShopLogo.tsx";
-import {ChevronDown, ChevronRight} from "lucide-react";
 
 interface DayAnalyticsGridProps {
     startDate: Date;

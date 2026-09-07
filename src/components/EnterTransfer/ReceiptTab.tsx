@@ -1,15 +1,16 @@
-﻿import React, {useState} from 'react';
-import {Building2, Link, Plus, QrCode, Trash2} from 'lucide-react';
-import {appStyles, receiptStyles, commonStyles} from '../../App.styles';
-import {YerevanCityGrid} from "./YerevanCityGrid.tsx";
-import {JsonGrid} from "./JsonGrid.tsx";
-import {QRLinkGrid} from "./QRUrl.tsx";
-import {ReceiptParamsGrid} from "./ReceiptParamsGrid.tsx";
-import {financeApi, type SaveCheckDto, type SaveTransactionPayload} from "../../services/api.ts";
-import {formatISODateTime} from "../../utils/dateformatter.ts";
-import {StatusModal, type StatusModalType} from "../StatusModal.tsx";
-import {CheckSavedSuccessModal} from "../CheckSavedSuccessModal.tsx";
-import type {Category, Currency} from "../../types/finance.ts";
+﻿import { Building2, Link, Plus, QrCode, Trash2 } from 'lucide-react';
+import React, { useState } from 'react';
+
+import { appStyles, commonStyles,receiptStyles } from '../../App.styles';
+import { financeApi, type SaveCheckDto, type SaveTransactionPayload } from "../../services/api.ts";
+import type { Category, Currency } from "../../types/finance.ts";
+import { formatISODateTime } from "../../utils/dateformatter.ts";
+import { CheckSavedSuccessModal } from "../CheckSavedSuccessModal.tsx";
+import { StatusModal, type StatusModalType } from "../StatusModal.tsx";
+import { JsonGrid } from "./JsonGrid.tsx";
+import { QRLinkGrid } from "./QRUrl.tsx";
+import { ReceiptParamsGrid } from "./ReceiptParamsGrid.tsx";
+import { YerevanCityGrid } from "./YerevanCityGrid.tsx";
 
 type MainTabMode = 'yerevan_city' | 'fns_ru' | 'manual';
 type RuInputSubMode = 'params' | 'qr_url' | 'json';

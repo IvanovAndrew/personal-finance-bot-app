@@ -1,7 +1,8 @@
-﻿import React from 'react';
-import { X } from 'lucide-react';
+﻿import { X } from 'lucide-react';
+import React from 'react';
+
+import { modalStyles, theme } from '../App.styles';
 import type { Category, SubCategory } from '../types/finance';
-import {modalStyles, theme} from '../App.styles';
 
 interface SubCategoryModalProps {
     category: Category | null;

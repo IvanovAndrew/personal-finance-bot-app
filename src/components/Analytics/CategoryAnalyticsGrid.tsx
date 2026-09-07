@@ -1,13 +1,14 @@
-﻿import { useMemo, useState, type FC } from "react";
-import type { Category, Currency } from "../../types/finance.ts";
-import type { MonthlyAnalyticsResponse } from "../../services/api.ts";
+﻿import { type FC,useMemo, useState } from "react";
+
 import { commonStyles, receiptStyles, theme } from "../../App.styles.ts";
-import { formatCurrencyValue } from "../../utils/numberformatter.ts";
-import { formatDateMMMMYYYY } from "../../utils/dateformatter.ts";
+import type { MonthlyAnalyticsResponse } from "../../services/api.ts";
+import type { Category, Currency } from "../../types/finance.ts";
 import { getCategoryMeta, getSubCategoryName } from "../../utils/categoryutils.ts";
+import { formatDateMMMMYYYY } from "../../utils/dateformatter.ts";
+import { formatCurrencyValue } from "../../utils/numberformatter.ts";
 import { CategorySwitcherModal } from "../CategorySwitcherModal.tsx";
-import { NoAvailableData } from "../NoAvailableData.tsx";
 import { LoadingData } from "../LoadingData.tsx";
+import { NoAvailableData } from "../NoAvailableData.tsx";
 
 interface CategoryAnalyticsGridProps {
     categories: Category[];

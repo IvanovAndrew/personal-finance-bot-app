@@ -1,10 +1,11 @@
 ﻿import React from 'react';
-import { theme, receiptStyles } from '../App.styles';
-import { getShopMeta } from '../utils/shoplogos.ts';
-import { getCategoryMeta, getSubCategoryName } from '../utils/categoryutils';
-import { ShopAvatar } from './ShopAvatar';
-import { formatCurrencyValue } from '../utils/numberformatter';
+
+import { receiptStyles,theme } from '../App.styles';
 import type { Category, Currency } from '../types/finance';
+import { getCategoryMeta, getSubCategoryName } from '../utils/categoryutils';
+import { formatCurrencyValue } from '../utils/numberformatter';
+import { getShopMeta } from '../utils/shoplogos.ts';
+import { ShopAvatar } from './ShopAvatar';
 
 interface TransactionRowProps {
     transaction: {

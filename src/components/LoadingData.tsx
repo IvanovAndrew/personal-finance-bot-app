@@ -1,11 +1,12 @@
-﻿import {commonStyles, theme} from "../App.styles.ts";
-import {Loader2} from "lucide-react";
+﻿import { Loader2 } from "lucide-react";
+
+import { commonStyles, theme } from "../App.styles.ts";
 
 interface LoadingDataProps {
     text: string;
 }
 
-export const LoadingData: React.FC<LoadingDataProps> = ({text}) => {
+export const LoadingData: React.FC<LoadingDataProps> = ({ text }) => {
     return (<div
         style={{
             ...commonStyles.card,

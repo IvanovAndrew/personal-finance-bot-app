@@ -1,4 +1,5 @@
 ﻿import { type FC, useState } from 'react';
+
 import { getShopMeta } from '../utils/shoplogos.ts';
 
 export const ShopLogo: FC<{ shopName: string }> = ({ shopName }) => {
