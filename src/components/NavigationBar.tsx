@@ -1,4 +1,4 @@
-﻿import { PieChart as PieChartIcon,PlusCircle, Receipt } from 'lucide-react';
+﻿import { PieChart as PieChartIcon,PlusCircle } from 'lucide-react';
 import React from 'react';
 
 import { appStyles } from '../App.styles';
@@ -19,13 +19,6 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({ activeTab, onChang
                 >
                     <PlusCircle size={20} />
                     <span>Enter</span>
-                </button>
-                <button
-                    onClick={() => onChangeTab('receipt')}
-                    style={{ ...appStyles.navTab, ...(activeTab === 'receipt' ? appStyles.navTabActive : {}) }}
-                >
-                    <Receipt size={20} />
-                    <span>Receipt</span>
                 </button>
                 <button
                     onClick={() => onChangeTab('analytics')}

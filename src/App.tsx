@@ -3,7 +3,6 @@
 import { appStyles, theme } from './App.styles';
 import { AnalyticsTab } from "./components/Analytics/AnalyticsTab.tsx";
 import { EnterTransactionTab } from "./components/EnterTransfer/EnterTransactionTab.tsx";
-import { ReceiptTab } from './components/EnterTransfer/ReceiptTab';
 import { NavigationBar } from './components/NavigationBar';
 import { financeApi } from './services/api';
 import type { Category, Currency, TabType } from './types/finance';
@@ -111,7 +110,6 @@ export const App: React.FC = () => {
         
       <div style={appStyles.content}>
         {activeTab === 'add' && <EnterTransactionTab incomeCategories={incomeCategories} outcomeCategories={outcomeCategories} currencies={currencies} />}
-        {activeTab === 'receipt' && <ReceiptTab categories={outcomeCategories} currencies={currencies} />}
         {activeTab === 'analytics' && <AnalyticsTab outcomeCategories={outcomeCategories} incomeCategories={incomeCategories} currencies={currencies} />}
       </div>
 

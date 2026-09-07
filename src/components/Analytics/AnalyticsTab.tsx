@@ -22,6 +22,7 @@ import { SubCategoryAnalyticsGrid } from "./SubCategoryAnalyticsGrid.tsx";
 import { SummaryAnalyticsGrid } from "./SummaryAnalyticsGrid.tsx";
 import {AnalyticsHeader} from "./AnalyticsHeader.tsx";
 import {AnalyticsSegmentedControl} from "../SegmentedControl.tsx";
+import {STORAGE_KEYS} from "../../constants/storageKeys.ts";
 
 interface AnalyticsTabProps {
     outcomeCategories: Category[];
@@ -35,11 +36,6 @@ export interface DailyGroup {
 }
 
 type ViewMode = 'summary' | 'days' | 'months' | 'categories' | 'subcategories';
-
-const STORAGE_KEYS = {
-    CURRENCY: 'analytics_selected_currency',
-    MONTH: 'analytics_selected_month',
-};
 
 const mapDailyResponseToGroups = (response: DailyAnalyticsResponse): DailyGroup[] => {
     if (!response || !Array.isArray(response.days)) {
