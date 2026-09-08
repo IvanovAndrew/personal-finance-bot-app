@@ -116,7 +116,7 @@ export const CategoryAnalyticsGrid: FC<CategoryAnalyticsGridProps> = ({
                             {selectedMonthStr ? 'FILTERED TOTAL' : 'TOTAL'}
                         </div>
                         <div style={{ fontSize: '18px', fontWeight: '800', color: theme.colors.textPrimary, marginTop: '2px' }}>
-                            {formatCurrencyValue(selectedMonthStr ? activeSubcategoryTotal : categoryGrandTotal)} {currency.symbol}
+                            {formatCurrencyValue(selectedMonthStr ? activeSubcategoryTotal : categoryGrandTotal, currency.format)} {currency.symbol}
                         </div>
                     </div>
 
@@ -195,7 +195,7 @@ export const CategoryAnalyticsGrid: FC<CategoryAnalyticsGridProps> = ({
                                                 whiteSpace: 'nowrap',
                                             }}
                                         >
-                                            {m.total > 0 ? formatCurrencyValue(m.total) : '—'}
+                                            {m.total > 0 ? formatCurrencyValue(m.total, currency.format) : '—'}
                                         </span>
 
                                         <div style={{
@@ -266,7 +266,7 @@ export const CategoryAnalyticsGrid: FC<CategoryAnalyticsGridProps> = ({
                                                 </span>
                                                 <div style={{ textAlign: 'right' }}>
                                                     <span style={{ fontWeight: '700', fontSize: '13px', color: theme.colors.textPrimary, marginRight: '6px' }}>
-                                                        {formatCurrencyValue(sc.total)} {currency.symbol}
+                                                        {formatCurrencyValue(sc.total, currency.format)} {currency.symbol}
                                                     </span>
                                                     <span style={{ fontSize: '10px', color: theme.colors.textSecondary }}>
                                                         ({percentage.toFixed(1)}%)

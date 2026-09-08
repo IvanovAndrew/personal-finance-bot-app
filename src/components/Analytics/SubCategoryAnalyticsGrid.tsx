@@ -166,7 +166,7 @@ export const SubCategoryAnalyticsGrid: FC<SubCategoryAnalyticsGridProps> = ({
                             >
                                 <span style={{ color: theme.colors.textPrimary, fontWeight: '500' }}>{sub.name}</span>
                                 <span style={{ fontWeight: '700', color: theme.colors.textPrimary }}>
-                                    {formatCurrencyValue(total)} {currency.symbol}
+                                    {formatCurrencyValue(total, currency.format)} {currency.symbol}
                                 </span>
                             </div>
                         );
@@ -203,7 +203,7 @@ export const SubCategoryAnalyticsGrid: FC<SubCategoryAnalyticsGridProps> = ({
                                 <div key={m.month} style={{ ...receiptStyles.subChip, justifyContent: 'space-between', padding: '10px 12px' }}>
                                     <span style={{ color: theme.colors.textSecondary }}>{formatDateMMMMYYYY(monthDate)}</span>
                                     <span style={{ fontWeight: '700', color: monthAmount > 0 ? theme.colors.primary : theme.colors.textSecondary }}>
-                                        {formatCurrencyValue(monthAmount)} {currency.symbol}
+                                        {formatCurrencyValue(monthAmount, currency.format)} {currency.symbol}
                                     </span>
                                 </div>
                             );

@@ -60,7 +60,7 @@ export const CheckSavedSuccessModal: React.FC<CheckSavedSuccessModalProps> = ({
             TOTAL AMOUNT
           </span>
                     <span style={{ fontSize: '18px', fontWeight: '800', color: theme.colors.primary }}>
-            {formatCurrencyValue(totalSum)} {currency.symbol}
+            {formatCurrencyValue(totalSum, currency.format)} {currency.symbol}
           </span>
                 </div>
 
@@ -140,7 +140,7 @@ export const CheckSavedSuccessModal: React.FC<CheckSavedSuccessModalProps> = ({
                                 </div>
 
                                 <span style={{ fontSize: '13px', fontWeight: '700', color: theme.colors.textPrimary }}>
-                  {formatCurrencyValue(item.amount)} {currency.symbol}
+                  {formatCurrencyValue(item.amount, currency.format)} {currency.symbol}
                 </span>
                             </div>
                         );

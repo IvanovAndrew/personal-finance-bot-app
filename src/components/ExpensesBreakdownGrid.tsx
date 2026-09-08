@@ -22,7 +22,7 @@ export const ExpensesBreakdownGrid: FC<ExpensesBreakdownGridProps>  = ({ activeM
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     
     const formatAmount = useCallback(
-        (val: number) => `${formatCurrencyValue(val)} ${currency.symbol}`,
+        (val: number) => `${formatCurrencyValue(val, currency.format)} ${currency.symbol}`,
         [currency.symbol]
     );
 

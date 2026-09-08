@@ -63,7 +63,7 @@ export const DayAnalyticsGrid: FC<DayAnalyticsGridProps> = ({
                     {formattedDayStr}
                 </div>
                 <div style={{ fontSize: '14px', fontWeight: '700', color: theme.colors.textSecondary }}>
-                    {formatCurrencyValue(dayTotal)} {currency.symbol}
+                    {formatCurrencyValue(dayTotal, currency.format)} {currency.symbol}
                 </div>
             </div>
 
@@ -100,7 +100,7 @@ export const DayAnalyticsGrid: FC<DayAnalyticsGridProps> = ({
                                     </span>
                                 </div>
                                 <span style={{ fontSize: '15px', fontWeight: '700', color: theme.colors.primary }}>
-                                    {formatCurrencyValue(shopExpenses.total)} {currency.symbol}
+                                    {formatCurrencyValue(shopExpenses.total, currency.format)} {currency.symbol}
                                 </span>
                             </div>
 

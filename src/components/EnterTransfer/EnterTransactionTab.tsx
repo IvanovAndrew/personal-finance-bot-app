@@ -135,7 +135,7 @@ export const EnterTransactionTab: React.FC<EnterOutcomeTabProps> = ({
 
             const detailsArray = [shop.trim(), note.trim()].filter(Boolean);
             const detailsText = detailsArray.length > 0 ? ` (${detailsArray.join(', ')})` : '';
-            const formattedAmount = `${selectedCurrency.symbol}${formatCurrencyValue(parseFloat(amountStr))}`;
+            const formattedAmount = `${selectedCurrency.symbol}${formatCurrencyValue(parseFloat(amountStr), selectedCurrency.format)}`;
 
             setSaveStatus('saved');
             setStatusMessage(`Saved: ${formattedAmount}${detailsText}`);

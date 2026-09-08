@@ -58,7 +58,7 @@ export const MonthAnalyticsGrid: FC<MonthAnalyticsGridProps> = ({
     const activeMonth = sortedMonths[selectedIndex] || sortedMonths[sortedMonths.length - 1];
 
     const formatAmount = useCallback(
-        (val: number) => `${formatCurrencyValue(val)} ${currency.symbol}`,
+        (val: number) => `${formatCurrencyValue(val, currency.format)} ${currency.symbol}`,
         [currency.symbol]
     );
 

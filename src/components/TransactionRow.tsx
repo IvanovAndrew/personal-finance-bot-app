@@ -192,7 +192,7 @@ export const TransactionRow: React.FC<TransactionRowProps> = ({
                         color: transaction.isOutcome ? theme.colors.textPrimary : theme.colors.success,
                     }}
                 >
-                    {transaction.isOutcome ? '-' : '+'}{formatCurrencyValue(transaction.amount)} {currency.symbol}
+                    {transaction.isOutcome ? '-' : '+'}{formatCurrencyValue(transaction.amount, currency.format)} {currency.symbol}
                 </span>
             </div>
         </div>
