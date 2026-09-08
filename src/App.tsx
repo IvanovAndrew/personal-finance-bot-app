@@ -104,7 +104,8 @@ export const App: React.FC = () => {
 
       {isServerWakingUp && (
           <div style={appStyles.serverWakingBannerStyle}>
-              ⚡ The server is waking up... Requests may take longer than usual.
+              <div>⚡ The server is waking up...</div> 
+              <div>Requests may take longer than usual.</div>
           </div>
       )}
         
