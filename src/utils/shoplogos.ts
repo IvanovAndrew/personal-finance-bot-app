@@ -83,7 +83,7 @@ const RAW_SHOPS_REGISTRY: Record<string, ShopMeta> = {
     ucom: { type: 'image', src: ucomLogo },
     wildberries: { type: 'image', src: wildberriesLogo },
     yandexeats: { type: 'image', src: yandexeatsLogo },
-    yandexgo: { type: 'image', src: yandexgoLogo },
+    yandexgo: { type: 'image', src: yandexgoLogo, hasOwnBackground: true },
     yerevancity: { type: 'image', src: yerevanCityLogo },
     yerevanswim: { type: 'image', src: yerevanSwimLogo },
     

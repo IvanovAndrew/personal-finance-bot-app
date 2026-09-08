@@ -34,7 +34,6 @@ export const ShopAvatar: React.FC<ShopAvatarProps> = ({ shopName, size = 32 }) =
         overflow: 'hidden',
     };
 
-    // SVG
     const svgContainerStyle: React.CSSProperties = {
         width: `${size}px`,
         height: `${size}px`,
@@ -47,7 +46,6 @@ export const ShopAvatar: React.FC<ShopAvatarProps> = ({ shopName, size = 32 }) =
         flexShrink: 0,
     };
 
-    // SVG from assets
     if (meta?.type === 'image') {
         if (meta.hasOwnBackground) {
             return (
@@ -80,7 +78,6 @@ export const ShopAvatar: React.FC<ShopAvatarProps> = ({ shopName, size = 32 }) =
         );
     }
 
-    // SVG from simple icons
     if (meta?.type === 'svg-path') {
         return (
             <div style={svgContainerStyle}>
@@ -96,7 +93,6 @@ export const ShopAvatar: React.FC<ShopAvatarProps> = ({ shopName, size = 32 }) =
         );
     }
 
-    // No logo
     return (
         <div
             style={{
