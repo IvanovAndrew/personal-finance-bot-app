@@ -14,22 +14,22 @@ const CACHE_KEYS = {
     CURRENCIES: 'app_currencies_cache',
 };
 
+type ServerState = 'sleeping' | 'failed' | 'working';
+
 export const App: React.FC = () => {
 
-    const [isServerWakingUp, setIsServerWakingUp] = useState<boolean>(true);
+    const [serverState, setServerState] = useState<ServerState>('sleeping');
 
     useEffect(() => {
         financeApi.health()
             .then((isHealthy) => {
                 if (!isHealthy) {
                     console.error('API is not healthy');
+                    setServerState('failed');
+                } else {
+                    setServerState('working');
                 }
             })
-            .catch(() => console.error('Health check failed'))
-            .finally(() => {
-                // Сервер ответил — значит он проснулся
-                setIsServerWakingUp(false);
-            });
     }, []);
     
     const [activeTab, setActiveTab] = useState<TabType>('add');
@@ -102,10 +102,17 @@ export const App: React.FC = () => {
   return (
     <div style={appStyles.appContainer}>
 
-      {isServerWakingUp && (
+      {serverState === 'sleeping' && (
           <div style={appStyles.serverWakingBannerStyle}>
               <div>⚡ The server is waking up...</div> 
               <div>Requests may take longer than usual.</div>
+          </div>
+      )}
+    
+      {serverState === 'failed' && (
+          <div style={appStyles.serverWakingBannerStyle}>
+              <div>⚡ The server is failed...</div>
+              <div>Admins are already notified.</div>
           </div>
       )}
         
