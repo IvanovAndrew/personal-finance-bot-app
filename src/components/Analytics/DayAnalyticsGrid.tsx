@@ -2,25 +2,19 @@
 import { type FC, useMemo, useState } from "react";
 
 import { commonStyles, theme } from "../../App.styles.ts";
-import { type SaveTransactionPayload } from "../../services/api.ts";
+import {type ShopExpensesDto} from "../../services/api.ts";
 import type { Category, Currency } from "../../types/finance.ts";
 import { formatCurrencyValue } from "../../utils/numberformatter.ts";
 import { LoadingData } from "../LoadingData.tsx";
-import { ShopLogo } from "../ShopLogo.tsx";
 import { TransactionRow } from "../TransactionRow.tsx";
+import {ShopAvatar} from "../ShopAvatar.tsx";
 
 interface DayAnalyticsGridProps {
     startDate: Date;
     currency: Currency;
     categories?: Category[];
-    items: SaveTransactionPayload[] | null;
+    items: ShopExpensesDto[];
     isLoading: boolean;
-}
-
-interface ShopGroup {
-    shop: string;
-    total: number;
-    items: SaveTransactionPayload[];
 }
 
 export const DayAnalyticsGrid: FC<DayAnalyticsGridProps> = ({
@@ -30,7 +24,6 @@ export const DayAnalyticsGrid: FC<DayAnalyticsGridProps> = ({
                                                                 items,
                                                                 isLoading,
                                                             }) => {
-    // Состояние развернутых магазинов (ключ - имя магазина)
     const [expandedShops, setExpandedShops] = useState<Record<string, boolean>>({});
 
     const toggleShop = (shopName: string) => {
@@ -41,28 +34,7 @@ export const DayAnalyticsGrid: FC<DayAnalyticsGridProps> = ({
     };
 
     const dayTotal = useMemo(() => {
-        return (items ?? []).reduce((acc, curr) => acc + curr.amount, 0);
-    }, [items]);
-
-    const groupedByShop = useMemo<ShopGroup[]>(() => {
-        if (!items) return [];
-
-        const shopMap = new Map<string, { shop: string; total: number; items: SaveTransactionPayload[] }>();
-
-        items.forEach((item) => {
-            const catKey = item.category?.trim() || "Others";
-            const shopKey = item.shop?.trim() || catKey;
-
-            if (!shopMap.has(shopKey)) {
-                shopMap.set(shopKey, { shop: shopKey, total: 0, items: [] });
-            }
-
-            const shopData = shopMap.get(shopKey)!;
-            shopData.total += item.amount;
-            shopData.items.push(item);
-        });
-
-        return Array.from(shopMap.values()).sort((a, b) => b.total - a.total);
+        return (items ?? []).reduce((acc, curr) => acc + curr.total, 0);
     }, [items]);
 
     if (isLoading) {
@@ -96,19 +68,19 @@ export const DayAnalyticsGrid: FC<DayAnalyticsGridProps> = ({
             </div>
 
             {/* List of Shops */}
-            {groupedByShop.length === 0 ? (
+            {items.length === 0 ? (
                 <div style={{ ...commonStyles.card, textAlign: 'center', padding: '24px', color: theme.colors.textSecondary }}>
                     No expenses recorded for this day
                 </div>
             ) : (
-                groupedByShop.map((shopGroup) => {
-                    const isExpanded = !!expandedShops[shopGroup.shop];
+                items.map((shopExpenses) => {
+                    const isExpanded = !!expandedShops[shopExpenses.shop];
 
                     return (
-                        <div key={shopGroup.shop} style={{ ...commonStyles.card, padding: '0', overflow: 'hidden' }}>
+                        <div key={shopExpenses.shop} style={{ ...commonStyles.card, padding: '0', overflow: 'hidden' }}>
                             {/* Кликабельный заголовок Магазина */}
                             <div
-                                onClick={() => toggleShop(shopGroup.shop)}
+                                onClick={() => toggleShop(shopExpenses.shop)}
                                 style={{
                                     ...commonStyles.rowBetween,
                                     padding: '14px 16px',
@@ -122,19 +94,19 @@ export const DayAnalyticsGrid: FC<DayAnalyticsGridProps> = ({
                                     <span style={{ fontSize: '12px', color: theme.colors.textSecondary, marginRight: '4px' }}>
                                         {isExpanded ? <ChevronDown/> : <ChevronRight/>}
                                     </span>
-                                    <ShopLogo shopName={shopGroup.shop} />
+                                    <ShopAvatar shopName={shopExpenses.shop} />
                                     <span style={{ ...commonStyles.cardTitle, fontSize: '15px' }}>
-                                        {shopGroup.shop}
+                                        {shopExpenses.shop}
                                     </span>
                                 </div>
                                 <span style={{ fontSize: '15px', fontWeight: '700', color: theme.colors.primary }}>
-                                    {formatCurrencyValue(shopGroup.total)} {currency.symbol}
+                                    {formatCurrencyValue(shopExpenses.total)} {currency.symbol}
                                 </span>
                             </div>
 
                             {isExpanded && (
                                 <div style={{ padding: '4px 16px 12px 16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                    {shopGroup.items.map((item, idx) => (
+                                    {shopExpenses.expenses.map((item, idx) => (
                                         <TransactionRow
                                             key={`${item.shop}-${item.category}-${item.amount}-${idx}`}
                                             transaction={{
@@ -147,7 +119,7 @@ export const DayAnalyticsGrid: FC<DayAnalyticsGridProps> = ({
                                             }}
                                             categories={categories}
                                             currency={currency}
-                                            isLast={idx === shopGroup.items.length - 1}
+                                            isLast={idx === shopExpenses.expenses.length - 1}
                                             variant={"flat"}
                                             isInsideGroup={true}
                                         />

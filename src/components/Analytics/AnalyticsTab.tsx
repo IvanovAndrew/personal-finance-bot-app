@@ -9,20 +9,40 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { appStyles, commonStyles, receiptStyles, theme } from '../../App.styles';
 import { EARLIEST_DATA_DATE } from "../../constants/data.ts";
 import {
-    type DailyAnalyticsResponse,
+    type DailyExpensesResponse,
     financeApi,
-    type MonthlyAnalyticsResponse,
-    type SaveTransactionPayload,
-    type SummaryResponse } from "../../services/api.ts";
+    type MonthlyAnalyticsResponse, type ShopExpensesDto,
+    type SummaryResponse
+} from "../../services/api.ts";
 import type { Category, Currency } from '../../types/finance';
 import { CategoryAnalyticsGrid } from "./CategoryAnalyticsGrid.tsx";
 import { DayAnalyticsGrid } from "./DayAnalyticsGrid.tsx";
 import { MonthAnalyticsGrid } from "./MonthAnalyticsGrid.tsx";
 import { SubCategoryAnalyticsGrid } from "./SubCategoryAnalyticsGrid.tsx";
 import { SummaryAnalyticsGrid } from "./SummaryAnalyticsGrid.tsx";
-import {AnalyticsHeader} from "./AnalyticsHeader.tsx";
-import {AnalyticsSegmentedControl} from "../SegmentedControl.tsx";
-import {STORAGE_KEYS} from "../../constants/storageKeys.ts";
+import { AnalyticsHeader } from "./AnalyticsHeader.tsx";
+import { AnalyticsSegmentedControl } from "../SegmentedControl.tsx";
+import { STORAGE_KEYS } from "../../constants/storageKeys.ts";
+
+export interface DailyGroup {
+    date: Date;
+    items: ShopExpensesDto[];
+}
+
+/**
+ * Maps the API dictionary response Record<string, ShopExpensesDto[]>
+ * into a sorted array of DailyGroup objects (ordered from newest to oldest date).
+ */
+const mapDailyResponseToGroups = (response: DailyExpensesResponse): DailyGroup[] => {
+    if (!response) return [];
+
+    return Object.entries(response)
+        .map(([dateStr, items]) => ({
+            date: new Date(dateStr),
+            items,
+        }))
+        .sort((a, b) => b.date.getTime() - a.date.getTime());
+};
 
 interface AnalyticsTabProps {
     outcomeCategories: Category[];
@@ -30,48 +50,7 @@ interface AnalyticsTabProps {
     currencies: Currency[];
 }
 
-export interface DailyGroup {
-    date: Date;
-    items: SaveTransactionPayload[];
-}
-
 type ViewMode = 'summary' | 'days' | 'months' | 'categories' | 'subcategories';
-
-const mapDailyResponseToGroups = (response: DailyAnalyticsResponse): DailyGroup[] => {
-    if (!response || !Array.isArray(response.days)) {
-        return [];
-    }
-
-    // Сортируем дни по убыванию (от свежих к старым)
-    const sortedDays = [...response.days].sort(
-        (a, b) => new Date(b.day).getTime() - new Date(a.day).getTime()
-    );
-
-    return sortedDays.map((dayItem) => {
-        const items: SaveTransactionPayload[] = [];
-
-        dayItem.shops?.forEach((shop) => {
-            shop.categories?.forEach((cat) => {
-                cat.subCategories?.forEach((sub) => {
-                    items.push({
-                        isOutcome: true,
-                        date: dayItem.day,
-                        category: cat.category,
-                        subCategory: sub.subCategory,
-                        shop: shop.name,
-                        amount: sub.total,
-                        currency: response.currency,
-                    });
-                });
-            });
-        });
-
-        return {
-            date: new Date(dayItem.day),
-            items,
-        };
-    });
-};
 
 export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, incomeCategories, currencies }) => {
 
@@ -140,7 +119,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, i
     };
 
     // ----------------------------------------------------
-    // Загрузка стартовых данных для режимов
+    // Initial data fetch per view mode
     // ----------------------------------------------------
     const fetchAnalytics = useCallback(async (forceRefresh = false) => {
         const monthKey = `${selectedMonth.getFullYear()}-${selectedMonth.getMonth() + 1}`;
@@ -183,7 +162,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, i
                     setSummary(data);
                 }
             } else if (viewMode === 'days') {
-                // Запрашиваем батч в 7 дней назад от dailyAnchorDate
+                // Request a 7-day batch backwards starting from dailyAnchorDate
                 const endDate = dailyAnchorDate;
                 const startDate = new Date(dailyAnchorDate);
                 startDate.setDate(startDate.getDate() - 6);
@@ -197,7 +176,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, i
                     return;
                 }
 
-                const response = await financeApi.getDailyAnalytics({
+                const response: DailyExpensesResponse = await financeApi.getDailyExpenses({
                     startDate,
                     endDate,
                     currency: currencyCode,
@@ -236,14 +215,14 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, i
     }, [viewMode, currencyCode, selectedMonth, dailyAnchorDate]);
 
     // ----------------------------------------------------
-    // Подгрузка следующего недельного блока (7 дней)
+    // Load next 7-day chunk on scroll
     // ----------------------------------------------------
     const fetchNextChunk = useCallback(async () => {
         if (isFetchingMoreDays || isLoading || viewMode !== 'days' || dailyGroups.length === 0) {
             return;
         }
 
-        // Берём самую последнюю группу из массива (это самая старая загруженная дата благодаря сортировке)
+        // Target the last group in array (oldest loaded date due to sorting)
         const lastGroup = dailyGroups[dailyGroups.length - 1];
         const lastDate = new Date(lastGroup.date);
 
@@ -252,11 +231,11 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, i
             return;
         }
 
-        // Новая верхняя граница = 1 день ДО самой старой даты из текущего списка
+        // Upper limit = 1 day before the oldest loaded date
         const endDate = new Date(lastDate);
         endDate.setDate(endDate.getDate() - 1);
 
-        // Ниже граница = ещё минус 6 дней (итого 7 дней)
+        // Lower limit = 6 days prior (total 7-day chunk)
         let startDate = new Date(endDate);
         startDate.setDate(startDate.getDate() - 6);
 
@@ -264,7 +243,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, i
             startDate = new Date(EARLIEST_DATA_DATE);
         }
 
-        // Если диапазон схлопнулся или вышел за границы
+        // Stop if range collapsed or went past boundaries
         if (endDate < startDate) {
             setHasMoreDays(false);
             return;
@@ -285,7 +264,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, i
         setIsFetchingMoreDays(true);
 
         try {
-            const response = await financeApi.getDailyAnalytics({
+            const response: DailyExpensesResponse = await financeApi.getDailyExpenses({
                 startDate,
                 endDate,
                 currency: requestCurrency,
@@ -298,7 +277,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, i
             if (stillRelevant) {
                 const newGroups = mapDailyResponseToGroups(response);
 
-                // Если API вернул пустой массив дней за период — останавливаем подгрузку дальше
+                // If API returned no days for period, stop future fetches
                 if (newGroups.length === 0 && startDate <= EARLIEST_DATA_DATE) {
                     setHasMoreDays(false);
                 }
@@ -351,11 +330,11 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, i
     return (
         <div style={appStyles.tabContent}>
 
-            <AnalyticsHeader 
-                selectedCurrency={selectedCurrency} 
-                currencies={currencies} 
+            <AnalyticsHeader
+                selectedCurrency={selectedCurrency}
+                currencies={currencies}
                 onCurrencyChange={handleCurrencyChange}
-                selectedDate={selectedMonth} 
+                selectedDate={selectedMonth}
                 onDateChange={handleMonthChange} />
 
             <AnalyticsSegmentedControl value={viewMode} onChange={setViewMode} />
