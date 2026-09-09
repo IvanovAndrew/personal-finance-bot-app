@@ -32,8 +32,9 @@ export const CheckSavedSuccessModal: React.FC<CheckSavedSuccessModalProps> = ({
                 {/* Header */}
                 <div style={modalStyles.header}>
                     <div>
-                        <div style={modalStyles.title}>Receipt Saved! 🎉</div>
                         <ShopAvatar shopName={check.shop} />
+                        <div style={modalStyles.title}>Receipt Saved! 🎉</div>
+                        
                         <div style={{ fontSize: '12px', color: theme.colors.textSecondary, marginTop: '2px' }}>
                             Saved {check.expenses.length} item{check.expenses.length > 1 ? 's' : ''}
                         </div>

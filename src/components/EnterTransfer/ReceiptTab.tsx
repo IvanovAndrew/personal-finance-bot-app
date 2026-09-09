@@ -107,7 +107,7 @@ export const ReceiptTab: React.FC<ReceiptTabProps> = ({ categories, currencies }
 
                 showStatus('loading', 'Loading and parsing receipt...', 0);
 
-                const { success, error, check } = await financeApi.saveYerevanCityCheck({
+                const { success, error, shopExpenses } = await financeApi.saveYerevanCityCheck({
                     date: ycDate,
                     barcode: ycBarcode.trim(),
                 });
@@ -118,7 +118,7 @@ export const ReceiptTab: React.FC<ReceiptTabProps> = ({ categories, currencies }
                     
                     setYcBarcode('');
                     setCurrency(currencies.find(c => c.name === 'AMD') || currencies[0]);
-                    setSavedCheck(check);
+                    setSavedCheck(shopExpenses);
                 } else {
                     window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred('error');
                     showStatus('error', error || 'Failed to save receipt', 2000);
@@ -170,7 +170,7 @@ export const ReceiptTab: React.FC<ReceiptTabProps> = ({ categories, currencies }
                     showStatus('success', 'Receipt saved successfully!');
 
                     setCurrency(currencies.find(c => c.name === 'RUR') || currencies[0]);
-                    setSavedCheck(result.check);
+                    setSavedCheck(result.shopExpenses);
 
                     if (ruSubMode === 'qr_url') {
                         setUrlInput('');

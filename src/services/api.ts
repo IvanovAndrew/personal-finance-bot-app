@@ -175,7 +175,7 @@ export interface MonthlyAnalyticsResponse {
 export interface SaveCheckDto {
     success: boolean;
     error?: string;
-    check?: ShopExpensesDto;
+    shopExpenses?: ShopExpensesDto;
 }
 
 export const financeApi = {
