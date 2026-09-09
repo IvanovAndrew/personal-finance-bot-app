@@ -11,6 +11,7 @@ import { JsonGrid } from "./JsonGrid.tsx";
 import { QRLinkGrid } from "./QRUrl.tsx";
 import { ReceiptParamsGrid } from "./ReceiptParamsGrid.tsx";
 import { YerevanCityGrid } from "./YerevanCityGrid.tsx";
+import {ONE_SECOND} from "../../constants/time.ts";
 
 type MainTabMode = 'yerevan_city' | 'fns_ru' | 'manual';
 type RuInputSubMode = 'params' | 'qr_url' | 'json';
@@ -182,7 +183,7 @@ export const ReceiptTab: React.FC<ReceiptTabProps> = ({ categories, currencies }
                     }
                 } else {
                     window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred('error');
-                    showStatus('error', result.error || 'Failed to save receipt', 2000);
+                    showStatus('error', result.error || 'Failed to save receipt', 5 * ONE_SECOND);
                 }
             } else if (mainTab === 'manual') {
                 // Обработка для ручного ввода
@@ -190,7 +191,7 @@ export const ReceiptTab: React.FC<ReceiptTabProps> = ({ categories, currencies }
         } catch (error) {
             console.error('Error processing receipt:', error);
             window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred('error');
-            showStatus('error', 'An unexpected error occurred.', 2000);
+            showStatus('error', 'An unexpected error occurred.', 5 * ONE_SECOND);
         }
     };
 
