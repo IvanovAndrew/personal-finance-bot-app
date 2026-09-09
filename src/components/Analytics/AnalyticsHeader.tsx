@@ -10,6 +10,7 @@ interface AnalyticsHeaderProps {
     selectedCurrency: Currency;
     currencies: Currency[];
     onCurrencyChange: (currency: Currency) => void;
+    showMonthPicker?: boolean;
 }
 
 export const AnalyticsHeader: React.FC<AnalyticsHeaderProps> = ({
@@ -18,17 +19,17 @@ export const AnalyticsHeader: React.FC<AnalyticsHeaderProps> = ({
                                                                     selectedCurrency,
                                                                     currencies,
                                                                     onCurrencyChange,
+                                                                    showMonthPicker = true,
                                                                 }) => {
     const [showCurrencyPicker, setShowCurrencyPicker] = useState(false);
 
     return (
         <div style={styles.container}>
-            {/* 1. Выбор месяца через твой CustomDatePicker */}
             <div style={styles.datePickerWrapper}>
                 <CustomDatePicker
                     selectedDate={selectedDate}
                     onChange={onDateChange}
-                    showMonthPicker={true}
+                    showMonthPicker={showMonthPicker}
                 />
             </div>
 

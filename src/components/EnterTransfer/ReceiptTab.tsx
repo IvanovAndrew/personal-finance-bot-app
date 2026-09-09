@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 
 import { appStyles, commonStyles,receiptStyles } from '../../App.styles';
-import { financeApi, type SaveCheckDto, type SaveTransactionPayload } from "../../services/api.ts";
+import {financeApi, type SaveCheckDto, type ShopExpensesDto} from "../../services/api.ts";
 import type { Category, Currency } from "../../types/finance.ts";
 import { formatISODateTime } from "../../utils/dateformatter.ts";
 import { CheckSavedSuccessModal } from "../CheckSavedSuccessModal.tsx";
@@ -57,7 +57,7 @@ export const ReceiptTab: React.FC<ReceiptTabProps> = ({ categories, currencies }
 
     const [processStatus, setProcessStatus] = useState<StatusModalType | null>(null);
     const [statusMessage, setStatusMessage] = useState<string>('');
-    const [savedPositions, setSavedPositions] = useState<SaveTransactionPayload[] | null>(null);
+    const [savedCheck, setSavedCheck] = useState<ShopExpensesDto | undefined>(undefined);
 
     const showStatus = (status: StatusModalType, message: string, autoHideMs = 2000) => {
         setProcessStatus(status);
@@ -106,7 +106,7 @@ export const ReceiptTab: React.FC<ReceiptTabProps> = ({ categories, currencies }
 
                 showStatus('loading', 'Loading and parsing receipt...', 0);
 
-                const { success, error, positions } = await financeApi.saveYerevanCityCheck({
+                const { success, error, check } = await financeApi.saveYerevanCityCheck({
                     date: ycDate,
                     barcode: ycBarcode.trim(),
                 });
@@ -117,7 +117,7 @@ export const ReceiptTab: React.FC<ReceiptTabProps> = ({ categories, currencies }
                     
                     setYcBarcode('');
                     setCurrency(currencies.find(c => c.name === 'AMD') || currencies[0]);
-                    setSavedPositions(positions || []);
+                    setSavedCheck(check);
                 } else {
                     window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred('error');
                     showStatus('error', error || 'Failed to save receipt', 2000);
@@ -125,7 +125,7 @@ export const ReceiptTab: React.FC<ReceiptTabProps> = ({ categories, currencies }
             } else if (mainTab === 'fns_ru') {
                 showStatus('loading', 'Loading and parsing receipt...', 0);
 
-                let result: SaveCheckDto = { success: false, error: 'Unknown mode', positions: [] };
+                let result: SaveCheckDto = { success: false, error: 'Unknown mode' };
 
                 if (ruSubMode === 'qr_url') {
                     if (!urlInput.trim()) {
@@ -169,7 +169,7 @@ export const ReceiptTab: React.FC<ReceiptTabProps> = ({ categories, currencies }
                     showStatus('success', 'Receipt saved successfully!');
 
                     setCurrency(currencies.find(c => c.name === 'RUR') || currencies[0]);
-                    setSavedPositions(result.positions || []);
+                    setSavedCheck(result.check);
 
                     if (ruSubMode === 'qr_url') {
                         setUrlInput('');
@@ -327,9 +327,9 @@ export const ReceiptTab: React.FC<ReceiptTabProps> = ({ categories, currencies }
             {processStatus && <StatusModal status={processStatus} statusMessage={statusMessage} />}
 
             <CheckSavedSuccessModal
-                isOpen={!!savedPositions}
-                onClose={() => setSavedPositions(null)}
-                positions={savedPositions || []}
+                isOpen={!!savedCheck}
+                onClose={() => setSavedCheck(undefined)}
+                check={savedCheck}
                 categories={categories}
                 currency={currency}
             />

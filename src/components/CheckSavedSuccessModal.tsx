@@ -1,15 +1,16 @@
-﻿import React, { useMemo } from 'react';
+﻿import React from 'react';
 
 import { commonStyles,modalStyles, theme } from '../App.styles';
-import type { SaveTransactionPayload } from "../services/api.ts";
+import type { ShopExpensesDto} from "../services/api.ts";
 import type { Category, Currency } from '../types/finance';
 import { getCategoryMeta, getSubCategoryName } from '../utils/categoryutils';
 import { formatCurrencyValue } from '../utils/numberformatter';
+import {ShopAvatar} from "./ShopAvatar.tsx";
 
 interface CheckSavedSuccessModalProps {
     isOpen: boolean;
     onClose: () => void;
-    positions: SaveTransactionPayload[];
+    check?: ShopExpensesDto;
     categories?: Category[];
     currency: Currency;
 }
@@ -17,16 +18,13 @@ interface CheckSavedSuccessModalProps {
 export const CheckSavedSuccessModal: React.FC<CheckSavedSuccessModalProps> = ({
                                                              isOpen,
                                                              onClose,
-                                                             positions,
+                                                             check,
                                                              categories = [],
                                                              currency,
                                                          }) => {
-    const totalSum = useMemo(
-        () => positions.reduce((acc, p) => acc + p.amount, 0),
-        [positions]
-    );
+    if (!isOpen || !check) return null;
 
-    if (!isOpen) return null;
+    const totalSum = check.total;
 
     return (
         <div style={modalStyles.overlay} onClick={onClose}>
@@ -35,8 +33,9 @@ export const CheckSavedSuccessModal: React.FC<CheckSavedSuccessModalProps> = ({
                 <div style={modalStyles.header}>
                     <div>
                         <div style={modalStyles.title}>Receipt Saved! 🎉</div>
+                        <ShopAvatar shopName={check.shop} />
                         <div style={{ fontSize: '12px', color: theme.colors.textSecondary, marginTop: '2px' }}>
-                            Saved {positions.length} item{positions.length > 1 ? 's' : ''}
+                            Saved {check.expenses.length} item{check.expenses.length > 1 ? 's' : ''}
                         </div>
                     </div>
                     <button style={modalStyles.closeBtn} onClick={onClose}>
@@ -75,7 +74,7 @@ export const CheckSavedSuccessModal: React.FC<CheckSavedSuccessModalProps> = ({
                         paddingRight: '4px',
                     }}
                 >
-                    {positions.map((item, idx) => {
+                    {check.expenses.map((item, idx) => {
                         const meta = getCategoryMeta(categories, item.category || '');
                         const subName = item.subCategory
                             ? getSubCategoryName(categories, item.category || '', item.subCategory)

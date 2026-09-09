@@ -107,9 +107,14 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, i
         setHasMoreDays(true);
     };
 
-    const handleMonthChange = (newMonth: Date) => {
-        setSelectedMonth(newMonth);
-        localStorage.setItem(STORAGE_KEYS.MONTH, newMonth.toISOString());
+    const handleMonthChange = (newDate: Date) => {
+        
+        if (viewMode === 'days') {
+            setDailyAnchorDate(newDate)
+        } else {
+            setSelectedMonth(newDate);
+            localStorage.setItem(STORAGE_KEYS.MONTH, newDate.toISOString());
+        }
     };
 
     const resetDailyToToday = () => {
@@ -334,8 +339,10 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, i
                 selectedCurrency={selectedCurrency}
                 currencies={currencies}
                 onCurrencyChange={handleCurrencyChange}
-                selectedDate={selectedMonth}
-                onDateChange={handleMonthChange} />
+                selectedDate={viewMode !== 'days' ? selectedMonth : dailyAnchorDate}
+                onDateChange={handleMonthChange}
+                showMonthPicker={viewMode !== 'days'}
+            />
 
             <AnalyticsSegmentedControl value={viewMode} onChange={setViewMode} />
 
@@ -390,7 +397,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, i
                                     currency={selectedCurrency}
                                     categories={outcomeCategories}
                                     items={group.items || []}
-                                    isLoading={false}
+                                    isLoading={isLoading}
                                 />
                             ))}
 
