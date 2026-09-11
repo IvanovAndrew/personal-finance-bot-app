@@ -178,10 +178,21 @@ export interface SaveCheckDto {
     shopExpenses?: ShopExpensesDto;
 }
 
+type HealthResponse = Record<string, boolean>;
+
 export const financeApi = {
     
-    async health(signal?: AbortSignal): Promise<boolean> {
-        return apiFetch<boolean>('/health', {}, signal);
+    async health(signal?: AbortSignal): Promise<HealthResponse> {
+        const response = await fetch(`${API_BASE_URL}/health`, {
+            headers: { 'Content-Type': 'application/json' },
+            signal,
+        });
+
+        if (response.status === 200 || response.status === 503) {
+            return await response.json();
+        }
+
+        throw new Error(`Health check server error: ${response.status}`);
     },
 
     async getCurrencies(signal?: AbortSignal): Promise<Currency[]> {
