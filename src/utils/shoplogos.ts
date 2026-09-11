@@ -18,10 +18,12 @@ import ardshinkbankLogo from '../assets/shops/ardshinbank.svg';
 import chgkLogo from '../assets/shops/chgk.svg';
 import coffeehouseLogo from '../assets/shops/coffeehouse.svg';
 import dodoLogo from '../assets/shops/dodo.svg';
+import eightyEightLogo from '../assets/shops/eightyeight.svg';
 import fixpriceLogo from '../assets/shops/fixprice.svg';
 import hafhafLogo from '../assets/shops/hafhaf.svg';
 import inecobankLogo from '../assets/shops/inecobank.svg';
 import lentaLogo from '../assets/shops/lenta.svg';
+import leovetLogo from '../assets/shops/leovet.svg';
 import onexLogo from '../assets/shops/onex.svg';
 import ovioLogo from '../assets/shops/ovio.svg';
 import ozonLogo from '../assets/shops/ozon.svg';
@@ -64,12 +66,14 @@ export const normalizeShopName = (name: string): string => {
 const RAW_SHOPS_REGISTRY: Record<string, ShopMeta> = {
     
     "60секунд": { type: 'image', src: sixtysecondsLogo },
+    "88": { type: 'image', src: eightyEightLogo },
     ardshinbank: { type: 'image', src: ardshinkbankLogo },
     coffeehouse: { type: 'image', src: coffeehouseLogo },
     dodo: { type: 'image', src: dodoLogo },
     fixprice: { type: 'image', src: fixpriceLogo },
     hafhaf: { type: 'image', src: hafhafLogo },
     inecobank: { type: 'image', src: inecobankLogo },
+    leovet: { type: 'image', src: leovetLogo },
     onex: { type: 'image', src: onexLogo },
     ovio: { type: 'image', src: ovioLogo },
     ozon: { type: 'image', src: ozonLogo },
