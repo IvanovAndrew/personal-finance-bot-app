@@ -48,7 +48,7 @@ import yandexeatsLogo from '../assets/shops/yandexeats.svg';
 import yandexgoLogo from '../assets/shops/yandexgo.svg';
 import yerevanCityLogo from '../assets/shops/yerevancity.svg';
 import yerevanSwimLogo from '../assets/shops/yerevanswim.svg';
-import yotaLogo from '../assets/shops/yotaLogo.svg';
+import yotaLogo from '../assets/shops/yota.svg';
 import zoovetLogo from '../assets/shops/zoovet.svg';
 import zovqLogo from '../assets/shops/zovq.svg';
 
