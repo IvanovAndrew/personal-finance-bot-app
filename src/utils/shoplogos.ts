@@ -15,11 +15,14 @@
 
 // SVG for local brands (not in simple-icons)
 import ardshinkbankLogo from '../assets/shops/ardshinbank.svg';
+import avitoLogo from '../assets/shops/avito.svg';
+import auchanLogo from '../assets/shops/auchan.svg';
 import chgkLogo from '../assets/shops/chgk.svg';
 import coffeehouseLogo from '../assets/shops/coffeehouse.svg';
 import dodoLogo from '../assets/shops/dodo.svg';
 import eightyEightLogo from '../assets/shops/eightyeight.svg';
 import fixpriceLogo from '../assets/shops/fixprice.svg';
+import gazpromLogo from '../assets/shops/gazprom.svg';
 import hafhafLogo from '../assets/shops/hafhaf.svg';
 import inecobankLogo from '../assets/shops/inecobank.svg';
 import lentaLogo from '../assets/shops/lenta.svg';
@@ -45,6 +48,7 @@ import yandexeatsLogo from '../assets/shops/yandexeats.svg';
 import yandexgoLogo from '../assets/shops/yandexgo.svg';
 import yerevanCityLogo from '../assets/shops/yerevancity.svg';
 import yerevanSwimLogo from '../assets/shops/yerevanswim.svg';
+import yotaLogo from '../assets/shops/yotaLogo.svg';
 import zoovetLogo from '../assets/shops/zoovet.svg';
 import zovqLogo from '../assets/shops/zovq.svg';
 
@@ -68,9 +72,12 @@ const RAW_SHOPS_REGISTRY: Record<string, ShopMeta> = {
     "60секунд": { type: 'image', src: sixtysecondsLogo },
     "88": { type: 'image', src: eightyEightLogo },
     ardshinbank: { type: 'image', src: ardshinkbankLogo },
+    avito: { type: 'image', src: avitoLogo },
+    auchan: { type: 'image', src: auchanLogo },
     coffeehouse: { type: 'image', src: coffeehouseLogo },
     dodo: { type: 'image', src: dodoLogo },
     fixprice: { type: 'image', src: fixpriceLogo },
+    gazprom: { type: 'image', src: gazpromLogo },
     hafhaf: { type: 'image', src: hafhafLogo },
     inecobank: { type: 'image', src: inecobankLogo },
     leovet: { type: 'image', src: leovetLogo },
@@ -90,12 +97,16 @@ const RAW_SHOPS_REGISTRY: Record<string, ShopMeta> = {
     yandexgo: { type: 'image', src: yandexgoLogo, hasOwnBackground: true },
     yerevancity: { type: 'image', src: yerevanCityLogo },
     yerevanswim: { type: 'image', src: yerevanSwimLogo },
+    yota: { type: 'image', src: yotaLogo },
     
     zoovet: { type: 'image', src: zoovetLogo },
     zoovetam: { type: 'image', src: zoovetLogo },
     zovq: { type: 'image', src: zovqLogo },
+    авито: { type: 'image', src: avitoLogo },
+    ашан: { type: 'image', src: auchanLogo },
     вкусноиточка: { type: 'image', src: vkusnoitochkaLogo },
     вседома: { type: 'image', src: vsedomaLogo },
+    газпром: { type: 'image', src: gazpromLogo },
     еревансити: { type: 'image', src: yerevanCityLogo },
     лента: { type: 'image', src: lentaLogo },
     перекрёсток: { type: 'image', src: perekrestokLogo },
