@@ -17,22 +17,27 @@
 import ardshinkbankLogo from '../assets/shops/ardshinbank.svg';
 import avitoLogo from '../assets/shops/avito.svg';
 import auchanLogo from '../assets/shops/auchan.svg';
-import chgkLogo from '../assets/shops/chgk.svg';
+import chgkLogo from '../assets/shops/chgk.png';
 import coffeehouseLogo from '../assets/shops/coffeehouse.svg';
+import ddxLogo from '../assets/shops/ddx.svg';
 import dodoLogo from '../assets/shops/dodo.svg';
 import eightyEightLogo from '../assets/shops/eightyeight.svg';
+import equusLogo from '../assets/shops/equus.jpg';
+import falafelLogo from '../assets/shops/falafel.png';
 import fixpriceLogo from '../assets/shops/fixprice.svg';
 import gazpromLogo from '../assets/shops/gazprom.svg';
-import hafhafLogo from '../assets/shops/hafhaf.svg';
+import hafhafLogo from '../assets/shops/hafhaf.png';
 import inecobankLogo from '../assets/shops/inecobank.svg';
+import lahtaclinicLogo from '../assets/shops/lahtaclinic.svg';
 import lentaLogo from '../assets/shops/lenta.svg';
-import leovetLogo from '../assets/shops/leovet.svg';
+import leovetLogo from '../assets/shops/leovet.jpg';
+import nemoLogo from '../assets/shops/nemo.png';
 import onexLogo from '../assets/shops/onex.svg';
 import ovioLogo from '../assets/shops/ovio.svg';
 import ozonLogo from '../assets/shops/ozon.svg';
 import perekrestokLogo from '../assets/shops/perekrestok.svg';
 import pyaterochkaLogo from '../assets/shops/pyaterochka.svg';
-import raupoolLogo from '../assets/shops/raupool.svg';
+import raupoolLogo from '../assets/shops/raupool.jpg';
 import royalcaninLogo from '../assets/shops/royalcanin.svg';
 import rtcleaningLogo from '../assets/shops/rtcleaning.svg';
 import semishagoffLogo from '../assets/shops/semishagoff.svg';
@@ -42,6 +47,7 @@ import tbankLogo from '../assets/shops/tbank.svg';
 import telcellLogo from '../assets/shops/telcell.svg';
 import ucomLogo from '../assets/shops/ucom.svg';
 import vkusnoitochkaLogo from '../assets/shops/vkusnoitochka.svg';
+import volchekLogo from '../assets/shops/vochek.png';
 import vsedomaLogo from '../assets/shops/vsedoma.svg';
 import wildberriesLogo from '../assets/shops/wildberries.svg';
 import yandexeatsLogo from '../assets/shops/yandexeats.svg';
@@ -75,12 +81,16 @@ const RAW_SHOPS_REGISTRY: Record<string, ShopMeta> = {
     avito: { type: 'image', src: avitoLogo },
     auchan: { type: 'image', src: auchanLogo },
     coffeehouse: { type: 'image', src: coffeehouseLogo },
-    dodo: { type: 'image', src: dodoLogo },
+    ddx: { type: 'image', src: dodoLogo },
+    dodo: { type: 'image', src: ddxLogo },
+    equus: { type: 'image', src: equusLogo },
+    falafel: { type: 'image', src: falafelLogo },
     fixprice: { type: 'image', src: fixpriceLogo },
     gazprom: { type: 'image', src: gazpromLogo },
     hafhaf: { type: 'image', src: hafhafLogo },
     inecobank: { type: 'image', src: inecobankLogo },
     leovet: { type: 'image', src: leovetLogo },
+    nemo: { type: 'image', src: nemoLogo },
     onex: { type: 'image', src: onexLogo },
     ovio: { type: 'image', src: ovioLogo },
     ozon: { type: 'image', src: ozonLogo },
@@ -104,15 +114,18 @@ const RAW_SHOPS_REGISTRY: Record<string, ShopMeta> = {
     zovq: { type: 'image', src: zovqLogo },
     авито: { type: 'image', src: avitoLogo },
     ашан: { type: 'image', src: auchanLogo },
+    булочнаявольчека: { type: 'image', src: volchekLogo, hasOwnBackground: true },
     вкусноиточка: { type: 'image', src: vkusnoitochkaLogo },
     вседома: { type: 'image', src: vsedomaLogo },
     газпром: { type: 'image', src: gazpromLogo },
     еревансити: { type: 'image', src: yerevanCityLogo },
+    лахтаклиник: { type: 'image', src: lahtaclinicLogo },
     лента: { type: 'image', src: lentaLogo },
     перекрёсток: { type: 'image', src: perekrestokLogo },
     пятёрочка: { type: 'image', src: pyaterochkaLogo },
     семишагофф: { type: 'image', src: semishagoffLogo },
     тбанк: { type: 'image', src: tbankLogo },
+    фалафельная: { type: 'image', src: falafelLogo },
     чгк: { type: 'image', src: chgkLogo },
 
     // global brands from simple-icons
