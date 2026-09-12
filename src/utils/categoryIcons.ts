@@ -21,6 +21,7 @@ export const CATEGORY_ICONS: Record<string, CategoryVisual> = {
     ForHouse: { icon: '🏠', color: '#8BC34A' },         // Салатовый
     Gifts: { icon: '🎁', color: '#FF4081' },            // Ярко-розовый
     Health: { icon: '💊', color: '#F44336' },           // Красный
+    Hygiene: { icon: '🧼', color: '#26A69A' },           // Бирюзово-зелёный (мыло/уход)
     Hobby: { icon: '🎨', color: '#673AB7' },            // Тёмно-фиолетовый
     Leisure: { icon: '🎬', color: '#E040FB' },          // Пурпурный
     Onlineservice: { icon: '🔄', color: '#009688' },    // Морская волна
@@ -28,6 +29,7 @@ export const CATEGORY_ICONS: Record<string, CategoryVisual> = {
     Phone: { icon: '📱', color: '#00E676' },            // Неоново-зеленый
     Psycologist: { icon: '🧠', color: '#FF80AB' },       // Нежно-розовый
     Restaurants: { icon: '🍔', color: '#FF5722' },      // Красно-оранжевый
+    Savings: { icon: '🐷', color: '#C0CA33' },      // Лаймовый (копилка)
     Transport: { icon: '🚖', color: '#FFB300' },        // Желто-оранжевый
     Travel: { icon: '✈️', color: '#00BCD4' },        // Желто-оранжевый
     Others: { icon: '📦', color: '#9E9E9E' },           // Нейтральный серый
@@ -40,6 +42,7 @@ export const CATEGORY_ICONS: Record<string, CategoryVisual> = {
     InterestOnBalance: { icon: '📈', color: '#1B5E20' }, // Глубокий зеленый
     ApartmentRent: { icon: '🔑', color: '#8D6E63' },     // Теплый коричневый
     Improvisation: { icon: '🎭', color: '#AB47BC' },     // Сиреневый
+    FromSavings: { icon: '🪙', color: '#7986CB' },  // Индиго (монета — снятие с накоплений)
     IncomeOthers: { icon: '💵', color: '#66BB6A' },      // Мягкий зеленый
 };
 
