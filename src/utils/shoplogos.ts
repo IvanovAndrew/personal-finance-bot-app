@@ -43,6 +43,7 @@ import rtcleaningLogo from '../assets/shops/rtcleaning.svg';
 import semishagoffLogo from '../assets/shops/semishagoff.svg';
 import sixtysecondsLogo from '../assets/shops/sixtyseconds.svg';
 import sorrisoLogo from '../assets/shops/sorriso.svg';
+import sushiwhiteLogo from '../assets/shops/sushiwhite.png';
 import tbankLogo from '../assets/shops/tbank.svg';
 import telcellLogo from '../assets/shops/telcell.svg';
 import ucomLogo from '../assets/shops/ucom.svg';
@@ -99,6 +100,7 @@ const RAW_SHOPS_REGISTRY: Record<string, ShopMeta> = {
     royalcanin: { type: 'image', src: royalcaninLogo },
     rtcleaning: { type: 'image', src: rtcleaningLogo },
     sorriso: { type: 'image', src: sorrisoLogo },
+    sushiwhite: { type: 'image', src: sushiwhiteLogo },
     tbank: { type: 'image', src: tbankLogo },
     telcell: { type: 'image', src: telcellLogo },
     ucom: { type: 'image', src: ucomLogo },
