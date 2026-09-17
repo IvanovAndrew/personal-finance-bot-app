@@ -43,6 +43,7 @@ import rtcleaningLogo from '../assets/shops/rtcleaning.svg';
 import semishagoffLogo from '../assets/shops/semishagoff.svg';
 import sixtysecondsLogo from '../assets/shops/sixtyseconds.svg';
 import sorrisoLogo from '../assets/shops/sorriso.svg';
+import spbMetroLogo from '../assets/shops/spbmetro.svg';
 import sushiwhiteLogo from '../assets/shops/sushiwhite.png';
 import tbankLogo from '../assets/shops/tbank.svg';
 import telcellLogo from '../assets/shops/telcell.svg';
@@ -123,6 +124,8 @@ const RAW_SHOPS_REGISTRY: Record<string, ShopMeta> = {
     еревансити: { type: 'image', src: yerevanCityLogo },
     лахтаклиник: { type: 'image', src: lahtaclinicLogo },
     лента: { type: 'image', src: lentaLogo },
+    метрополитен: { type: 'image', src: spbMetroLogo },
+    метроcанктпетербурга: { type: 'image', src: spbMetroLogo },
     перекрёсток: { type: 'image', src: perekrestokLogo },
     пятёрочка: { type: 'image', src: pyaterochkaLogo },
     семишагофф: { type: 'image', src: semishagoffLogo },
