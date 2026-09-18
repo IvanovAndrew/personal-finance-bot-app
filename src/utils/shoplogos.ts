@@ -38,6 +38,7 @@ import lentaLogo from '../assets/shops/lenta.svg';
 import leovetLogo from '../assets/shops/leovet.jpg';
 import letualLogo from '../assets/shops/letual.svg';
 import magnitLogo from '../assets/shops/magnit.svg';
+import masterclassLogo from '../assets/shops/masterclass.jpg';
 import microsoftLogo from '../assets/shops/microsoft.svg';
 import nemoLogo from '../assets/shops/nemo.png';
 import onexLogo from '../assets/shops/onex.svg';
@@ -53,6 +54,7 @@ import semishagoffLogo from '../assets/shops/semishagoff.svg';
 import sixtysecondsLogo from '../assets/shops/sixtyseconds.svg';
 import sorrisoLogo from '../assets/shops/sorriso.svg';
 import spbMetroLogo from '../assets/shops/spbmetro.svg';
+import sushilabLogo from '../assets/shops/sushilab.jpg';
 import sushiwhiteLogo from '../assets/shops/sushiwhite.png';
 import tbankLogo from '../assets/shops/tbank.svg';
 import telcellLogo from '../assets/shops/telcell.svg';
@@ -108,6 +110,7 @@ const RAW_SHOPS_REGISTRY: Record<string, ShopMeta> = {
     hafhaf: { type: 'image', src: hafhafLogo },
     inecobank: { type: 'image', src: inecobankLogo },
     leovet: { type: 'image', src: leovetLogo, hasOwnBackground: true },
+    masterclass: { type: 'image', src: masterclassLogo, hasOwnBackground: true },
     microsoft: { type: 'image', src: microsoftLogo, hasOwnBackground: true },
     nemo: { type: 'image', src: nemoLogo },
     onex: { type: 'image', src: onexLogo },
@@ -118,6 +121,7 @@ const RAW_SHOPS_REGISTRY: Record<string, ShopMeta> = {
     royalcanin: { type: 'image', src: royalcaninLogo },
     rtcleaning: { type: 'image', src: rtcleaningLogo },
     sorriso: { type: 'image', src: sorrisoLogo },
+    sushilab: { type: 'image', src: sushilabLogo },
     sushiwhite: { type: 'image', src: sushiwhiteLogo },
     tbank: { type: 'image', src: tbankLogo, hasOwnBackground: true },
     telcell: { type: 'image', src: telcellLogo },
@@ -141,6 +145,7 @@ const RAW_SHOPS_REGISTRY: Record<string, ShopMeta> = {
     вседома: { type: 'image', src: vsedomaLogo },
     газпром: { type: 'image', src: gazpromLogo },
     госуслуги: { type: 'image', src: gosuslugiLogo },
+    дикси: { type: 'image', src: dixiLogo, hasOwnBackground: true },
     еревансити: { type: 'image', src: yerevanCityLogo },
     лахтаклиник: { type: 'image', src: lahtaclinicLogo },
     лента: { type: 'image', src: lentaLogo, hasOwnBackground: true },
