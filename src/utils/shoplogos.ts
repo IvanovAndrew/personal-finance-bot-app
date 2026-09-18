@@ -44,6 +44,7 @@ import onexLogo from '../assets/shops/onex.svg';
 import ovioLogo from '../assets/shops/ovio.svg';
 import ozonLogo from '../assets/shops/ozon.svg';
 import perekrestokLogo from '../assets/shops/perekrestok.svg';
+import petersburgpharmaciesLogo from '../assets/shops/petersburgpharmacies.jpg';
 import pyaterochkaLogo from '../assets/shops/pyaterochka.svg';
 import raupoolLogo from '../assets/shops/raupool.jpg';
 import royalcaninLogo from '../assets/shops/royalcanin.svg';
@@ -148,6 +149,7 @@ const RAW_SHOPS_REGISTRY: Record<string, ShopMeta> = {
     метрополитен: { type: 'image', src: spbMetroLogo },
     метроcанктпетербурга: { type: 'image', src: spbMetroLogo },
     перекрёсток: { type: 'image', src: perekrestokLogo },
+    петербургскиеаптеки: { type: 'image', src: petersburgpharmaciesLogo },
     пятёрочка: { type: 'image', src: pyaterochkaLogo, hasOwnBackground: true },
     семишагофф: { type: 'image', src: semishagoffLogo },
     тбанк: { type: 'image', src: tbankLogo },
