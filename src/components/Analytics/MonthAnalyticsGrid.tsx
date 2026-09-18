@@ -1,14 +1,5 @@
 ﻿import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { type FC, useCallback, useEffect,useMemo, useState } from "react";
-import {
-    Bar,
-    BarChart,
-    CartesianGrid,
-    Cell,
-    Tooltip,
-    XAxis,
-    YAxis,
-} from "recharts";
 
 import { commonStyles, theme } from "../../App.styles.ts";
 import {
@@ -22,6 +13,7 @@ import { formatCurrencyValue } from "../../utils/numberformatter.ts";
 import { ExpensesBreakdownGrid } from "../ExpensesBreakdownGrid.tsx";
 import { LoadingData } from "../LoadingData.tsx";
 import { NoAvailableData } from "../NoAvailableData.tsx";
+import {ChartComponent} from "../ChartComponent.tsx";
 
 interface MonthAnalyticsGridProps {
     outcomeCategories?: Category[];
@@ -121,10 +113,12 @@ export const MonthAnalyticsGrid: FC<MonthAnalyticsGridProps> = ({
             const date = parseMonthString(m.month);
             const { income, outcome } = getCalculatedMonthValues(m);
             return {
-                name: formatDateMMMMYYYY(date),
-                shortName: date.toLocaleDateString('en-US', { month: 'short' }),
-                income,
-                outcome,
+                id: m.month,
+                label: date.toLocaleDateString('en-US', { month: 'short' }),
+                subLabel: date.getFullYear().toString(), 
+                fullName: formatDateMMMMYYYY(date),
+                value1: income,
+                value2: outcome,
             };
         });
     }, [sortedMonths, getCalculatedMonthValues]);
@@ -207,96 +201,12 @@ export const MonthAnalyticsGrid: FC<MonthAnalyticsGridProps> = ({
                 </div>
 
                 {/* Scrollable BarChart */}
-                <div style={{ width: '100%', overflowX: 'auto', marginTop: '16px', paddingBottom: '8px' }}>
-                    <BarChart
-                        data={chartData}
-                        width={Math.max(chartData.length * 48, 300)}
-                        height={180}
-                        margin={{ top: 10, right: 10, left: -25, bottom: 0 }}
-                    >
-                        <CartesianGrid strokeDasharray="3 3" stroke={theme.colors.border} vertical={false} />
-                        <XAxis
-                            dataKey="shortName"
-                            stroke={theme.colors.textSecondary}
-                            fontSize={11}
-                            tickLine={false}
-                            axisLine={false}
-                        />
-                        <YAxis
-                            stroke={theme.colors.textSecondary}
-                            fontSize={10}
-                            tickLine={false}
-                            axisLine={false}
-                            tickFormatter={(val) => `${val >= 1000 ? (val / 1000).toFixed(0) + 'k' : val}`}
-                        />
-                        <Tooltip
-                            cursor={{ fill: 'rgba(255,255,255,0.03)' }}
-                            wrapperStyle={{ pointerEvents: 'none' }}
-                            content={({ active, payload }) => {
-                                if (active && payload && payload.length) {
-                                    const incomeVal = (payload.find((p) => p.dataKey === 'income')?.value as number) || 0;
-                                    const outcomeVal = (payload.find((p) => p.dataKey === 'outcome')?.value as number) || 0;
-
-                                    return (
-                                        <div
-                                            style={{
-                                                backgroundColor: theme.colors.bgCard,
-                                                border: `1px solid ${theme.colors.border}`,
-                                                borderRadius: theme.radius?.md || '8px',
-                                                padding: '8px 12px',
-                                                boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
-                                            }}
-                                        >
-                                            <div style={{ fontSize: '11px', color: theme.colors.textSecondary, fontWeight: '700', marginBottom: '4px' }}>
-                                                {payload[0]?.payload?.name}
-                                            </div>
-                                            <div style={{ fontSize: '12px', color: theme.colors.success, fontWeight: '700' }}>
-                                                Income: +{formatAmount(incomeVal)}
-                                            </div>
-                                            <div style={{ fontSize: '12px', color: theme.colors.danger, fontWeight: '700' }}>
-                                                Expense: -{formatAmount(outcomeVal)}
-                                            </div>
-                                        </div>
-                                    );
-                                }
-                                return null;
-                            }}
-                        />
-                        <Bar
-                            dataKey="income"
-                            radius={[4, 4, 0, 0]}
-                            barSize={10}
-                            onClick={(_, index) => setSelectedIndex(index)}
-                        >
-                            {chartData.map((_, index) => (
-                                <Cell
-                                    key={`inc-${index}`}
-                                    fill={theme.colors.success}
-                                    opacity={index === selectedIndex ? 1 : 0.35}
-                                    cursor="pointer"
-                                    onClick={() => setSelectedIndex(index)}
-                                />
-                            ))}
-                        </Bar>
-                        <Bar
-                            dataKey="outcome"
-                            radius={[4, 4, 0, 0]}
-                            barSize={10}
-                            onClick={(_, index) => setSelectedIndex(index)}
-                        >
-                            {chartData.map((_, index) => (
-                                <Cell
-                                    key={`out-${index}`}
-                                    fill={theme.colors.danger}
-                                    opacity={index === selectedIndex ? 1 : 0.35}
-                                    cursor="pointer"
-                                    onClick={() => setSelectedIndex(index)}
-                                />
-                            ))}
-                        </Bar>
-                    </BarChart>
-                </div>
-            </div>
+                <ChartComponent
+                    data={chartData}
+                    selectedIndex={selectedIndex}
+                    onSelect={setSelectedIndex}
+                    showDualBar={true}
+                />
 
             {/* 2. ACTIVE MONTH CARD WITH CONTROLS */}
             {activeMonth && (
@@ -434,6 +344,7 @@ export const MonthAnalyticsGrid: FC<MonthAnalyticsGridProps> = ({
                     </div>
                 </div>
             )}
+        </div>
         </div>
     );
 };

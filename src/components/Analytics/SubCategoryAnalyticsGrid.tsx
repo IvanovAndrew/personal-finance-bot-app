@@ -1,12 +1,13 @@
-﻿import { type FC, useMemo, useState } from "react";
+﻿import { type FC, useCallback, useMemo, useState } from "react";
 
-import { appStyles,commonStyles, receiptStyles, theme } from "../../App.styles.ts";
+import { appStyles, commonStyles, receiptStyles, theme } from "../../App.styles.ts";
 import type { MonthlyAnalyticsResponse } from "../../services/api.ts";
 import type { Category, Currency } from "../../types/finance.ts";
 import { formatDateMMMMYYYY } from "../../utils/dateformatter.ts";
 import { formatCurrencyValue } from "../../utils/numberformatter.ts";
 import { CategorySwitcherModal } from "../CategorySwitcherModal.tsx";
 import { LoadingData } from "../LoadingData.tsx";
+import { ChartComponent, type ChartDataItem } from "../ChartComponent.tsx";
 
 interface SubCategoryAnalyticsGridProps {
     categories: Category[];
@@ -29,6 +30,7 @@ export const SubCategoryAnalyticsGrid: FC<SubCategoryAnalyticsGridProps> = ({
     );
     const [selectedSubCatId, setSelectedSubCatId] = useState<string | null>(null);
     const [subCatViewType, setSubCatViewType] = useState<'total' | 'monthly'>('total');
+    const [selectedChartIndex, setSelectedChartIndex] = useState<number>(-1);
 
     const parseMonthString = (monthStr: string): Date => {
         const parts = monthStr.split('-');
@@ -37,6 +39,11 @@ export const SubCategoryAnalyticsGrid: FC<SubCategoryAnalyticsGridProps> = ({
         }
         return new Date(monthStr);
     };
+
+    const formatAmount = useCallback(
+        (val: number) => `${formatCurrencyValue(val, currency.format)} ${currency.symbol}`,
+        [currency]
+    );
 
     const subCategoryTotalsMap = useMemo(() => {
         const map = new Map<string, number>();
@@ -67,6 +74,8 @@ export const SubCategoryAnalyticsGrid: FC<SubCategoryAnalyticsGridProps> = ({
         return [...list].sort((a, b) => getSubcategoryTotal(b.code) - getSubcategoryTotal(a.code));
     }, [selectedCategory, subCategoryTotalsMap]);
 
+    const activeSubCatCode = selectedSubCatId || sortedSubCategories[0]?.code || null;
+
     const getSubcategoryMonthlyTotal = (monthStr: string, subCode: string | null): number => {
         if (!subCode || !monthlyData?.months) return 0;
 
@@ -83,6 +92,28 @@ export const SubCategoryAnalyticsGrid: FC<SubCategoryAnalyticsGridProps> = ({
 
         return subData?.total || 0;
     };
+
+    // Сортировка месяцев по возрастанию даты для корректного отображения графика
+    const sortedMonths = useMemo(() => {
+        if (!monthlyData?.months) return [];
+        return [...monthlyData.months].sort((a, b) => a.month.localeCompare(b.month));
+    }, [monthlyData]);
+
+    // Подготовка данных графика для компонента ChartComponent
+    const chartData: ChartDataItem[] = useMemo(() => {
+        if (!sortedMonths.length || !activeSubCatCode) return [];
+        return sortedMonths.map((m) => {
+            const date = parseMonthString(m.month);
+            const total = getSubcategoryMonthlyTotal(m.month, activeSubCatCode);
+            return {
+                id: m.month,
+                label: date.toLocaleDateString('en-US', { month: 'short' }),
+                subLabel: String(date.getFullYear()),
+                fullName: formatDateMMMMYYYY(date),
+                value1: total,
+            };
+        });
+    }, [sortedMonths, activeSubCatCode, selectedCategory]);
 
     if (isLoading) {
         return <LoadingData text={"Loading data..."} />;
@@ -104,10 +135,9 @@ export const SubCategoryAnalyticsGrid: FC<SubCategoryAnalyticsGridProps> = ({
         );
     }
 
-    const activeSubCatCode = selectedSubCatId || sortedSubCategories[0]?.code || null;
-
     const handleSelectSubCategory = (subCode: string) => {
         setSelectedSubCatId(subCode);
+        setSelectedChartIndex(-1);
         setSubCatViewType('monthly');
     };
 
@@ -123,6 +153,7 @@ export const SubCategoryAnalyticsGrid: FC<SubCategoryAnalyticsGridProps> = ({
                 onSelectCategory={(code) => {
                     setSelectedCategoryCode(code);
                     setSelectedSubCatId(null);
+                    setSelectedChartIndex(-1);
                 }}
             />
 
@@ -182,7 +213,10 @@ export const SubCategoryAnalyticsGrid: FC<SubCategoryAnalyticsGridProps> = ({
                         {sortedSubCategories.map((sub) => (
                             <button
                                 key={sub.code}
-                                onClick={() => setSelectedSubCatId(sub.code)}
+                                onClick={() => {
+                                    setSelectedSubCatId(sub.code);
+                                    setSelectedChartIndex(-1);
+                                }}
                                 style={{
                                     ...receiptStyles.subChip,
                                     ...(activeSubCatCode === sub.code ? receiptStyles.subChipActive : {}),
@@ -194,21 +228,18 @@ export const SubCategoryAnalyticsGrid: FC<SubCategoryAnalyticsGridProps> = ({
                         ))}
                     </div>
 
-                    <div style={receiptStyles.manualList}>
-                        {monthlyData?.months?.map((m) => {
-                            const monthDate = parseMonthString(m.month);
-                            const monthAmount = getSubcategoryMonthlyTotal(m.month, activeSubCatCode);
-
-                            return (
-                                <div key={m.month} style={{ ...receiptStyles.subChip, justifyContent: 'space-between', padding: '10px 12px' }}>
-                                    <span style={{ color: theme.colors.textSecondary }}>{formatDateMMMMYYYY(monthDate)}</span>
-                                    <span style={{ fontWeight: '700', color: monthAmount > 0 ? theme.colors.primary : theme.colors.textSecondary }}>
-                                        {formatCurrencyValue(monthAmount, currency.format)} {currency.symbol}
-                                    </span>
-                                </div>
-                            );
-                        })}
-                    </div>
+                    {/* График расхода по подкатегории */}
+                    {chartData.length > 0 && (
+                        <div style={{ marginTop: '8px' }}>
+                            <ChartComponent
+                                data={chartData}
+                                selectedIndex={selectedChartIndex}
+                                onSelect={setSelectedChartIndex}
+                                showDualBar={false}
+                                formatAmount={formatAmount}
+                            />
+                        </div>
+                    )}
                 </div>
             )}
         </div>

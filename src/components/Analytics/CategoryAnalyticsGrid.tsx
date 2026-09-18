@@ -1,4 +1,4 @@
-﻿import { type FC,useMemo, useState } from "react";
+﻿import { type FC, useMemo, useState } from "react";
 
 import { commonStyles, receiptStyles, theme } from "../../App.styles.ts";
 import type { MonthlyAnalyticsResponse } from "../../services/api.ts";
@@ -7,6 +7,7 @@ import { getCategoryMeta, getSubCategoryName } from "../../utils/categoryutils.t
 import { formatDateMMMMYYYY } from "../../utils/dateformatter.ts";
 import { formatCurrencyValue } from "../../utils/numberformatter.ts";
 import { CategorySwitcherModal } from "../CategorySwitcherModal.tsx";
+import { ChartComponent, type ChartDataItem } from "../ChartComponent.tsx"; // Import chart component
 import { LoadingData } from "../LoadingData.tsx";
 import { NoAvailableData } from "../NoAvailableData.tsx";
 
@@ -38,14 +39,6 @@ export const CategoryAnalyticsGrid: FC<CategoryAnalyticsGridProps> = ({
         return matching.length > 0 ? matching : categories;
     }, [categories, allUniqueCategoryCodes]);
 
-    if (isLoading) {
-        return <LoadingData text={"Loading data..."} />;
-    }
-
-    if (!monthlyData || !monthlyData.months || monthlyData.months.length === 0) {
-        return <NoAvailableData />;
-    }
-
     const parseMonthString = (monthStr: string): Date => {
         const parts = monthStr.split('-');
         return new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, 1);
@@ -54,14 +47,37 @@ export const CategoryAnalyticsGrid: FC<CategoryAnalyticsGridProps> = ({
     const activeCode = selectedCategoryCode || availableCategories[0]?.code || allUniqueCategoryCodes[0] || null;
     const activeMeta = activeCode ? getCategoryMeta(categories, activeCode) : null;
 
-    const categoryMonthlyTrend = monthlyData.months.map((m) => {
-        const catData = m.outcomeCategories.find((c) => c.category.toLowerCase() === activeCode?.toLowerCase());
-        return {
-            monthStr: m.month,
-            total: catData?.total || 0,
-            subCategories: catData?.subCategories || [],
-        };
-    });
+    const categoryMonthlyTrend = useMemo(() => {
+        if (!monthlyData?.months) return [];
+        return monthlyData.months.map((m) => {
+            const catData = m.outcomeCategories.find((c) => c.category.toLowerCase() === activeCode?.toLowerCase());
+            return {
+                monthStr: m.month,
+                total: catData?.total || 0,
+                subCategories: catData?.subCategories || [],
+            };
+        });
+    }, [monthlyData, activeCode]);
+
+    // 1. Преобразуем данные в формат ChartDataItem для ChartComponent
+    const chartData = useMemo<ChartDataItem[]>(() => {
+        return categoryMonthlyTrend.map((m) => {
+            const date = parseMonthString(m.monthStr);
+            return {
+                id: m.monthStr,
+                label: date.toLocaleDateString('en-US', { month: 'short' }), // "Jan"
+                subLabel: date.getFullYear().toString(),                   // "2026"
+                fullName: formatDateMMMMYYYY(date),                         // "January 2026"
+                value1: m.total,
+            };
+        });
+    }, [categoryMonthlyTrend]);
+
+    // Определяем выбранный индекс для подсвечивания в графике (-1, если фильтр не выбран)
+    const selectedChartIndex = useMemo(() => {
+        if (!selectedMonthStr) return -1;
+        return categoryMonthlyTrend.findIndex((m) => m.monthStr === selectedMonthStr);
+    }, [categoryMonthlyTrend, selectedMonthStr]);
 
     const categoryGrandTotal = categoryMonthlyTrend.reduce((acc, curr) => acc + curr.total, 0);
 
@@ -88,15 +104,20 @@ export const CategoryAnalyticsGrid: FC<CategoryAnalyticsGridProps> = ({
         .sort((a, b) => b.total - a.total);
 
     const selectedMonthDate = selectedMonthStr ? parseMonthString(selectedMonthStr) : null;
-    const maxTotal = Math.max(...categoryMonthlyTrend.map((item) => item.total), 1);
+
+    if (isLoading) {
+        return <LoadingData text={"Loading data..."} />;
+    }
+
+    if (!monthlyData || !monthlyData.months || monthlyData.months.length === 0) {
+        return <NoAvailableData />;
+    }
 
     return (
         <div style={commonStyles.column12}>
-            {/* Unified Header Card: Свитчер категории слева + Сумма справа */}
+            {/* Header Card: Category Switcher + Total */}
             <div style={{ ...commonStyles.card, padding: '12px 16px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-
-                    {/* Свитчер категории (слева) */}
                     <div style={{ flex: 1 }}>
                         <CategorySwitcherModal
                             categories={categories}
@@ -110,7 +131,6 @@ export const CategoryAnalyticsGrid: FC<CategoryAnalyticsGridProps> = ({
                         />
                     </div>
 
-                    {/* Сумма трат (справа) */}
                     <div style={{ textAlign: 'center', marginLeft: '16px' }}>
                         <div style={{ fontSize: '10px', color: theme.colors.textSecondary, fontWeight: '700', letterSpacing: '0.5px' }}>
                             {selectedMonthStr ? 'FILTERED TOTAL' : 'TOTAL'}
@@ -119,18 +139,18 @@ export const CategoryAnalyticsGrid: FC<CategoryAnalyticsGridProps> = ({
                             {formatCurrencyValue(selectedMonthStr ? activeSubcategoryTotal : categoryGrandTotal, currency.format)} {currency.symbol}
                         </div>
                     </div>
-
                 </div>
             </div>
 
             {activeMeta && (
                 <>
-                    {/* Interactive Monthly Trend Bar Chart */}
+                    {/* 2. Внедренный переиспользуемый график */}
                     <div style={commonStyles.card}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <span style={commonStyles.cardTitle}>Monthly Trend</span>
                             {selectedMonthStr && (
                                 <button
+                                    type="button"
                                     onClick={() => setSelectedMonthStr(null)}
                                     style={{
                                         border: 'none',
@@ -147,91 +167,19 @@ export const CategoryAnalyticsGrid: FC<CategoryAnalyticsGridProps> = ({
                             )}
                         </div>
 
-                        <div
-                            style={{
-                                display: 'flex',
-                                alignItems: 'flex-end',
-                                gap: '12px',
-                                height: '110px',
-                                paddingTop: '0px',
-                                overflowX: 'auto',
-                                WebkitOverflowScrolling: 'touch',
+                        <ChartComponent
+                            data={chartData}
+                            selectedIndex={selectedChartIndex}
+                            showDualBar={false}
+                            formatAmount={(val) => `${formatCurrencyValue(val, currency.format)} ${currency.symbol}`}
+                            onSelect={(index) => {
+                                const clickedMonth = categoryMonthlyTrend[index]?.monthStr;
+                                if (clickedMonth) {
+                                    // Клик по выбранному бару сбрасывает фильтр, по новому — выбирает
+                                    setSelectedMonthStr((prev) => (prev === clickedMonth ? null : clickedMonth));
+                                }
                             }}
-                        >
-                            {categoryMonthlyTrend.map((m) => {
-                                const parsedDate = parseMonthString(m.monthStr);
-                                const heightPercent = m.total > 0 ? Math.max((m.total / maxTotal) * 100, 8) : 4;
-
-                                const isBarSelected = selectedMonthStr === m.monthStr;
-                                const isAnySelected = selectedMonthStr !== null;
-
-                                return (
-                                    <div
-                                        key={m.monthStr}
-                                        onClick={() => {
-                                            setSelectedMonthStr((prev) => (prev === m.monthStr ? null : m.monthStr));
-                                        }}
-                                        style={{
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                            alignItems: 'center',
-                                            flex: '1 0 48px',
-                                            height: '100%',
-                                            justifyContent: 'flex-end',
-                                            gap: '6px',
-                                            cursor: 'pointer',
-                                            opacity: isAnySelected && !isBarSelected ? 0.45 : 1,
-                                            transition: 'opacity 0.2s ease',
-                                        }}
-                                    >
-                                        <span
-                                            style={{
-                                                fontSize: '10px',
-                                                fontWeight: '700',
-                                                color: isBarSelected
-                                                    ? theme.colors.primary
-                                                    : (m.total > 0 ? theme.colors.textPrimary : theme.colors.textSecondary),
-                                                textAlign: 'center',
-                                                whiteSpace: 'nowrap',
-                                            }}
-                                        >
-                                            {m.total > 0 ? formatCurrencyValue(m.total, currency.format) : '—'}
-                                        </span>
-
-                                        <div style={{
-                                            flex: 1,
-                                            width: '100%',
-                                            display: 'flex',
-                                            justifyContent: 'center',
-                                            alignItems: 'flex-end'
-                                        }}>
-                                            <div
-                                                style={{
-                                                    width: '100%',
-                                                    maxWidth: '24px',
-                                                    height: `${heightPercent}%`,
-                                                    backgroundColor: isBarSelected
-                                                        ? theme.colors.primary
-                                                        : (m.total > 0 ? theme.colors.primary : theme.colors.bgElement),
-                                                    borderRadius: '4px 4px 0 0',
-                                                    boxShadow: isBarSelected ? `0 0 8px ${theme.colors.primary}` : 'none',
-                                                    transition: 'all 0.2s ease',
-                                                }}
-                                            />
-                                        </div>
-
-                                        <span style={{
-                                            fontSize: '10px',
-                                            color: isBarSelected ? theme.colors.primary : theme.colors.textSecondary,
-                                            fontWeight: isBarSelected ? '700' : '400',
-                                            textAlign: 'center',
-                                        }}>
-                                            {formatDateMMMMYYYY(parsedDate).slice(0, 3)}
-                                        </span>
-                                    </div>
-                                );
-                            })}
-                        </div>
+                        />
                     </div>
 
                     {/* Subcategories Breakdown */}
