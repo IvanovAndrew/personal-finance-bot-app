@@ -30,6 +30,7 @@ import falafelLogo from '../assets/shops/falafel.png';
 import fixpriceLogo from '../assets/shops/fixprice.svg';
 import fnsLogo from '../assets/shops/fns.svg';
 import gazpromLogo from '../assets/shops/gazprom.svg';
+import grandcandyLogo from '../assets/shops/grandcandy.jpg';
 import gosuslugiLogo from '../assets/shops/gosuslugi.svg';
 import hafhafLogo from '../assets/shops/hafhaf.png';
 import inecobankLogo from '../assets/shops/inecobank.svg';
@@ -40,10 +41,11 @@ import letualLogo from '../assets/shops/letual.svg';
 import magnitLogo from '../assets/shops/magnit.svg';
 import masterclassLogo from '../assets/shops/masterclass.jpg';
 import microsoftLogo from '../assets/shops/microsoft.svg';
-import nemoLogo from '../assets/shops/nemo.png';
+import nemoLogo from '../assets/shops/nemo.jpg';
 import onexLogo from '../assets/shops/onex.svg';
 import ovioLogo from '../assets/shops/ovio.svg';
 import ozonLogo from '../assets/shops/ozon.svg';
+import phoboLogo from '../assets/shops/phobo.jpg';
 import perekrestokLogo from '../assets/shops/perekrestok.svg';
 import petersburgpharmaciesLogo from '../assets/shops/petersburgpharmacies.jpg';
 import pyaterochkaLogo from '../assets/shops/pyaterochka.svg';
@@ -63,6 +65,7 @@ import ucomLogo from '../assets/shops/ucom.svg';
 import vkusnoitochkaLogo from '../assets/shops/vkusnoitochka.svg';
 import volchekLogo from '../assets/shops/vochek.png';
 import vsedomaLogo from '../assets/shops/vsedoma.svg';
+import veoliaLogo from '../assets/shops/veolia.jpg';
 import wildberriesLogo from '../assets/shops/wildberries.svg';
 import yandexeatsLogo from '../assets/shops/yandexeats.svg';
 import yandexgoLogo from '../assets/shops/yandexgo.svg';
@@ -70,6 +73,7 @@ import yandexTaxiLogo from '../assets/shops/yandextaxi.svg';
 import yerevanCityLogo from '../assets/shops/yerevancity.svg';
 import yerevanSwimLogo from '../assets/shops/yerevanswim.svg';
 import yotaLogo from '../assets/shops/yota.svg';
+import yunyanLogo from '../assets/shops/yunyan.jpg';
 import zoovetLogo from '../assets/shops/zoovet.svg';
 import zovqLogo from '../assets/shops/zovq.svg';
 
@@ -107,6 +111,7 @@ const RAW_SHOPS_REGISTRY: Record<string, ShopMeta> = {
     falafel: { type: 'image', src: falafelLogo, hasOwnBackground: true },
     fixprice: { type: 'image', src: fixpriceLogo },
     gazprom: { type: 'image', src: gazpromLogo },
+    grandcandy: { type: 'image', src: grandcandyLogo },
     hafhaf: { type: 'image', src: hafhafLogo },
     inecobank: { type: 'image', src: inecobankLogo },
     leovet: { type: 'image', src: leovetLogo, hasOwnBackground: true },
@@ -117,6 +122,8 @@ const RAW_SHOPS_REGISTRY: Record<string, ShopMeta> = {
     ovio: { type: 'image', src: ovioLogo },
     ozon: { type: 'image', src: ozonLogo, hasOwnBackground: true },
     озон: { type: 'image', src: ozonLogo, hasOwnBackground: true },
+    pho: { type: 'image', src: phoboLogo },
+    phobo: { type: 'image', src: phoboLogo },
     raupool: { type: 'image', src: raupoolLogo },
     royalcanin: { type: 'image', src: royalcaninLogo },
     rtcleaning: { type: 'image', src: rtcleaningLogo },
@@ -127,6 +134,8 @@ const RAW_SHOPS_REGISTRY: Record<string, ShopMeta> = {
     telcell: { type: 'image', src: telcellLogo },
     tinsurance: { type: 'image', src: tinsuranceLogo },
     ucom: { type: 'image', src: ucomLogo },
+    veolia: { type: 'image', src: veoliaLogo },
+    Veoliajur: { type: 'image', src: veoliaLogo },
     wildberries: { type: 'image', src: wildberriesLogo, hasOwnBackground: true },
     yandexeats: { type: 'image', src: yandexeatsLogo },
     yandexgo: { type: 'image', src: yandexgoLogo, hasOwnBackground: true },
@@ -134,6 +143,7 @@ const RAW_SHOPS_REGISTRY: Record<string, ShopMeta> = {
     yerevancity: { type: 'image', src: yerevanCityLogo },
     yerevanswim: { type: 'image', src: yerevanSwimLogo },
     yota: { type: 'image', src: yotaLogo },
+    yunyan: { type: 'image', src: yunyanLogo, hasOwnBackground: true },
     
     zoovet: { type: 'image', src: zoovetLogo },
     zoovetam: { type: 'image', src: zoovetLogo },
