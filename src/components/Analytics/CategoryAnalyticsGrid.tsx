@@ -1,15 +1,23 @@
-﻿import { type FC, useMemo, useState } from "react";
+import { type FC, useMemo, useState } from "react";
 
-import { commonStyles, receiptStyles, theme } from "../../App.styles.ts";
+import { theme } from "../../App.styles.ts";
+import { SUBCATEGORY_PALETTE } from "../../constants/palette.ts";
+import { terms } from "../../constants/strings.ts";
 import type { MonthlyAnalyticsResponse } from "../../services/api.ts";
 import type { Category, Currency } from "../../types/finance.ts";
 import { getCategoryMeta, getSubCategoryName } from "../../utils/categoryutils.ts";
-import { formatDateMMMMYYYY } from "../../utils/dateformatter.ts";
+import { formatDateMMMMYYYY, formatMonth } from "../../utils/dateformatter.ts";
+import { parseMonthString } from "../../utils/dateparser.ts";
 import { formatCurrencyValue } from "../../utils/numberformatter.ts";
+import { formatPeriod } from "../../utils/period.ts";
+import { AnalyticsRow } from "../AnalyticsRow.tsx";
+import { Card, ListGroup } from "../Card.tsx";
 import { CategorySwitcherModal } from "../CategorySwitcherModal.tsx";
-import { ChartComponent, type ChartDataItem } from "../ChartComponent.tsx"; // Import chart component
+import { ChartComponent, type ChartDataItem } from "../ChartComponent.tsx";
+import { HeroNumber } from "../HeroNumber.tsx";
 import { LoadingData } from "../LoadingData.tsx";
 import { NoAvailableData } from "../NoAvailableData.tsx";
+import { ShareBar } from "../ShareBar.tsx";
 
 interface CategoryAnalyticsGridProps {
     categories: Category[];
@@ -28,8 +36,9 @@ export const CategoryAnalyticsGrid: FC<CategoryAnalyticsGridProps> = ({
     const [selectedCategoryCode, setSelectedCategoryCode] = useState<string | null>(null);
     const [selectedMonthStr, setSelectedMonthStr] = useState<string | null>(null);
 
-    const allUniqueCategoryCodes = Array.from(
-        new Set((monthlyData?.months || []).flatMap((m) => m.outcomeCategories.map((c) => c.category)))
+    const allUniqueCategoryCodes = useMemo(
+        () => Array.from(new Set((monthlyData?.months || []).flatMap((m) => m.outcomeCategories.map((c) => c.category)))),
+        [monthlyData]
     );
 
     const availableCategories = useMemo(() => {
@@ -38,11 +47,6 @@ export const CategoryAnalyticsGrid: FC<CategoryAnalyticsGridProps> = ({
         );
         return matching.length > 0 ? matching : categories;
     }, [categories, allUniqueCategoryCodes]);
-
-    const parseMonthString = (monthStr: string): Date => {
-        const parts = monthStr.split('-');
-        return new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, 1);
-    };
 
     const activeCode = selectedCategoryCode || availableCategories[0]?.code || allUniqueCategoryCodes[0] || null;
     const activeMeta = activeCode ? getCategoryMeta(categories, activeCode) : null;
@@ -59,51 +63,58 @@ export const CategoryAnalyticsGrid: FC<CategoryAnalyticsGridProps> = ({
         });
     }, [monthlyData, activeCode]);
 
-    // 1. Преобразуем данные в формат ChartDataItem для ChartComponent
     const chartData = useMemo<ChartDataItem[]>(() => {
         return categoryMonthlyTrend.map((m) => {
             const date = parseMonthString(m.monthStr);
             return {
                 id: m.monthStr,
-                label: date.toLocaleDateString('en-US', { month: 'short' }), // "Jan"
-                subLabel: date.getFullYear().toString(),                   // "2026"
-                fullName: formatDateMMMMYYYY(date),                         // "January 2026"
+                label: formatMonth(date),
+                subLabel: date.getFullYear().toString(),
+                fullName: formatDateMMMMYYYY(date),
                 value1: m.total,
             };
         });
     }, [categoryMonthlyTrend]);
 
-    // Определяем выбранный индекс для подсвечивания в графике (-1, если фильтр не выбран)
+    // Index of the highlighted bar (-1 when no month filter is applied)
     const selectedChartIndex = useMemo(() => {
         if (!selectedMonthStr) return -1;
         return categoryMonthlyTrend.findIndex((m) => m.monthStr === selectedMonthStr);
     }, [categoryMonthlyTrend, selectedMonthStr]);
 
+    const periodLabel = useMemo(() => formatPeriod(categoryMonthlyTrend.map((m) => m.monthStr)), [categoryMonthlyTrend]);
+
     const categoryGrandTotal = categoryMonthlyTrend.reduce((acc, curr) => acc + curr.total, 0);
 
-    const targetMonthsForSubcategories = selectedMonthStr
-        ? categoryMonthlyTrend.filter((m) => m.monthStr === selectedMonthStr)
-        : categoryMonthlyTrend;
+    const targetMonthsForSubcategories = useMemo(
+        () => (selectedMonthStr ? categoryMonthlyTrend.filter((m) => m.monthStr === selectedMonthStr) : categoryMonthlyTrend),
+        [categoryMonthlyTrend, selectedMonthStr]
+    );
 
-    const activeSubcategoryTotal = targetMonthsForSubcategories.reduce((acc, curr) => acc + curr.total, 0);
+    const activeTotal = targetMonthsForSubcategories.reduce((acc, curr) => acc + curr.total, 0);
 
-    const subCategoryTotalsMap = new Map<string, { code: string | null; name: string; total: number }>();
+    const subCategoryList = useMemo(() => {
+        const totals = new Map<string, { code: string | null; name: string; total: number }>();
 
-    targetMonthsForSubcategories.forEach((m) => {
-        m.subCategories.forEach((sc) => {
-            const rawCode = sc.subCategory;
-            const key = rawCode ? rawCode.toLowerCase() : 'other';
-            const displayName = getSubCategoryName(categories, activeCode, rawCode) ?? 'other';
+        targetMonthsForSubcategories.forEach((m) => {
+            m.subCategories.forEach((sc) => {
+                const rawCode = sc.subCategory;
+                const key = rawCode ? rawCode.toLowerCase() : "other";
+                const displayName = getSubCategoryName(categories, activeCode, rawCode) ?? "other";
 
-            const current = subCategoryTotalsMap.get(key) || { code: rawCode, name: displayName, total: 0 };
-            subCategoryTotalsMap.set(key, { ...current, total: current.total + sc.total });
+                const current = totals.get(key) || { code: rawCode, name: displayName, total: 0 };
+                totals.set(key, { ...current, total: current.total + sc.total });
+            });
         });
-    });
 
-    const subCategoryList = Array.from(subCategoryTotalsMap.values())
-        .sort((a, b) => b.total - a.total);
-
-    const selectedMonthDate = selectedMonthStr ? parseMonthString(selectedMonthStr) : null;
+        return Array.from(totals.values())
+            .sort((a, b) => b.total - a.total)
+            .map((sc, i) => ({
+                ...sc,
+                color: SUBCATEGORY_PALETTE[i % SUBCATEGORY_PALETTE.length],
+                share: activeTotal > 0 ? sc.total / activeTotal : 0,
+            }));
+    }, [targetMonthsForSubcategories, categories, activeCode, activeTotal]);
 
     if (isLoading) {
         return <LoadingData text={"Loading data..."} />;
@@ -113,56 +124,59 @@ export const CategoryAnalyticsGrid: FC<CategoryAnalyticsGridProps> = ({
         return <NoAvailableData />;
     }
 
-    return (
-        <div style={commonStyles.column12}>
-            {/* Header Card: Category Switcher + Total */}
-            <div style={{ ...commonStyles.card, padding: '12px 16px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ flex: 1 }}>
-                        <CategorySwitcherModal
-                            categories={categories}
-                            availableCategories={availableCategories}
-                            selectedCategoryCode={activeCode}
-                            enableSubCategorySelection={false}
-                            onSelectCategory={(code) => {
-                                setSelectedCategoryCode(code);
-                                setSelectedMonthStr(null);
-                            }}
-                        />
-                    </div>
+    const selectedMonthDate = selectedMonthStr ? parseMonthString(selectedMonthStr) : null;
+    const scopeLabel = selectedMonthDate ? formatDateMMMMYYYY(selectedMonthDate) : periodLabel;
 
-                    <div style={{ textAlign: 'center', marginLeft: '16px' }}>
-                        <div style={{ fontSize: '10px', color: theme.colors.textSecondary, fontWeight: '700', letterSpacing: '0.5px' }}>
-                            {selectedMonthStr ? 'FILTERED TOTAL' : 'TOTAL'}
-                        </div>
-                        <div style={{ fontSize: '18px', fontWeight: '800', color: theme.colors.textPrimary, marginTop: '2px' }}>
-                            {formatCurrencyValue(selectedMonthStr ? activeSubcategoryTotal : categoryGrandTotal, currency.format)} {currency.symbol}
-                        </div>
-                    </div>
-                </div>
-            </div>
+    return (
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <CategorySwitcherModal
+                variant="chip"
+                categories={categories}
+                availableCategories={availableCategories}
+                selectedCategoryCode={activeCode}
+                enableSubCategorySelection={false}
+                onSelectCategory={(code) => {
+                    setSelectedCategoryCode(code);
+                    setSelectedMonthStr(null);
+                }}
+            />
+
+            <HeroNumber
+                heroLabel={`${terms.expenses} · ${scopeLabel}`}
+                heroValue={selectedMonthStr ? activeTotal : categoryGrandTotal}
+                currency={currency}
+            />
 
             {activeMeta && (
                 <>
-                    {/* 2. Внедренный переиспользуемый график */}
-                    <div style={commonStyles.card}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <span style={commonStyles.cardTitle}>Monthly Trend</span>
+                    <Card padding={12}>
+                        <div
+                            style={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                                minHeight: 24,
+                                padding: "0 4px",
+                            }}
+                        >
+                            <span style={{ fontSize: 15, fontWeight: 600, color: theme.colors.textPrimary }}>
+                                {terms.monthlyTrend}
+                            </span>
                             {selectedMonthStr && (
                                 <button
                                     type="button"
                                     onClick={() => setSelectedMonthStr(null)}
                                     style={{
-                                        border: 'none',
-                                        backgroundColor: 'transparent',
+                                        border: "none",
+                                        background: "transparent",
                                         color: theme.colors.primary,
-                                        fontSize: '11px',
-                                        fontWeight: '700',
-                                        cursor: 'pointer',
-                                        padding: '0',
+                                        fontSize: 13,
+                                        fontWeight: 600,
+                                        cursor: "pointer",
+                                        padding: 0,
                                     }}
                                 >
-                                    Reset filter
+                                    {terms.reset}
                                 </button>
                             )}
                         </div>
@@ -175,77 +189,46 @@ export const CategoryAnalyticsGrid: FC<CategoryAnalyticsGridProps> = ({
                             onSelect={(index) => {
                                 const clickedMonth = categoryMonthlyTrend[index]?.monthStr;
                                 if (clickedMonth) {
-                                    // Клик по выбранному бару сбрасывает фильтр, по новому — выбирает
+                                    // Tapping the selected bar clears the filter, tapping another one selects it
                                     setSelectedMonthStr((prev) => (prev === clickedMonth ? null : clickedMonth));
                                 }
                             }}
                         />
-                    </div>
+                    </Card>
 
-                    {/* Subcategories Breakdown */}
                     {subCategoryList.length > 0 && (
-                        <div style={commonStyles.card}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                                <span style={commonStyles.cardTitle}>Subcategories Breakdown</span>
-                                <span style={{ fontSize: '11px', color: theme.colors.textSecondary, fontWeight: '600' }}>
-                                    {selectedMonthDate ? formatDateMMMMYYYY(selectedMonthDate) : 'All Months'}
+                        <>
+                            <div
+                                style={{
+                                    display: "flex",
+                                    alignItems: "baseline",
+                                    justifyContent: "space-between",
+                                    padding: "0 4px",
+                                }}
+                            >
+                                <span style={{ fontSize: 15, fontWeight: 600, color: theme.colors.textPrimary }}>
+                                    {terms.subcategories}
+                                </span>
+                                <span style={{ fontSize: 13, color: theme.colors.textSecondary }}>
+                                    {selectedMonthDate ? formatDateMMMMYYYY(selectedMonthDate) : terms.allMonths}
                                 </span>
                             </div>
 
-                            <div style={commonStyles.column8}>
-                                {subCategoryList.map((sc) => {
-                                    const percentage = activeSubcategoryTotal > 0 ? (sc.total / activeSubcategoryTotal) * 100 : 0;
+                            <ShareBar items={subCategoryList.map((sc) => ({ id: sc.code || "other", total: sc.total, color: sc.color }))} />
 
-                                    return (
-                                        <div
-                                            key={sc.code || 'other'}
-                                            style={{
-                                                ...receiptStyles.subChip,
-                                                flexDirection: 'column',
-                                                alignItems: 'stretch',
-                                                padding: '10px 12px',
-                                                gap: '6px',
-                                                backgroundColor: theme.colors.bgElement,
-                                            }}
-                                        >
-                                            <div style={commonStyles.rowBetween}>
-                                                <span style={{ fontWeight: '600', fontSize: '13px', color: theme.colors.textPrimary }}>
-                                                    {sc.name}
-                                                </span>
-                                                <div style={{ textAlign: 'right' }}>
-                                                    <span style={{ fontWeight: '700', fontSize: '13px', color: theme.colors.textPrimary, marginRight: '6px' }}>
-                                                        {formatCurrencyValue(sc.total, currency.format)} {currency.symbol}
-                                                    </span>
-                                                    <span style={{ fontSize: '10px', color: theme.colors.textSecondary }}>
-                                                        ({percentage.toFixed(1)}%)
-                                                    </span>
-                                                </div>
-                                            </div>
-
-                                            <div
-                                                style={{
-                                                    width: '100%',
-                                                    height: '4px',
-                                                    backgroundColor: theme.colors.bgCard,
-                                                    borderRadius: '2px',
-                                                    overflow: 'hidden',
-                                                }}
-                                            >
-                                                <div
-                                                    style={{
-                                                        width: `${Math.min(percentage, 100)}%`,
-                                                        height: '100%',
-                                                        backgroundColor: theme.colors.primary,
-                                                        borderRadius: '2px',
-                                                        transition: 'width 0.3s ease',
-                                                    }}
-                                                />
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </div>
+                            <ListGroup>
+                                {subCategoryList.map((sc) => (
+                                    <AnalyticsRow
+                                        key={sc.code || "other"}
+                                        name={sc.name}
+                                        color={sc.color}
+                                        share={sc.share}
+                                        total={sc.total}
+                                        currency={currency}
+                                    />
+                                ))}
+                            </ListGroup>
+                        </>
                     )}
                 </>
             )}

@@ -1,135 +1,24 @@
-﻿import { ChevronRight } from "lucide-react";
-import { type CSSProperties, type FC, useCallback, useMemo, useState } from "react";
+import { type FC, useCallback, useMemo, useState } from "react";
 
-import { commonStyles, theme } from "../../App.styles.ts";
+import { SUBCATEGORY_PALETTE } from "../../constants/palette.ts";
+import { terms } from "../../constants/strings.ts";
 import type { MonthlyAnalyticsResponse } from "../../services/api.ts";
 import type { Category, Currency } from "../../types/finance.ts";
-import {formatDateMMMMYYYY, formatMonth, formatMonthYear} from "../../utils/dateformatter.ts";
+import { formatDateMMMMYYYY, formatMonth } from "../../utils/dateformatter.ts";
 import { parseMonthString } from "../../utils/dateparser.ts";
 import { formatCurrencyValue } from "../../utils/numberformatter.ts";
-import { NBSP, terms } from "../../constants/strings.ts";
+import { formatPeriod } from "../../utils/period.ts";
+
+import { AnalyticsRow } from "../AnalyticsRow.tsx";
+import { Card, ListGroup } from "../Card.tsx";
 import { CategorySwitcherModal } from "../CategorySwitcherModal.tsx";
 import { ChartComponent, type ChartDataItem } from "../ChartComponent.tsx";
+import { HeroNumber } from "../HeroNumber.tsx";
 import { LoadingData } from "../LoadingData.tsx";
-import {Avatar} from "../Avatar.tsx";
+import { NoAvailableData } from "../NoAvailableData.tsx";
+import { SegmentedControl } from "../SegmentedControl.tsx";
+import { ShareBar } from "../ShareBar.tsx";
 
-// Muted multi-hue palette for subcategories. Turquoise is intentionally absent,
-// it is reserved for interactive / active states.
-const PALETTE = [
-    "#F5B942", // amber
-    "#EF6C57", // coral
-    "#8B7CF6", // violet
-    "#5B9DF9", // blue
-    "#E879A6", // pink
-    "#9BC25A", // lime
-    "#F2994A", // orange
-    "#7C8CA5", // slate
-];
-
-// All new UI strings live here so the language can be switched in one place.
-
-const formatShare = (share: number): string => {
-    if (share <= 0) return `0${NBSP}%`;
-    if (share < 0.01) return terms.lessThanOne;
-    return `${Math.round(share * 100)}${NBSP}%`;
-};
-
-// ---------------------------------------------------------------------------
-// Small presentational pieces
-// ---------------------------------------------------------------------------
-const Amount: FC<{ value: number; currency: Currency; size: number; weight?: number }> = ({
-                                                                                              value,
-                                                                                              currency,
-                                                                                              size,
-                                                                                              weight = 700,
-                                                                                          }) => (
-    <span
-        style={{
-            fontSize: size,
-            fontWeight: weight,
-            color: theme.colors.textPrimary,
-            fontVariantNumeric: "tabular-nums",
-            whiteSpace: "nowrap",
-        }}
-    >
-        {formatCurrencyValue(value, currency.format)}
-        <span style={{ color: theme.colors.textSecondary, fontWeight: 600, marginLeft: NBSP }}>
-            {NBSP}{currency.symbol}
-        </span>
-    </span>
-);
-
-interface SubRowProps {
-    name: string;
-    color: string;
-    share: number;
-    total: number;
-    currency: Currency;
-    onClick: () => void;
-}
-
-const SubRow: FC<SubRowProps> = ({ name, color, share, total, currency, onClick }) => {
-    const [pressed, setPressed] = useState(false);
-    return (
-        <button
-            type="button"
-            onClick={onClick}
-            onPointerDown={() => setPressed(true)}
-            onPointerUp={() => setPressed(false)}
-            onPointerLeave={() => setPressed(false)}
-            onPointerCancel={() => setPressed(false)}
-            style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 12,
-                width: "100%",
-                padding: "12px 16px",
-                background: pressed ? theme.colors.surfacePressed : "transparent",
-                border: "none",
-                textAlign: "left",
-                cursor: "pointer",
-                font: "inherit",
-                transition: "background-color 0.15s ease",
-            }}
-        >
-            <Avatar name={name} color={color} />
-            <div style={{ flex: 1, minWidth: 0 }}>
-                <div
-                    style={{
-                        fontSize: 15,
-                        fontWeight: 500,
-                        color: theme.colors.textPrimary,
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                    }}
-                >
-                    {name}
-                </div>
-                <div style={{ fontSize: 13, color: theme.colors.textSecondary, marginTop: 2 }}>
-                    {formatShare(share)}
-                </div>
-            </div>
-            <Amount value={total} currency={currency} size={15} />
-            <ChevronRight size={16} color={theme.colors.textSecondary} style={{ flex: "0 0 auto" }} />
-        </button>
-    );
-};
-
-const pillStyle = (active: boolean): CSSProperties => ({
-    border: "none",
-    borderRadius: theme.colors.radiusPill,
-    background: active ? theme.colors.primary : "transparent",
-    color: active ? theme.colors.onPrimary : theme.colors.textSecondary,
-    fontSize: 14,
-    fontWeight: 600,
-    cursor: "pointer",
-    transition: "background-color 0.2s ease, color 0.2s ease",
-});
-
-// ---------------------------------------------------------------------------
-// Component
-// ---------------------------------------------------------------------------
 interface SubCategoryAnalyticsGridProps {
     categories: Category[];
     currency: Currency;
@@ -149,6 +38,7 @@ export const SubCategoryAnalyticsGrid: FC<SubCategoryAnalyticsGridProps> = ({
         () => categories.find((c) => c.code === selectedCategoryCode) || categories[0] || null,
         [categories, selectedCategoryCode]
     );
+
     const [selectedSubCatId, setSelectedSubCatId] = useState<string | null>(null);
     const [subCatViewType, setSubCatViewType] = useState<"total" | "monthly">("total");
     const [selectedChartIndex, setSelectedChartIndex] = useState<number>(-1);
@@ -183,13 +73,11 @@ export const SubCategoryAnalyticsGrid: FC<SubCategoryAnalyticsGridProps> = ({
         return [...list].sort((a, b) => totalOf(b.code) - totalOf(a.code));
     }, [selectedCategory, subCategoryTotalsMap]);
 
-    // Rows for the list and the share bar. Shares are relative to the sum of the
-    // listed subcategories so that they always add up to 100 %.
     const { rows, grandTotal } = useMemo(() => {
         const raw = sortedSubCategories.map((sub, i) => ({
             sub,
             total: subCategoryTotalsMap.get(sub.code.toLowerCase()) || 0,
-            color: PALETTE[i % PALETTE.length],
+            color: SUBCATEGORY_PALETTE[i % SUBCATEGORY_PALETTE.length],
         }));
         const sum = raw.reduce((s, r) => s + r.total, 0);
         return {
@@ -218,32 +106,28 @@ export const SubCategoryAnalyticsGrid: FC<SubCategoryAnalyticsGridProps> = ({
         return subData?.total || 0;
     };
 
-    // Months ascending, so the chart reads left to right
     const sortedMonths = useMemo(() => {
         if (!monthlyData?.months) return [];
         return [...monthlyData.months].sort((a, b) => a.month.localeCompare(b.month));
     }, [monthlyData]);
 
-    const periodLabel = useMemo(() => {
-        if (!sortedMonths.length) return "";
-        const first = formatMonthYear(parseMonthString(sortedMonths[0].month));
-        const last = formatMonthYear(parseMonthString(sortedMonths[sortedMonths.length - 1].month));
-        return first === last ? first : `${first} — ${last}`;
-    }, [sortedMonths]);
+    const periodLabel = useMemo(() => formatPeriod(sortedMonths.map((m) => m.month)), [sortedMonths]);
 
     const chartData: ChartDataItem[] = useMemo(() => {
         if (!sortedMonths.length || !activeSubCatCode) return [];
-        return sortedMonths.filter(m => getSubcategoryMonthlyTotal(m.month, activeSubCatCode) > 0).map((m) => {
-            const date = parseMonthString(m.month);
-            const total = getSubcategoryMonthlyTotal(m.month, activeSubCatCode);
-            return {
-                id: m.month,
-                label: formatMonth(date),
-                subLabel: String(date.getFullYear()),
-                fullName: formatDateMMMMYYYY(date),
-                value1: total,
-            };
-        });
+        return sortedMonths
+            .filter((m) => getSubcategoryMonthlyTotal(m.month, activeSubCatCode) > 0)
+            .map((m) => {
+                const date = parseMonthString(m.month);
+                const total = getSubcategoryMonthlyTotal(m.month, activeSubCatCode);
+                return {
+                    id: m.month,
+                    label: formatMonth(date),
+                    subLabel: String(date.getFullYear()),
+                    fullName: formatDateMMMMYYYY(date),
+                    value1: total,
+                };
+            });
     }, [sortedMonths, activeSubCatCode, selectedCategory]);
 
     if (isLoading) {
@@ -251,19 +135,11 @@ export const SubCategoryAnalyticsGrid: FC<SubCategoryAnalyticsGridProps> = ({
     }
 
     if (!monthlyData || !monthlyData.months || monthlyData.months.length === 0) {
-        return (
-            <div style={{ ...commonStyles.card, textAlign: "center", padding: "20px", color: theme.colors.textSecondary }}>
-                No analytics data available
-            </div>
-        );
+        return <NoAvailableData />;
     }
 
     if (categories.length === 0) {
-        return (
-            <div style={{ ...commonStyles.card, textAlign: "center", padding: "20px", color: theme.colors.textSecondary }}>
-                No categories with subcategories available
-            </div>
-        );
+        return <NoAvailableData text="No categories with subcategories available" />;
     }
 
     const handleSelectSubCategory = (subCode: string) => {
@@ -272,7 +148,6 @@ export const SubCategoryAnalyticsGrid: FC<SubCategoryAnalyticsGridProps> = ({
         setSubCatViewType("monthly");
     };
 
-    // Hero number: the whole category for "Total", the chosen bar or the sum for "Monthly"
     const selectedBar = selectedChartIndex >= 0 ? chartData[selectedChartIndex] : undefined;
     const heroValue =
         subCatViewType === "total"
@@ -280,6 +155,7 @@ export const SubCategoryAnalyticsGrid: FC<SubCategoryAnalyticsGridProps> = ({
             : selectedBar
                 ? selectedBar.value1
                 : chartData.reduce((s, d) => s + d.value1, 0);
+
     const heroLabel =
         subCatViewType === "total"
             ? `${terms.expenses} · ${periodLabel}`
@@ -290,6 +166,7 @@ export const SubCategoryAnalyticsGrid: FC<SubCategoryAnalyticsGridProps> = ({
     return (
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             <CategorySwitcherModal
+                variant="chip"
                 categories={categories}
                 availableCategories={categories}
                 selectedCategoryCode={selectedCategory?.code}
@@ -301,59 +178,27 @@ export const SubCategoryAnalyticsGrid: FC<SubCategoryAnalyticsGridProps> = ({
                 }}
             />
 
-            {/* Hero number */}
-            <div style={{ padding: "0 4px" }}>
-                <div style={{ fontSize: 13, color: theme.colors.textSecondary }}>{heroLabel}</div>
-                <div style={{ marginTop: 2, letterSpacing: "-0.02em", lineHeight: 1.15 }}>
-                    <Amount value={heroValue} currency={currency} size={34} />
-                </div>
-            </div>
+            <HeroNumber heroLabel={heroLabel} heroValue={heroValue} currency={currency} />
 
-            {/* Segmented control: filled pill, no outline */}
-            <div
-                style={{
-                    display: "flex",
-                    padding: 4,
-                    gap: 4,
-                    background: theme.colors.surface,
-                    borderRadius: theme.colors.radiusPill,
-                }}
-            >
-                {(["total", "monthly"] as const).map((mode) => (
-                    <button
-                        key={mode}
-                        type="button"
-                        onClick={() => setSubCatViewType(mode)}
-                        style={{ ...pillStyle(subCatViewType === mode), flex: 1, padding: "10px 0" }}
-                    >
-                        {mode === "total" ? terms.total : terms.monthly}
-                    </button>
-                ))}
-            </div>
+            <SegmentedControl
+                options={[
+                    { value: "total", label: terms.total },
+                    { value: "monthly", label: terms.monthly },
+                ]}
+                selectedValue={subCatViewType}
+                onChange={setSubCatViewType}
+            />
 
-            {/* TOTAL: share bar + one grouped list */}
             {subCatViewType === "total" && (
                 <>
-                    {grandTotal > 0 && (
-                        <div style={{ display: "flex", gap: 2, height: 8, borderRadius: theme.colors.radiusPill, overflow: "hidden" }}>
-                            {rows
-                                .filter((r) => r.total > 0)
-                                .map((r) => (
-                                    <div
-                                        key={r.sub.code}
-                                        style={{ flex: `${r.total} 1 0`, minWidth: 4, background: r.color }}
-                                    />
-                                ))}
-                        </div>
-                    )}
+                    <ShareBar items={rows.map((r) => ({ id: r.sub.code, total: r.total, color: r.color }))} />
 
-                    <div style={{ background: theme.colors.surface, borderRadius: theme.colors.radiusCard, overflow: "hidden" }}>
-                        {rows.filter(r => r.total > 0).map((r, i) => (
-                            <div key={r.sub.code}>
-                                {i > 0 && (
-                                    <div style={{ height: 1, marginLeft: 68, background: theme.colors.border, opacity: 0.6 }} />
-                                )}
-                                <SubRow
+                    <ListGroup>
+                        {rows
+                            .filter((r) => r.total > 0)
+                            .map((r) => (
+                                <AnalyticsRow
+                                    key={r.sub.code}
                                     name={r.sub.name}
                                     color={r.color}
                                     share={r.share}
@@ -361,17 +206,15 @@ export const SubCategoryAnalyticsGrid: FC<SubCategoryAnalyticsGridProps> = ({
                                     currency={currency}
                                     onClick={() => handleSelectSubCategory(r.sub.code)}
                                 />
-                            </div>
-                        ))}
-                    </div>
+                            ))}
+                    </ListGroup>
                 </>
             )}
 
-            {/* MONTHLY: scrolling chips + chart */}
             {subCatViewType === "monthly" && (
                 <>
                     {chartData.length > 0 && (
-                        <div style={{ background: theme.colors.surface, borderRadius: theme.colors.radiusCard, padding: 12 }}>
+                        <Card padding={12}>
                             <ChartComponent
                                 data={chartData}
                                 selectedIndex={selectedChartIndex}
@@ -379,7 +222,7 @@ export const SubCategoryAnalyticsGrid: FC<SubCategoryAnalyticsGridProps> = ({
                                 showDualBar={false}
                                 formatAmount={formatAmount}
                             />
-                        </div>
+                        </Card>
                     )}
                 </>
             )}

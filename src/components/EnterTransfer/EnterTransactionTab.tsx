@@ -1,16 +1,18 @@
-﻿import { ArrowDownLeft, ArrowUpRight, Edit3, FileText } from 'lucide-react';
 import React, { useState } from "react";
 
-import { appStyles, commonStyles, receiptStyles } from '../../App.styles';
+import { appStyles, theme } from '../../App.styles';
 import { QUICK_CATEGORY_INCOME_CODES, QUICK_CATEGORY_OUTCOME_CODES } from '../../constants/categories';
 import { ONE_SECOND } from "../../constants/time.ts";
 import { financeApi } from "../../services/api.ts";
 import type { Category, Currency, SubCategory, TransactionType } from "../../types/finance.ts";
 import { toDateOnlyString } from "../../utils/dateformatter.ts";
 import { formatCurrencyValue } from "../../utils/numberformatter.ts";
+import { Button } from '../Button.tsx';
 import { CategorySwitcherModal } from '../CategorySwitcherModal.tsx';
 import { CustomDatePicker } from "../CustomDatePicker.tsx";
+import { SegmentedControl } from "../SegmentedControl.tsx";
 import { StatusModal } from "../StatusModal.tsx";
+import { chipStyle } from "../ui.ts";
 import { ReceiptTab } from "./ReceiptTab.tsx";
 import {STORAGE_KEYS} from "../../constants/storageKeys.ts";
 
@@ -48,7 +50,7 @@ export const EnterTransactionTab: React.FC<EnterOutcomeTabProps> = ({
     const [statusMessage, setStatusMessage] = useState<string>('');
 
     if (!currencies.length || (!incomeCategories.length && !outcomeCategories.length)) {
-        return <div style={{ color: '#fff', padding: '20px', textAlign: 'center' }}>Loading transaction data...</div>;
+        return <div style={{ color: theme.colors.textSecondary, padding: '20px', textAlign: 'center' }}>Loading transaction data...</div>;
     }
 
     const currentCategories = txType === 'income' ? incomeCategories : outcomeCategories;
@@ -172,78 +174,70 @@ export const EnterTransactionTab: React.FC<EnterOutcomeTabProps> = ({
         .map(code => currentCategories.find(c => c.code.toLowerCase() === code.toLowerCase()))
         .filter((cat): cat is Category => Boolean(cat));
 
+    const inputStyle: React.CSSProperties = {
+        width: '100%',
+        boxSizing: 'border-box',
+        padding: '14px 16px',
+        border: 'none',
+        borderRadius: 16,
+        outline: 'none',
+        background: theme.colors.surface,
+        color: theme.colors.textPrimary,
+        fontSize: 15,
+    };
+
+    const tileStyle = (selected: boolean): React.CSSProperties => ({
+        height: 48,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 8,
+        padding: '0 12px',
+        border: 'none',
+        borderRadius: 16,
+        background: selected ? theme.colors.primary : theme.colors.surface,
+        color: selected ? theme.colors.onPrimary : theme.colors.textPrimary,
+        fontWeight: selected ? 700 : 500,
+        fontSize: 14,
+        cursor: 'pointer',
+        transition: 'background-color 0.15s ease, color 0.15s ease',
+        whiteSpace: 'nowrap',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+    });
+
+    const sectionLabelStyle: React.CSSProperties = { fontSize: 13, color: theme.colors.textSecondary };
+
     return (
         <div style={{ ...appStyles.tabContent, gap: '16px', paddingBottom: '24px' }}>
 
-            {/* 1. ВЕРХНИЙ ПЕРЕКЛЮЧАТЕЛЬ: Manual / Receipt */}
-            <div style={{ ...receiptStyles.mainTabs, display: 'grid', gridTemplateColumns: '1fr 1fr', padding: '2px', width: '100%', boxSizing: 'border-box' }}>
-                <button
-                    type="button"
-                    onClick={() => setInputMethod('manual')}
-                    style={{
-                        ...receiptStyles.mainTabBtn,
-                        ...(inputMethod === 'manual' ? receiptStyles.mainTabActive : {}),
-                        gap: '6px',
-                        padding: '8px',
-                    }}
-                >
-                    <Edit3 size={15} />
-                    <span>Manual</span>
-                </button>
-                <button
-                    type="button"
-                    onClick={() => setInputMethod('receipt')}
-                    style={{
-                        ...receiptStyles.mainTabBtn,
-                        ...(inputMethod === 'receipt' ? receiptStyles.mainTabActive : {}),
-                        gap: '6px',
-                        padding: '8px',
-                    }}
-                >
-                    <FileText size={15} />
-                    <span>Receipt</span>
-                </button>
-            </div>
+            {/* Manual / Receipt */}
+            <SegmentedControl
+                options={[
+                    { value: 'manual', label: 'Manual' },
+                    { value: 'receipt', label: 'Receipt' },
+                ]}
+                selectedValue={inputMethod}
+                onChange={setInputMethod}
+            />
 
-            {/* 2. ЕСЛИ ВЫБРАН RECEIPT — ВНЕДРЯЕМ СУЩЕСТВУЮЩИЙ ReceiptTab */}
             {inputMethod === 'receipt' ? (
                 <ReceiptTab categories={outcomeCategories} currencies={currencies} />
             ) : (
-                /* 3. ЕСЛИ ВЫБРАН MANUAL — ОТОБРАЖАЕМ ФОРМУ РУЧНОГО ВВОДА */
                 <>
-                    {/* Toggle Outcome / Income */}
-                    <div style={appStyles.typeToggleGroup}>
-                        <button
-                            type="button"
-                            onClick={() => handleTxTypeChange('expense')}
-                            style={{
-                                ...appStyles.typeBtn,
-                                ...(txType === 'expense' ? appStyles.typeBtnExpenseActive : {}),
-                            }}
-                        >
-                            <ArrowUpRight size={16} /> Outcome
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => handleTxTypeChange('income')}
-                            style={{
-                                ...appStyles.typeBtn,
-                                ...(txType === 'income' ? appStyles.typeBtnIncomeActive : {}),
-                            }}
-                        >
-                            <ArrowDownLeft size={16} /> Income
-                        </button>
-                    </div>
+                    {/* Outcome / Income */}
+                    <SegmentedControl
+                        options={[
+                            { value: 'expense', label: 'Outcome' },
+                            { value: 'income', label: 'Income' },
+                        ]}
+                        selectedValue={txType}
+                        onChange={handleTxTypeChange}
+                    />
 
-                    {/* Amount Input & Currency / Date */}
-                    <div style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        padding: '16px 12px',
-                        gap: '8px'
-                    }}>
-                        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: '8px', width: '100%' }}>
+                    {/* Amount, currency, date */}
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '16px 12px', gap: '12px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', width: '100%' }}>
                             <input
                                 type="text"
                                 inputMode="decimal"
@@ -254,7 +248,9 @@ export const EnterTransactionTab: React.FC<EnterOutcomeTabProps> = ({
                                 style={{
                                     fontSize: '44px',
                                     fontWeight: '700',
-                                    color: '#FFFFFF',
+                                    letterSpacing: '-0.02em',
+                                    fontVariantNumeric: 'tabular-nums',
+                                    color: theme.colors.textPrimary,
                                     backgroundColor: 'transparent',
                                     border: 'none',
                                     outline: 'none',
@@ -268,15 +264,15 @@ export const EnterTransactionTab: React.FC<EnterOutcomeTabProps> = ({
                                 value={selectedCurrency.name}
                                 onChange={(e) => handleCurrencyChange(e.target.value)}
                                 style={{
-                                    backgroundColor: '#2C2C2E',
-                                    color: '#00E5FF',
+                                    backgroundColor: theme.colors.surface,
+                                    color: theme.colors.primary,
                                     border: 'none',
-                                    borderRadius: '8px',
-                                    padding: '6px 8px',
+                                    borderRadius: theme.colors.radiusPill,
+                                    padding: '8px 14px',
                                     fontSize: '18px',
                                     fontWeight: '600',
                                     outline: 'none',
-                                    cursor: 'pointer'
+                                    cursor: 'pointer',
                                 }}
                             >
                                 {currencies?.map((c) => (
@@ -287,99 +283,51 @@ export const EnterTransactionTab: React.FC<EnterOutcomeTabProps> = ({
                             </select>
                         </div>
 
-                        <div style={{ opacity: 0.85, fontSize: '14px' }}>
-                            <CustomDatePicker selectedDate={date} onChange={setDate} />
-                        </div>
+                        <CustomDatePicker selectedDate={date} onChange={setDate} />
                     </div>
 
-                    {/* Category & Subcategory Grid */}
+                    {/* Category & Subcategory */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '100%' }}>
-                        <span style={{ fontSize: '12px', color: '#8E8E93', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                            CATEGORY
-                        </span>
+                        <span style={sectionLabelStyle}>Category</span>
 
-                        <div style={{
-                            display: 'grid',
-                            gridTemplateColumns: '1fr 1fr',
-                            gap: '8px',
-                            width: '100%'
-                        }}>
-                            {quickCategories.map((cat) => {
-                                const isSelected = activeCategory?.code === cat.code;
-                                return (
-                                    <button
-                                        key={cat.code}
-                                        type="button"
-                                        onClick={() => handleCategorySelect(cat.code)}
-                                        style={{
-                                            height: '46px',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            gap: '8px',
-                                            padding: '0 12px',
-                                            borderRadius: '12px',
-                                            border: 'none',
-                                            backgroundColor: isSelected ? '#00E5FF' : '#1C1C1E',
-                                            color: isSelected ? '#000000' : '#FFFFFF',
-                                            fontWeight: isSelected ? '700' : '500',
-                                            fontSize: '14px',
-                                            cursor: 'pointer',
-                                            transition: 'all 0.15s ease',
-                                            whiteSpace: 'nowrap',
-                                            overflow: 'hidden',
-                                            textOverflow: 'ellipsis'
-                                        }}
-                                    >
-                                        {cat.icon && <span style={{ fontSize: '16px', flexShrink: 0 }}>{cat.icon}</span>}
-                                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{cat.name}</span>
-                                    </button>
-                                );
-                            })}
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', width: '100%' }}>
+                            {quickCategories.map((cat) => (
+                                <button
+                                    key={cat.code}
+                                    type="button"
+                                    onClick={() => handleCategorySelect(cat.code)}
+                                    style={tileStyle(activeCategory?.code === cat.code)}
+                                >
+                                    {cat.icon && <span style={{ fontSize: '16px', flexShrink: 0 }}>{cat.icon}</span>}
+                                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{cat.name}</span>
+                                </button>
+                            ))}
 
                             {(() => {
                                 const isQuickSelected = quickCategories.some(c => c.code === activeCategory?.code);
                                 const isCustomSelected = activeCategory && !isQuickSelected;
 
                                 return (
-                                    <div style={{
-                                        height: '46px',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        borderRadius: '12px',
-                                        backgroundColor: isCustomSelected ? '#00E5FF' : '#1C1C1E',
-                                        overflow: 'hidden',
-                                        transition: 'all 0.15s ease'
-                                    }}>
-                                        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-                                            <CategorySwitcherModal
-                                                label=""
-                                                categories={currentCategories}
-                                                selectedCategoryCode={isCustomSelected ? activeCategory.code : null}
-                                                selectedSubCategoryCode={isCustomSelected ? (selectedSubCat?.code || null) : null}
-                                                enableSubCategorySelection={false}
-                                                onSelectCategory={handleCategorySelect}
-                                                textColor={isCustomSelected ? '#000000' : '#FFFFFF'}
-                                            />
-                                        </div>
+                                    <div style={{ ...tileStyle(Boolean(isCustomSelected)), padding: 0 }}>
+                                        <CategorySwitcherModal
+                                            label=""
+                                            categories={currentCategories}
+                                            selectedCategoryCode={isCustomSelected ? activeCategory.code : null}
+                                            selectedSubCategoryCode={isCustomSelected ? (selectedSubCat?.code || null) : null}
+                                            enableSubCategorySelection={false}
+                                            onSelectCategory={handleCategorySelect}
+                                            textColor={isCustomSelected ? theme.colors.onPrimary : theme.colors.textPrimary}
+                                        />
                                     </div>
                                 );
                             })()}
                         </div>
 
-                        {/* Subcategory Grid */}
                         {activeCategory?.subCategories && activeCategory.subCategories.length > 0 && (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '4px', width: '100%' }}>
-                                <span style={{ fontSize: '11px', color: '#8E8E93', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                                    SUBCATEGORY
-                                </span>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '6px', width: '100%' }}>
+                                <span style={sectionLabelStyle}>Subcategory</span>
 
-                                <div style={{
-                                    display: 'grid',
-                                    gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
-                                    gap: '8px',
-                                    width: '100%'
-                                }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '8px', width: '100%' }}>
                                     {activeCategory.subCategories.map((sub) => {
                                         const isSubSelected = selectedSubCat?.code === sub.code;
                                         return (
@@ -391,22 +339,15 @@ export const EnterTransactionTab: React.FC<EnterOutcomeTabProps> = ({
                                                     setSelectedSubCat(sub);
                                                 }}
                                                 style={{
-                                                    height: '36px',
-                                                    padding: '0 8px',
-                                                    borderRadius: '10px',
-                                                    border: isSubSelected ? '1px solid #00E5FF' : '1px solid #2C2C2E',
-                                                    backgroundColor: isSubSelected ? 'rgba(0, 229, 255, 0.15)' : '#1C1C1E',
-                                                    color: isSubSelected ? '#00E5FF' : '#8E8E93',
-                                                    fontWeight: '500',
-                                                    fontSize: '12.5px',
-                                                    cursor: 'pointer',
-                                                    transition: 'background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease',
-                                                    whiteSpace: 'nowrap',
+                                                    ...chipStyle(isSubSelected),
+                                                    justifyContent: 'center',
+                                                    width: '100%',
+                                                    padding: '8px',
+                                                    fontSize: 13,
+                                                    fontWeight: 500,
+                                                    color: isSubSelected ? theme.colors.onPrimary : theme.colors.textSecondary,
                                                     overflow: 'hidden',
                                                     textOverflow: 'ellipsis',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center'
                                                 }}
                                             >
                                                 {sub.name}
@@ -418,26 +359,15 @@ export const EnterTransactionTab: React.FC<EnterOutcomeTabProps> = ({
                         )}
                     </div>
 
-                    {/* Text Inputs */}
-                    { txType === 'expense' && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '4px' }}>
+                    {/* Text inputs */}
+                    {txType === 'expense' && (
                         <input
                             type="text"
                             placeholder="Shop / Place (e.g. Yerevan-city)"
                             value={shop}
                             onChange={e => setShop(e.target.value)}
-                            style={{
-                                ...commonStyles.input,
-                                backgroundColor: '#1C1C1E',
-                                border: '1px solid #2C2C2E',
-                                borderRadius: '12px',
-                                padding: '14px',
-                                fontSize: '15px'
-                            }}
+                            style={inputStyle}
                         />
-
-                        
-                    </div>
                     )}
 
                     <input
@@ -449,37 +379,14 @@ export const EnterTransactionTab: React.FC<EnterOutcomeTabProps> = ({
                         }
                         value={note}
                         onChange={e => setNote(e.target.value)}
-                        style={{
-                            ...commonStyles.input,
-                            backgroundColor: '#1C1C1E',
-                            border: '1px solid #2C2C2E',
-                            borderRadius: '12px',
-                            padding: '14px',
-                            fontSize: '15px'
-                        }}
+                        style={inputStyle}
                     />
-                        
-                    {/* Save Primary Button */}
-                    <button
-                        type="button"
-                        onClick={handleSaveTransaction}
-                        style={{
-                            ...commonStyles.primaryBtn,
-                            marginTop: '8px',
-                            padding: '16px',
-                            borderRadius: '14px',
-                            fontSize: '16px',
-                            fontWeight: '700',
-                            opacity: saveButtonActive() ? 1 : 0.35,
-                            cursor: saveButtonActive() ? 'pointer' : 'not-allowed',
-                            transition: 'opacity 0.2s ease',
-                        }}
-                        disabled={!saveButtonActive()}
-                    >
+
+                    <Button disabled={!saveButtonActive()} onClick={handleSaveTransaction}>
                         {amountStr && parseFloat(amountStr) > 0
                             ? `Save ${amountStr} ${selectedCurrency.symbol || selectedCurrency.name}`
                             : 'Enter Amount'}
-                    </button>
+                    </Button>
                 </>
             )}
 

@@ -1,4 +1,4 @@
-﻿import { type FC } from "react";
+import { type FC } from "react";
 import {
     BarChart,
     Bar,
@@ -26,6 +26,8 @@ type ChartComponentProps = {
     onSelect: (index: number) => void;
     showDualBar?: boolean;
     formatAmount?: (val: number) => string;
+    /** Fill of the Y-axis mask; must match the surface the chart sits on. */
+    background?: string;
 };
 
 export const ChartComponent: FC<ChartComponentProps> = ({
@@ -34,6 +36,7 @@ export const ChartComponent: FC<ChartComponentProps> = ({
                                                             onSelect,
                                                             showDualBar = false,
                                                             formatAmount = (val) => val.toString(),
+                                                            background = theme.colors.surface,
                                                         }) => {
     const maxVal = Math.max(
         ...data.map((item) => Math.max(item.value1, item.value2 ?? 0)),
@@ -55,7 +58,7 @@ export const ChartComponent: FC<ChartComponentProps> = ({
     });
 
     return (
-        <div style={{ position: 'relative', width: '100%', marginTop: '16px' }}>
+        <div style={{ position: 'relative', width: '100%', marginTop: '8px' }}>
             {/* 1. Full height Left Mask / Background Overlay */}
             <div
                 style={{
@@ -64,7 +67,7 @@ export const ChartComponent: FC<ChartComponentProps> = ({
                     left: 0,
                     width: `${yAxisWidth}px`,
                     height: `${chartHeight}px`,
-                    backgroundColor: theme.colors.bgCard,
+                    backgroundColor: background,
                     zIndex: 10,
                     pointerEvents: 'none',
                 }}
@@ -89,7 +92,7 @@ export const ChartComponent: FC<ChartComponentProps> = ({
                         <span
                             key={index}
                             style={{
-                                fontSize: '10px',
+                                fontSize: '11px',
                                 color: theme.colors.textSecondary,
                                 lineHeight: '1',
                             }}
@@ -116,7 +119,7 @@ export const ChartComponent: FC<ChartComponentProps> = ({
                             data={data}
                             margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
                         >
-                            <CartesianGrid strokeDasharray="3 3" stroke={theme.colors.border} vertical={false} />
+                            <CartesianGrid strokeDasharray="3 3" stroke={theme.colors.border} strokeOpacity={0.6} vertical={false} />
 
                             <YAxis domain={[0, maxVal]} hide />
 
@@ -156,7 +159,7 @@ export const ChartComponent: FC<ChartComponentProps> = ({
                             />
 
                             <Tooltip
-                                cursor={{ fill: 'rgba(255,255,255,0.03)' }}
+                                cursor={{ fill: 'rgba(255,255,255,0.04)' }}
                                 wrapperStyle={{ pointerEvents: 'none', zIndex: 100 }}
                                 content={({ active, payload }) => {
                                     if (active && payload && payload.length) {
@@ -170,11 +173,10 @@ export const ChartComponent: FC<ChartComponentProps> = ({
                                         return (
                                             <div
                                                 style={{
-                                                    backgroundColor: theme.colors.bgCard,
-                                                    border: `1px solid ${theme.colors.border}`,
-                                                    borderRadius: theme.radius?.md || '8px',
+                                                    backgroundColor: theme.colors.surfacePressed,
+                                                    borderRadius: 12,
                                                     padding: '8px 12px',
-                                                    boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
+                                                    boxShadow: '0 8px 24px rgba(0,0,0,0.45)',
                                                 }}
                                             >
                                                 <div style={{ fontSize: '11px', color: theme.colors.textSecondary, fontWeight: '700', marginBottom: '4px' }}>
@@ -204,7 +206,7 @@ export const ChartComponent: FC<ChartComponentProps> = ({
 
                             <Bar
                                 dataKey="value1"
-                                radius={[4, 4, 0, 0]}
+                                radius={[5, 5, 0, 0]}
                                 barSize={10}
                                 cursor="pointer"
                                 fill={showDualBar ? theme.colors.success : theme.colors.primary}
@@ -219,7 +221,7 @@ export const ChartComponent: FC<ChartComponentProps> = ({
                             {showDualBar && (
                                 <Bar
                                     dataKey="value2"
-                                    radius={[4, 4, 0, 0]}
+                                    radius={[5, 5, 0, 0]}
                                     barSize={10}
                                     cursor="pointer"
                                     fill={theme.colors.danger}

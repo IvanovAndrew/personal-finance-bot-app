@@ -1,15 +1,21 @@
-﻿import { AlertCircle } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 import React from "react";
 
-import { commonStyles, theme } from "../App.styles.ts";
+import { theme } from "../App.styles.ts";
+import { Card } from "./Card.tsx";
 
 interface ErrorDataProps {
     error: string;
 }
 
 export const ErrorData: React.FC<ErrorDataProps> = ({ error }) => {
-    return <div style={{ ...commonStyles.card, alignItems: 'center', padding: '24px', textAlign: 'center', borderColor: theme.colors.danger }}>
-        <AlertCircle size={28} color={theme.colors.danger} />
-        <span style={{ fontSize: '13px', color: theme.colors.textPrimary, marginTop: '8px' }}>{error}</span>
-    </div>
+    return (
+        <Card
+            padding={24}
+            style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, textAlign: "center" }}
+        >
+            <AlertCircle size={28} color={theme.colors.danger} />
+            <span style={{ fontSize: 14, color: theme.colors.textPrimary }}>{error}</span>
+        </Card>
+    );
 };

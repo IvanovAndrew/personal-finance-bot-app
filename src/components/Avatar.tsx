@@ -1,21 +1,31 @@
-﻿import type {FC} from "react";
+import type { FC, ReactNode } from "react";
 
-export const Avatar: FC<{ name: string; color: string }> = ({ name, color }) => (
+interface AvatarProps {
+    name: string;
+    color: string;
+    /** Emoji or icon. Falls back to the first letter of `name`. */
+    icon?: ReactNode;
+    size?: number;
+    /** Override the default tinted background (`color` at ~18 % alpha, needs a hex colour). */
+    background?: string;
+}
+
+export const Avatar: FC<AvatarProps> = ({ name, color, icon, size = 40, background }) => (
     <div
         style={{
-            width: 40,
-            height: 40,
-            flex: "0 0 40px",
+            width: size,
+            height: size,
+            flex: `0 0 ${size}px`,
             borderRadius: "50%",
-            background: `${color}2E`, // ~18% alpha
+            background: background ?? `${color}2E`,
             color,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            fontSize: 16,
+            fontSize: icon ? Math.round(size * 0.45) : 16,
             fontWeight: 700,
         }}
     >
-        {(Array.from(name.trim())[0] ?? "?").toUpperCase()}
+        {icon ?? (Array.from(name.trim())[0] ?? "?").toUpperCase()}
     </div>
 );

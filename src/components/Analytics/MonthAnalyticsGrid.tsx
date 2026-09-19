@@ -1,19 +1,28 @@
-﻿import { ChevronLeft, ChevronRight, X } from "lucide-react";
-import { type FC, useCallback, useEffect,useMemo, useState } from "react";
+import { ArrowDownLeft, ArrowUpRight, ChevronLeft, ChevronRight } from "lucide-react";
+import { type FC, useCallback, useEffect, useMemo, useState } from "react";
 
-import { commonStyles, theme } from "../../App.styles.ts";
-import {
-    NOT_EVERYDAY_OUTCOME_CATEGORIES,
-    SALARY_CATEGORY_CODE,
-} from "../../constants/categories.ts";
-import type { MonthlyAnalyticsItem,MonthlyAnalyticsResponse } from "../../services/api.ts";
+import { theme } from "../../App.styles.ts";
+import { NOT_EVERYDAY_OUTCOME_CATEGORIES, SALARY_CATEGORY_CODE, SAVINGS_CATEGORY_CODE } from "../../constants/categories.ts";
+import { terms } from "../../constants/strings.ts";
+import type { MonthlyAnalyticsItem, MonthlyAnalyticsResponse } from "../../services/api.ts";
 import type { Category, Currency } from "../../types/finance.ts";
-import { formatDateMMMMYYYY } from "../../utils/dateformatter.ts";
+import { formatDateMMMMYYYY, formatMonth } from "../../utils/dateformatter.ts";
 import { formatCurrencyValue } from "../../utils/numberformatter.ts";
+import { parseMonthString } from "../../utils/dateparser.ts";
+import { formatPeriod } from "../../utils/period.ts";
+import { Amount } from "../Amount.tsx";
+import { Avatar } from "../Avatar.tsx";
+import { BottomSheet } from "../BottomSheet.tsx";
+import { Button } from "../Button.tsx";
+import { Card, Divider } from "../Card.tsx";
+import { ChartComponent, type ChartDataItem } from "../ChartComponent.tsx";
 import { ExpensesBreakdownGrid } from "../ExpensesBreakdownGrid.tsx";
+import { HeroNumber } from "../HeroNumber.tsx";
+import { ListRow } from "../ListRow.tsx";
 import { LoadingData } from "../LoadingData.tsx";
 import { NoAvailableData } from "../NoAvailableData.tsx";
-import {ChartComponent} from "../ChartComponent.tsx";
+import { SegmentedControl } from "../SegmentedControl.tsx";
+import { StatTile } from "../StatTile.tsx";
 
 interface MonthAnalyticsGridProps {
     outcomeCategories?: Category[];
@@ -23,7 +32,46 @@ interface MonthAnalyticsGridProps {
     isLoading?: boolean;
 }
 
-export type MonthAnalyticsView = 'total' | 'real' | 'everyday';
+export type MonthAnalyticsView = "total" | "real" | "everyday";
+
+const MODE_OPTIONS: { value: MonthAnalyticsView; label: string }[] = [
+    { value: "total", label: "Total" },
+    { value: "real", label: "Real" },
+    { value: "everyday", label: "Everyday" },
+];
+
+interface MonthNavButtonProps {
+    direction: "prev" | "next";
+    disabled: boolean;
+    onClick: () => void;
+}
+
+const MonthNavButton: FC<MonthNavButtonProps> = ({ direction, disabled, onClick }) => {
+    const Icon = direction === "prev" ? ChevronLeft : ChevronRight;
+    return (
+        <button
+            type="button"
+            disabled={disabled}
+            onClick={onClick}
+            aria-label={direction === "prev" ? terms.previousMonth : terms.nextMonth}
+            style={{
+                width: 40,
+                height: 40,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                border: "none",
+                borderRadius: "50%",
+                background: "transparent",
+                color: theme.colors.textPrimary,
+                opacity: disabled ? 0.3 : 1,
+                cursor: disabled ? "not-allowed" : "pointer",
+            }}
+        >
+            <Icon size={20} />
+        </button>
+    );
+};
 
 export const MonthAnalyticsGrid: FC<MonthAnalyticsGridProps> = ({
                                                                     outcomeCategories = [],
@@ -34,7 +82,7 @@ export const MonthAnalyticsGrid: FC<MonthAnalyticsGridProps> = ({
                                                                 }) => {
     const [selectedIndex, setSelectedIndex] = useState<number>(0);
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-    const [viewMode, setViewMode] = useState<MonthAnalyticsView>('real');
+    const [viewMode, setViewMode] = useState<MonthAnalyticsView>("real");
 
     const sortedMonths = useMemo(() => {
         if (!monthlyData?.months) return [];
@@ -49,30 +97,19 @@ export const MonthAnalyticsGrid: FC<MonthAnalyticsGridProps> = ({
 
     const activeMonth = sortedMonths[selectedIndex] || sortedMonths[sortedMonths.length - 1];
 
-    const formatAmount = useCallback(
-        (val: number) => `${formatCurrencyValue(val, currency.format)} ${currency.symbol}`,
-        [currency.symbol]
-    );
-
-    const parseMonthString = (monthStr: string): Date => {
-        const parts = monthStr.split('-');
-        return new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, 1);
-    };
+    const periodLabel = useMemo(() => formatPeriod(sortedMonths.map((m) => m.month)), [sortedMonths]);
 
     const getCalculatedMonthValues = useCallback(
         (m: MonthlyAnalyticsItem) => {
-            if (viewMode === 'total') {
-                return {
-                    income: m.totalIncome ?? 0,
-                    outcome: m.totalOutcome ?? 0,
-                };
+            if (viewMode === "total") {
+                return { income: m.totalIncome ?? 0, outcome: m.totalOutcome ?? 0 };
             }
 
-            if (viewMode === 'real') {
+            if (viewMode === "real") {
                 return {
                     income: m.totalIncome ?? 0,
                     outcome: (m.outcomeCategories ?? [])
-                        .filter((cat) => cat.category !== 'Savings' )
+                        .filter((cat) => cat.category !== SAVINGS_CATEGORY_CODE)
                         .reduce((sum, cat) => sum + cat.total, 0),
                 };
             }
@@ -85,10 +122,7 @@ export const MonthAnalyticsGrid: FC<MonthAnalyticsGridProps> = ({
                 .filter((cat) => !NOT_EVERYDAY_OUTCOME_CATEGORIES.has(cat.category))
                 .reduce((sum, cat) => sum + cat.total, 0);
 
-            return {
-                income: everydayIncome,
-                outcome: everydayOutcome,
-            };
+            return { income: everydayIncome, outcome: everydayOutcome };
         },
         [viewMode]
     );
@@ -107,15 +141,14 @@ export const MonthAnalyticsGrid: FC<MonthAnalyticsGridProps> = ({
         );
     }, [monthlyData, getCalculatedMonthValues]);
 
-    const chartData = useMemo(() => {
-        if (!sortedMonths.length) return [];
+    const chartData = useMemo<ChartDataItem[]>(() => {
         return sortedMonths.map((m) => {
             const date = parseMonthString(m.month);
             const { income, outcome } = getCalculatedMonthValues(m);
             return {
                 id: m.month,
-                label: date.toLocaleDateString('en-US', { month: 'short' }),
-                subLabel: date.getFullYear().toString(), 
+                label: formatMonth(date),
+                subLabel: date.getFullYear().toString(),
                 fullName: formatDateMMMMYYYY(date),
                 value1: income,
                 value2: outcome,
@@ -128,6 +161,8 @@ export const MonthAnalyticsGrid: FC<MonthAnalyticsGridProps> = ({
         return getCalculatedMonthValues(activeMonth);
     }, [activeMonth, getCalculatedMonthValues]);
 
+    const closeModal = useCallback(() => setIsModalOpen(false), []);
+
     if (isLoading) {
         return <LoadingData text="Loading monthly data..." />;
     }
@@ -136,215 +171,105 @@ export const MonthAnalyticsGrid: FC<MonthAnalyticsGridProps> = ({
         return <NoAvailableData />;
     }
 
+    const activeMonthTitle = activeMonth ? formatDateMMMMYYYY(parseMonthString(activeMonth.month)) : "";
+
     return (
-        <div style={{ ...commonStyles.column12, gap: '12px' }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <HeroNumber
+                heroLabel={`${terms.cashFlow} · ${periodLabel}`}
+                heroValue={totals.net}
+                currency={currency}
+                signed
+            />
 
-            {/* 1. HERO GRAPH CARD */}
-            <div style={commonStyles.card}>
-                <div style={commonStyles.rowBetween}>
-                    <div>
-                        <span style={{ fontSize: '11px', fontWeight: '700', color: theme.colors.textSecondary, textTransform: 'uppercase', letterSpacing: '0.8px' }}>
-                            Cash Flow
-                        </span>
-                        <div style={{ fontSize: '20px', fontWeight: '800', color: totals.net >= 0 ? theme.colors.success : theme.colors.danger, marginTop: '2px' }}>
-                            {totals.net >= 0 ? '+' : ''}{formatAmount(totals.net)}
-                        </div>
-                    </div>
+            <SegmentedControl options={MODE_OPTIONS} selectedValue={viewMode} onChange={setViewMode} />
 
-                    {/* Filter Chip (Total / Real / Everyday) */}
-                    <div
-                        style={{
-                            display: 'flex',
-                            backgroundColor: theme.colors.bgElement,
-                            borderRadius: '20px',
-                            padding: '3px',
-                            border: `1px solid ${theme.colors.border}`,
-                        }}
-                    >
-                        {(['total', 'real', 'everyday'] as const).map((mode) => {
-                            const isActive = viewMode === mode;
-                            return (
-                                <button
-                                    key={mode}
-                                    type="button"
-                                    onClick={() => setViewMode(mode)}
-                                    style={{
-                                        padding: '4px 10px',
-                                        borderRadius: '16px',
-                                        fontSize: '11px',
-                                        fontWeight: '700',
-                                        border: 'none',
-                                        cursor: 'pointer',
-                                        transition: 'all 0.15s ease',
-                                        textTransform: 'capitalize',
-                                        backgroundColor: isActive ? theme.colors.primary : 'transparent',
-                                        color: isActive ? '#ffffff' : theme.colors.textSecondary,
-                                    }}
-                                >
-                                    {mode}
-                                </button>
-                            );
-                        })}
-                    </div>
-                </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                <StatTile label={terms.income} value={totals.income} currency={currency} color={theme.colors.success} />
+                <StatTile label={terms.expenses} value={-totals.outcome} currency={currency} color={theme.colors.danger} />
+            </div>
 
-                {/* Sub-totals in Header */}
-                <div style={{ display: 'flex', gap: '16px', margin: '12px 0 16px 0', fontSize: '12px' }}>
-                    <div>
-                        <span style={{ color: theme.colors.textSecondary }}>Income: </span>
-                        <strong style={{ color: theme.colors.success }}>+{formatAmount(totals.income)}</strong>
-                    </div>
-                    <div>
-                        <span style={{ color: theme.colors.textSecondary }}>Expenses: </span>
-                        <strong style={{ color: theme.colors.danger }}>-{formatAmount(totals.outcome)}</strong>
-                    </div>
-                </div>
-
-                {/* Scrollable BarChart */}
+            <Card padding={12}>
                 <ChartComponent
                     data={chartData}
                     selectedIndex={selectedIndex}
                     onSelect={setSelectedIndex}
                     showDualBar={true}
+                    formatAmount={(val) => `${formatCurrencyValue(val, currency.format)} ${currency.symbol}`}
                 />
+            </Card>
 
-            {/* 2. ACTIVE MONTH CARD WITH CONTROLS */}
             {activeMonth && (
-                <div style={commonStyles.card}>
-                    <div style={commonStyles.rowBetween}>
-                        <button
-                            type="button"
+                <Card padding={0} style={{ overflow: "hidden" }}>
+                    <div
+                        style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            padding: "8px 8px",
+                        }}
+                    >
+                        <MonthNavButton
+                            direction="prev"
                             disabled={selectedIndex === 0}
                             onClick={() => setSelectedIndex((prev) => Math.max(prev - 1, 0))}
-                            style={{
-                                background: 'transparent',
-                                border: 'none',
-                                cursor: selectedIndex === 0 ? 'not-allowed' : 'pointer',
-                                color: selectedIndex === 0 ? theme.colors.border : theme.colors.textPrimary,
-                                display: 'flex',
-                                alignItems: 'center'
-                            }}
-                        >
-                            <ChevronLeft size={20} />
-                        </button>
-
-                        <span style={{ fontSize: '14px', fontWeight: '700', color: theme.colors.textPrimary }}>
-                            {formatDateMMMMYYYY(parseMonthString(activeMonth.month))}
+                        />
+                        <span style={{ fontSize: 15, fontWeight: 600, color: theme.colors.textPrimary }}>
+                            {activeMonthTitle}
                         </span>
-
-                        <button
-                            type="button"
+                        <MonthNavButton
+                            direction="next"
                             disabled={selectedIndex === sortedMonths.length - 1}
                             onClick={() => setSelectedIndex((prev) => Math.min(prev + 1, sortedMonths.length - 1))}
-                            style={{
-                                background: 'transparent',
-                                border: 'none',
-                                cursor: selectedIndex === sortedMonths.length - 1 ? 'not-allowed' : 'pointer',
-                                color: selectedIndex === sortedMonths.length - 1 ? theme.colors.border : theme.colors.textPrimary,
-                                display: 'flex',
-                                alignItems: 'center'
-                            }}
-                        >
-                            <ChevronRight size={20} />
-                        </button>
+                        />
                     </div>
 
-                    <div style={{ display: 'flex', justifyContent: 'space-around', margin: '16px 0', padding: '12px', backgroundColor: theme.colors.bgElement, borderRadius: '8px' }}>
-                        <div>
-                            <span style={{ fontSize: '11px', color: theme.colors.textSecondary, display: 'block' }}>Income</span>
-                            <strong style={{ fontSize: '13px', color: theme.colors.success }}>+{formatAmount(activeMonthValues.income)}</strong>
-                        </div>
-                        <div>
-                            <span style={{ fontSize: '11px', color: theme.colors.textSecondary, display: 'block' }}>Expenses</span>
-                            <strong style={{ fontSize: '13px', color: theme.colors.danger }}>-{formatAmount(activeMonthValues.outcome)}</strong>
-                        </div>
-                    </div>
+                    <Divider />
 
-                    <button
-                        type="button"
-                        onClick={() => setIsModalOpen(true)}
-                        style={{
-                            width: '100%',
-                            padding: '10px',
-                            backgroundColor: theme.colors.primary,
-                            color: '#ffffff',
-                            border: 'none',
-                            borderRadius: '8px',
-                            fontWeight: '700',
-                            fontSize: '12px',
-                            cursor: 'pointer'
-                        }}
-                    >
-                        View Categories Breakdown
-                    </button>
-                </div>
+                    <ListRow
+                        avatar={
+                            <Avatar
+                                name={terms.income}
+                                color={theme.colors.success}
+                                background={theme.colors.surfacePressed}
+                                icon={<ArrowDownLeft size={18} color={theme.colors.success} />}
+                            />
+                        }
+                        title={terms.income}
+                        right={<Amount value={activeMonthValues.income} currency={currency} size={15} signed color={theme.colors.success} />}
+                    />
+                    <Divider inset={68} />
+                    <ListRow
+                        avatar={
+                            <Avatar
+                                name={terms.expenses}
+                                color={theme.colors.danger}
+                                background={theme.colors.surfacePressed}
+                                icon={<ArrowUpRight size={18} color={theme.colors.danger} />}
+                            />
+                        }
+                        title={terms.expenses}
+                        right={<Amount value={-activeMonthValues.outcome} currency={currency} size={15} signed color={theme.colors.danger} />}
+                    />
+
+                    <div style={{ padding: 16 }}>
+                        <Button onClick={() => setIsModalOpen(true)}>{terms.categoriesBreakdown}</Button>
+                    </div>
+                </Card>
             )}
 
-            {/* 3. MODAL BREAKDOWN */}
             {isModalOpen && activeMonth && (
-                <div
-                    onClick={() => setIsModalOpen(false)}
-                    style={{
-                        position: 'fixed',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        backgroundColor: 'rgba(0, 0, 0, 0.75)',
-                        backdropFilter: 'blur(4px)',
-                        zIndex: 1000,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        padding: '16px',
-                    }}
-                >
-                    <div
-                        onClick={(e) => e.stopPropagation()}
-                        style={{
-                            ...commonStyles.card,
-                            width: '100%',
-                            maxWidth: '400px',
-                            position: 'relative',
-                            padding: '20px 16px',
-                            maxHeight: '80vh',
-                            overflowY: 'auto',
-                        }}
-                    >
-                        <button
-                            type="button"
-                            onClick={() => setIsModalOpen(false)}
-                            style={{
-                                position: 'absolute',
-                                top: '16px',
-                                right: '16px',
-                                background: 'transparent',
-                                border: 'none',
-                                color: theme.colors.textSecondary,
-                                cursor: 'pointer',
-                            }}
-                        >
-                            <X size={18} />
-                        </button>
-
-                        <div style={{ marginBottom: '16px' }}>
-                            <span style={{ fontSize: '15px', fontWeight: '700', color: theme.colors.textPrimary }}>
-                                Breakdown for {formatDateMMMMYYYY(parseMonthString(activeMonth.month))}
-                            </span>
-                        </div>
-
-                        {/* Expenses Breakdown */}
-                        <ExpensesBreakdownGrid 
-                            activeMonth={activeMonth} 
-                            viewMode={viewMode} 
-                            outcomeCategories={outcomeCategories} 
-                            incomeCategories={incomeCategories} 
-                            activeMonthValues={activeMonthValues} 
-                            currency={currency}/>
-                    </div>
-                </div>
+                <BottomSheet title={`${terms.breakdownFor} · ${activeMonthTitle}`} onClose={closeModal}>
+                    <ExpensesBreakdownGrid
+                        activeMonth={activeMonth}
+                        viewMode={viewMode}
+                        outcomeCategories={outcomeCategories}
+                        incomeCategories={incomeCategories}
+                        activeMonthValues={activeMonthValues}
+                        currency={currency}
+                    />
+                </BottomSheet>
             )}
-        </div>
         </div>
     );
 };

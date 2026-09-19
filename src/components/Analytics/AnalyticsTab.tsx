@@ -1,4 +1,4 @@
-﻿import {
+import {
     AlertCircle,
     Loader2,
     RefreshCw,
@@ -6,7 +6,7 @@
 } from 'lucide-react';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { appStyles, commonStyles, receiptStyles, theme } from '../../App.styles';
+import { appStyles, theme } from '../../App.styles';
 import { EARLIEST_DATA_DATE } from "../../constants/data.ts";
 import {
     type DailyExpensesResponse,
@@ -21,8 +21,11 @@ import { MonthAnalyticsGrid } from "./MonthAnalyticsGrid.tsx";
 import { SubCategoryAnalyticsGrid } from "./SubCategoryAnalyticsGrid.tsx";
 import { SummaryAnalyticsGrid } from "./SummaryAnalyticsGrid.tsx";
 import { AnalyticsHeader } from "./AnalyticsHeader.tsx";
-import { AnalyticsSegmentedControl } from "../SegmentedControl.tsx";
+import { AnalyticsSegmentedControl, type ViewMode } from "../AnalyticsSegmentedControl.tsx";
+import { Button } from "../Button.tsx";
+import { Card } from "../Card.tsx";
 import { STORAGE_KEYS } from "../../constants/storageKeys.ts";
+import { terms } from "../../constants/strings.ts";
 
 export interface DailyGroup {
     date: Date;
@@ -50,8 +53,6 @@ interface AnalyticsTabProps {
     currencies: Currency[];
 }
 
-type ViewMode = 'summary' | 'days' | 'months' | 'categories' | 'subcategories';
-
 export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, incomeCategories, currencies }) => {
 
     const [currencyCode, setCurrencyCode] = useState<string>(() => {
@@ -74,6 +75,11 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, i
     });
 
     const [viewMode, setViewMode] = useState<ViewMode>('summary');
+
+    const categoriesWithSubs = useMemo(
+        () => outcomeCategories.filter((x) => x.subCategories.length > 0),
+        [outcomeCategories]
+    );
 
     // ----------------------------------------------------
     // Data states
@@ -348,39 +354,18 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, i
 
             {/* Content Display */}
             {error && !isLoading ? (
-                <div style={{
-                    ...commonStyles.card,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    padding: '28px 16px',
-                    textAlign: 'center',
-                    gap: '12px',
-                    borderColor: theme.colors.danger,
-                }}>
+                <Card
+                    padding="28px 16px"
+                    style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', textAlign: 'center' }}
+                >
                     <AlertCircle size={36} color={theme.colors.danger} />
                     <span style={{ fontSize: '14px', color: theme.colors.textPrimary, fontWeight: '600' }}>
                         {error}
                     </span>
-                    <button
-                        onClick={() => fetchAnalytics(true)}
-                        style={{
-                            ...receiptStyles.subChip,
-                            padding: '8px 16px',
-                            backgroundColor: theme.colors.bgElement,
-                            borderColor: theme.colors.border,
-                            color: theme.colors.textPrimary,
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '6px',
-                            cursor: 'pointer',
-                        }}
-                    >
-                        <RefreshCw size={14} />
-                        <span>Retry</span>
-                    </button>
-                </div>
+                    <Button variant="secondary" fullWidth={false} icon={<RefreshCw size={14} />} onClick={() => fetchAnalytics(true)}>
+                        {terms.retry}
+                    </Button>
+                </Card>
             ) : (
                 <div style={{ opacity: isLoading ? 0.6 : 1, transition: 'opacity 0.2s ease' }}>
                     {viewMode === 'summary' && (
@@ -389,7 +374,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, i
 
                     {/* Endless timeline */}
                     {viewMode === 'days' && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                             {(dailyGroups || []).map((group) => (
                                 <DayAnalyticsGrid
                                     key={group.date instanceof Date ? group.date.toISOString() : String(group.date)}
@@ -447,7 +432,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, i
 
                     {viewMode === 'subcategories' && (
                         <SubCategoryAnalyticsGrid
-                            categories={outcomeCategories.filter(x => x.subCategories.length > 0)}
+                            categories={categoriesWithSubs}
                             monthlyData={monthlyData}
                             currency={selectedCurrency}
                             isLoading={isLoading}
@@ -466,13 +451,13 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, i
                         left: '50%',
                         transform: 'translateX(-50%)',
                         backgroundColor: theme.colors.primary,
-                        color: '#fff',
+                        color: theme.colors.onPrimary,
                         border: 'none',
-                        borderRadius: '20px',
+                        borderRadius: theme.colors.radiusPill,
                         padding: '10px 18px',
                         fontSize: '13px',
                         fontWeight: '600',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
+                        boxShadow: '0 8px 24px rgba(0,0,0,0.45)',
                         display: 'flex',
                         alignItems: 'center',
                         gap: '8px',

@@ -1,8 +1,11 @@
-﻿import React, { useState } from 'react';
-import { theme } from '../../App.styles';
-import type { Currency } from '../../types/finance';
-import { CurrencyDropdown } from '../CurrencyDropdown';
-import { CustomDatePicker } from '../CustomDatePicker';
+import { ChevronDown } from "lucide-react";
+import React, { useState } from "react";
+
+import { theme } from "../../App.styles";
+import type { Currency } from "../../types/finance";
+import { CurrencyDropdown } from "../CurrencyDropdown";
+import { CustomDatePicker } from "../CustomDatePicker";
+import { chipStyle } from "../ui.ts";
 
 interface AnalyticsHeaderProps {
     selectedDate: Date;
@@ -24,8 +27,17 @@ export const AnalyticsHeader: React.FC<AnalyticsHeaderProps> = ({
     const [showCurrencyPicker, setShowCurrencyPicker] = useState(false);
 
     return (
-        <div style={styles.container}>
-            <div style={styles.datePickerWrapper}>
+        <div
+            style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 12,
+                padding: "4px 0 16px 0",
+                position: "relative",
+            }}
+        >
+            <div style={{ flex: "0 1 auto" }}>
                 <CustomDatePicker
                     selectedDate={selectedDate}
                     onChange={onDateChange}
@@ -33,17 +45,18 @@ export const AnalyticsHeader: React.FC<AnalyticsHeaderProps> = ({
                 />
             </div>
 
-            <div style={{ position: 'relative' }}>
+            <div style={{ position: "relative" }}>
                 <button
                     type="button"
                     onClick={() => setShowCurrencyPicker(!showCurrencyPicker)}
-                    style={styles.currencyTrigger}
+                    style={chipStyle()}
                 >
-                    <span>{selectedCurrency.name} ({selectedCurrency.symbol})</span>
-                    <span style={styles.arrowIcon}>▾</span>
+                    <span>
+                        {selectedCurrency.name} ({selectedCurrency.symbol})
+                    </span>
+                    <ChevronDown size={14} color={theme.colors.textSecondary} />
                 </button>
 
-                {/* Выпадающий список */}
                 {showCurrencyPicker && (
                     <CurrencyDropdown
                         currencies={currencies}
@@ -54,36 +67,4 @@ export const AnalyticsHeader: React.FC<AnalyticsHeaderProps> = ({
             </div>
         </div>
     );
-};
-
-const styles: Record<string, React.CSSProperties> = {
-    container: {
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '4px 0 16px 0',
-        gap: '12px',
-        position: 'relative',
-    },
-    datePickerWrapper: {
-        flex: '1 1 auto',
-    },
-    currencyTrigger: {
-        backgroundColor: theme.colors.bgCard || '#1C1C1E',
-        border: `1px solid ${theme.colors.border || '#2C2C2E'}`,
-        borderRadius: theme.radius?.md || '12px',
-        color: theme.colors.textSecondary || '#8E8E93',
-        padding: '6px 12px',
-        fontSize: '13px',
-        fontWeight: '500',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '6px',
-        cursor: 'pointer',
-        outline: 'none',
-    },
-    arrowIcon: {
-        fontSize: '10px',
-        color: theme.colors.textSecondary || '#8E8E93',
-    },
 };

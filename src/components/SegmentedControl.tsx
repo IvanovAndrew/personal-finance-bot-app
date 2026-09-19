@@ -1,56 +1,54 @@
-﻿import {Calendar, Layers, LayoutDashboard, PieChart} from 'lucide-react';
-import React from 'react';
+import type { CSSProperties } from "react";
+import { theme } from "../App.styles.ts";
 
-import { receiptStyles } from '../App.styles';
-
-export type ViewMode = 'summary' | 'days' | 'months' | 'categories' | 'subcategories';
-
-interface AnalyticsSegmentedControlProps {
-    value: ViewMode;
-    onChange: (mode: ViewMode) => void;
+interface SegmentedControlOption<T extends string> {
+    value: T;
+    label: string;
 }
 
-export const AnalyticsSegmentedControl: React.FC<AnalyticsSegmentedControlProps> = ({ value, onChange }) => {
-    const tabs: { id: ViewMode; label: string; icon: React.ReactNode }[] = [
-        { id: 'summary', label: 'Summary', icon: <LayoutDashboard size={12} /> },
-        { id: 'days', label: 'Daily', icon: <Calendar size={12} /> },
-        { id: 'months', label: 'Monthly', icon: <Calendar size={12} /> },
-        { id: 'categories', label: 'Cats', icon: <PieChart size={12} /> },
-        { id: 'subcategories', label: 'Subs', icon: <Layers size={12} /> },
-    ];
+interface SegmentedControlProps<T extends string> {
+    options: SegmentedControlOption<T>[];
+    selectedValue: T;
+    onChange: (value: T) => void;
+}
 
+const pillStyle = (active: boolean): CSSProperties => ({
+    border: "none",
+    borderRadius: theme.colors.radiusPill,
+    background: active ? theme.colors.primary : "transparent",
+    color: active ? theme.colors.onPrimary : theme.colors.textSecondary,
+    fontSize: 14,
+    fontWeight: 600,
+    cursor: "pointer",
+    transition: "background-color 0.2s ease, color 0.2s ease",
+});
+
+export const SegmentedControl = <T extends string>({
+    options,
+    selectedValue,
+    onChange,
+}: SegmentedControlProps<T>) => {
     return (
-        <div style={{
-            ...receiptStyles.mainTabs,
-            display: 'grid',
-            gridTemplateColumns: 'repeat(5, 1fr)',
-            gap: '2px',
-            padding: '2px',
-            boxSizing: 'border-box',
-            width: '100%',
-            marginBottom: '12px',
-        }}>
-            {tabs.map((tab) => {
-                const isActive = value === tab.id;
-                return (
-                    <button
-                        key={tab.id}
-                        type="button"
-                        onClick={() => onChange(tab.id)}
-                        style={{
-                            ...receiptStyles.mainTabBtn,
-                            ...(isActive ? receiptStyles.mainTabActive : {}),
-                            padding: '6px 2px',
-                            fontSize: '11px',
-                            gap: '3px',
-                            whiteSpace: 'nowrap',
-                        }}
-                    >
-                        {tab.icon}
-                        <span>{tab.label}</span>
-                    </button>
-                );
-            })}
+        <div
+            style={{
+                display: "flex",
+                padding: 4,
+                gap: 4,
+                background: theme.colors.surface,
+                borderRadius: theme.colors.radiusPill,
+            }}
+        >
+            {options.map((option) => (
+                <button
+                    key={option.value}
+                    type="button"
+                    aria-pressed={selectedValue === option.value}
+                    onClick={() => onChange(option.value)}
+                    style={{ ...pillStyle(selectedValue === option.value), flex: 1, padding: "10px 0" }}
+                >
+                    {option.label}
+                </button>
+            ))}
         </div>
     );
 };

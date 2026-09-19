@@ -1,4 +1,4 @@
-﻿import { type FC, useCallback, useState } from "react";
+import { type FC, useMemo, useState } from "react";
 
 import { NOT_EVERYDAY_OUTCOME_CATEGORIES, SAVINGS_CATEGORY_CODE } from "../constants/categories.ts";
 import type { MonthlyAnalyticsItem } from "../services/api.ts";
@@ -6,6 +6,8 @@ import type { Category, Currency } from "../types/finance.ts";
 import { getCategoryMeta } from "../utils/categoryutils.ts";
 import { formatCurrencyValue } from "../utils/numberformatter.ts";
 import type { MonthAnalyticsView } from "./Analytics/MonthAnalyticsGrid.tsx";
+import { AnalyticsRow } from "./AnalyticsRow.tsx";
+import { ListGroup } from "./Card.tsx";
 import { DonutChart } from "./DonutChart.tsx";
 
 interface ExpensesBreakdownGridProps {
@@ -13,38 +15,40 @@ interface ExpensesBreakdownGridProps {
     viewMode: MonthAnalyticsView;
     outcomeCategories?: Category[];
     incomeCategories?: Category[];
-    activeMonthValues: {income: number, outcome: number};
+    activeMonthValues: { income: number; outcome: number };
     currency: Currency;
 }
 
-export const ExpensesBreakdownGrid: FC<ExpensesBreakdownGridProps>  = ({ activeMonth, viewMode, outcomeCategories, activeMonthValues, currency }) => {
-
+export const ExpensesBreakdownGrid: FC<ExpensesBreakdownGridProps> = ({
+                                                                          activeMonth,
+                                                                          viewMode,
+                                                                          outcomeCategories,
+                                                                          activeMonthValues,
+                                                                          currency,
+                                                                      }) => {
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-    
-    const formatAmount = useCallback(
-        (val: number) => `${formatCurrencyValue(val, currency.format)} ${currency.symbol}`,
-        [currency.symbol]
+
+    const formatAmount = (val: number) => `${formatCurrencyValue(val, currency.format)} ${currency.symbol}`;
+
+    const filteredCategories = useMemo(
+        () =>
+            activeMonth.outcomeCategories
+                .filter((cat) => {
+                    if (viewMode === "real") return cat.category !== SAVINGS_CATEGORY_CODE;
+                    if (viewMode === "everyday") return !NOT_EVERYDAY_OUTCOME_CATEGORIES.has(cat.category);
+                    return true;
+                })
+                .sort((a, b) => b.total - a.total),
+        [activeMonth, viewMode]
     );
 
-    const filteredCategories = activeMonth.outcomeCategories
-        .filter((cat) => {
-            if (viewMode === 'real') return cat.category !== SAVINGS_CATEGORY_CODE;
-            if (viewMode === 'everyday') return !NOT_EVERYDAY_OUTCOME_CATEGORIES.has(cat.category);
-            return true;
-        })
-        .sort((a, b) => b.total - a.total);
-
-    const segments = filteredCategories.map((cat) => {
-        
+    const rows = filteredCategories.map((cat) => {
         const meta = getCategoryMeta(outcomeCategories, cat.category);
         const percent = activeMonthValues.outcome > 0 ? (cat.total / activeMonthValues.outcome) * 100 : 0;
-
-        return {
-            code: meta.code,
-            percent,
-            color: meta.color || '#9E9E9E'
-        };
+        return { cat, meta, percent, color: meta.color || "#9E9E9E" };
     });
+
+    const segments = rows.map((r) => ({ code: r.meta.code, percent: r.percent, color: r.color }));
 
     const handlePrev = () => {
         if (filteredCategories.length === 0) return;
@@ -71,21 +75,37 @@ export const ExpensesBreakdownGrid: FC<ExpensesBreakdownGridProps>  = ({ activeM
     const selectedCat = filteredCategories.find((cat) => cat.category === selectedCategory);
     const selectedMeta = selectedCat ? getCategoryMeta(outcomeCategories, selectedCat.category) : null;
 
-    const donutTitle = selectedMeta ? selectedMeta.name : 'Total';
+    const donutTitle = selectedMeta ? selectedMeta.name : "Total";
+    const donutAmount = selectedCat ? formatAmount(selectedCat.total) : formatAmount(activeMonthValues.outcome);
 
-    const donutAmount = selectedCat
-        ? formatAmount(selectedCat.total)
-        : formatAmount(activeMonthValues.outcome);
+    return (
+        <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+            <DonutChart
+                segments={segments}
+                totalText={donutAmount}
+                titleText={donutTitle}
+                selectedCode={selectedCat?.category}
+                onSelectSegment={setSelectedCategory}
+                onPrevSegment={handlePrev}
+                onNextSegment={handleNext}
+            />
 
-    return <div style={{ display: 'flex', justifyContent: 'center', width: '100%', margin: '20px 0' }}>
-        <DonutChart 
-            segments={segments} 
-            totalText={donutAmount} 
-            titleText={donutTitle} 
-            selectedCode={selectedCat?.category} 
-            onSelectSegment={setSelectedCategory}
-            onPrevSegment={handlePrev}
-            onNextSegment={handleNext}
-        />
-    </div>;
-}
+            <ListGroup>
+                {rows.map((r) => (
+                    <AnalyticsRow
+                        key={r.cat.category}
+                        name={r.meta.name}
+                        icon={r.meta.icon}
+                        color={r.color}
+                        share={r.percent / 100}
+                        total={r.cat.total}
+                        currency={currency}
+                        onClick={() =>
+                            setSelectedCategory((prev) => (prev === r.cat.category ? null : r.cat.category))
+                        }
+                    />
+                ))}
+            </ListGroup>
+        </div>
+    );
+};

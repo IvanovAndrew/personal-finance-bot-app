@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 
 import { theme } from '../App.styles';
 import { getShopMeta } from '../utils/shoplogos';
@@ -14,7 +14,7 @@ export const ShopAvatar: React.FC<ShopAvatarProps> = ({ shopName, size = 32 }) =
     const imageContainerStyle: React.CSSProperties = {
         width: `${size}px`,
         height: `${size}px`,
-        borderRadius: '8px',
+        borderRadius: '50%',
         backgroundColor: '#FFFFFF',
         display: 'flex',
         alignItems: 'center',
@@ -29,7 +29,7 @@ export const ShopAvatar: React.FC<ShopAvatarProps> = ({ shopName, size = 32 }) =
     const imageOwnBackgroundStyle: React.CSSProperties = {
         width: `${size}px`,
         height: `${size}px`,
-        borderRadius: '8px',
+        borderRadius: '50%',
         flexShrink: 0,
         overflow: 'hidden',
     };
@@ -37,9 +37,8 @@ export const ShopAvatar: React.FC<ShopAvatarProps> = ({ shopName, size = 32 }) =
     const svgContainerStyle: React.CSSProperties = {
         width: `${size}px`,
         height: `${size}px`,
-        borderRadius: '8px',
+        borderRadius: '50%',
         backgroundColor: meta?.hexColor ? `${meta.hexColor}20` : theme.colors.bgElement,
-        border: `1px solid ${theme.colors.border}`,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -98,10 +97,9 @@ export const ShopAvatar: React.FC<ShopAvatarProps> = ({ shopName, size = 32 }) =
             style={{
                 width: `${size}px`,
                 height: `${size}px`,
-                borderRadius: '8px',
+                borderRadius: '50%',
                 backgroundColor: theme.colors.bgCard,
-                border: `1px solid ${theme.colors.border}`,
-                display: 'flex',
+                        display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 flexShrink: 0,

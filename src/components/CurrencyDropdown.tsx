@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 
 import { theme } from "../App.styles.ts";
 import type { Currency } from "../types/finance.ts";
@@ -9,42 +9,50 @@ interface CurrencyDropdownProps {
     setShowCurrencyPicker: (show: boolean) => void;
 }
 
-export const CurrencyDropdown: React.FC<CurrencyDropdownProps> = ({ currencies, setSelectedCurrency, setShowCurrencyPicker }) => {
-
+export const CurrencyDropdown: React.FC<CurrencyDropdownProps> = ({
+                                                                      currencies,
+                                                                      setSelectedCurrency,
+                                                                      setShowCurrencyPicker,
+                                                                  }) => {
     return (
-            <div style={{
-                position: 'absolute',
-                right: 0,            
-                top: 'calc(100% + 4px)',
-                backgroundColor: theme.colors.bgCard,
-                border: `1px solid ${theme.colors.border}`,
-                borderRadius: theme.radius.md,
-                zIndex: 100,         
-                display: 'flex',
-                flexDirection: 'column',
-                padding: '4px',
-                minWidth: '110px',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-            }}>
-            {currencies.map(curr => (
+        <div
+            style={{
+                position: "absolute",
+                right: 0,
+                top: "calc(100% + 8px)",
+                zIndex: 100,
+                display: "flex",
+                flexDirection: "column",
+                minWidth: 140,
+                padding: 6,
+                background: theme.colors.surfacePressed,
+                borderRadius: 16,
+                boxShadow: "0 8px 24px rgba(0,0,0,0.45)",
+            }}
+        >
+            {currencies.map((curr) => (
                 <button
                     key={curr.name}
+                    type="button"
                     onClick={() => {
                         setSelectedCurrency(curr);
                         setShowCurrencyPicker(false);
                     }}
                     style={{
-                        background: 'none',
-                        border: 'none',
+                        border: "none",
+                        borderRadius: 10,
+                        background: "transparent",
                         color: theme.colors.textPrimary,
-                        padding: '6px 12px',
-                        fontSize: '12px',
-                        textAlign: 'left',
-                        cursor: 'pointer'
+                        padding: "10px 12px",
+                        fontSize: 14,
+                        fontWeight: 500,
+                        textAlign: "left",
+                        cursor: "pointer",
                     }}
                 >
                     {curr.name} ({curr.symbol})
                 </button>
             ))}
-        </div>);
-}
+        </div>
+    );
+};

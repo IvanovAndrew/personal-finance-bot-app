@@ -1,4 +1,4 @@
-﻿import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import React, { type FC, type MouseEvent } from 'react';
 
 import { theme } from '../App.styles.ts';
@@ -49,8 +49,9 @@ export const DonutChart: FC<DonutChartProps> = ({
     return (
         <div style={{
             position: 'relative',
-            width: '375px',
-            height: '375px',
+            width: '100%',
+            maxWidth: '320px',
+            aspectRatio: '1 / 1',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -100,10 +101,10 @@ export const DonutChart: FC<DonutChartProps> = ({
                 flexDirection: 'row',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                backgroundColor: theme.colors.bgCard,
+                backgroundColor: theme.colors.surface,
                 borderRadius: '50%',
-                width: '225px',
-                height: '225px',
+                width: '60%',
+                height: '60%',
                 padding: '0 8px',
                 boxSizing: 'border-box'
             }}>
@@ -115,7 +116,7 @@ export const DonutChart: FC<DonutChartProps> = ({
                         onPrevSegment?.();
                     }}
                 >
-                    <ChevronLeft size={32} color={theme.colors.textSecondary} />
+                    <ChevronLeft size={24} color={theme.colors.textSecondary} />
                 </button>
 
                 <div style={{
@@ -128,7 +129,7 @@ export const DonutChart: FC<DonutChartProps> = ({
                     pointerEvents: 'none'
                 }}>
                     <span style={{
-                        fontSize: '14px',
+                        fontSize: '13px',
                         color: theme.colors.textSecondary || '#8E8E93',
                         marginBottom: '2px',
                         textAlign: 'center',
@@ -140,7 +141,7 @@ export const DonutChart: FC<DonutChartProps> = ({
                         {titleText}
                     </span>
                     <span style={{
-                        fontSize: '16px',
+                        fontSize: '17px',
                         fontWeight: '700',
                         color: theme.colors.textPrimary,
                         textAlign: 'center',
@@ -160,7 +161,7 @@ export const DonutChart: FC<DonutChartProps> = ({
                         onNextSegment?.();
                     }}
                 >
-                    <ChevronRight size={32} color={theme.colors.textSecondary} />
+                    <ChevronRight size={24} color={theme.colors.textSecondary} />
                 </button>
             </div>
         </div>
