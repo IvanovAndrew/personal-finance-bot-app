@@ -15,6 +15,7 @@ export interface ChartDataItem {
     id: string;
     label: string;       // e.g. "Jan"
     subLabel?: string;   // e.g. "2026"
+    fullName?: string;   // e.g. "Jan 2026"
     value1: number;      // Primary value
     value2?: number;     // Secondary value
 }

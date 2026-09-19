@@ -13,6 +13,16 @@ export const formatDateDMMMMYYYY = (date: Date, locale = 'en-US'): string => {
     }).format(date);
 };
 
+export const formatMonthYear = (date: Date, locale = 'en-US'): string =>
+    date
+        .toLocaleDateString(locale, { month: "short", year: "numeric" })
+        .replace(/\s?г\.$/, "");
+
+export const formatMonth = (date: Date, locale = 'en-US'): string =>
+    date
+        .toLocaleDateString(locale, { month: "short" })
+        .replace(/\s?г\.$/, "");
+
 export const toDateOnlyString = (date: Date): string => {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');

@@ -20,6 +20,12 @@ export const theme = {
     // additional
     danger: '#FF453A',
     success: '#20B2AA',
+
+    surface: "#1A1A1C",
+    surfacePressed: "#232326",
+    onPrimary: "#0B0B0C", // dark text on the turquoise fill
+    radiusCard: 20,
+    radiusPill: 999,
   },
   radius: {
     sm: '10px',
