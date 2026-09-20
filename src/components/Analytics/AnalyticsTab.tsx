@@ -1,6 +1,5 @@
 import {
     AlertCircle,
-    Loader2,
     RefreshCw,
     RotateCcw
 } from 'lucide-react';
@@ -16,7 +15,6 @@ import {
 } from "../../services/api.ts";
 import type { Category, Currency } from '../../types/finance';
 import { CategoryAnalyticsGrid } from "./CategoryAnalyticsGrid.tsx";
-import { DayAnalyticsGrid } from "./DayAnalyticsGrid.tsx";
 import { MonthAnalyticsGrid } from "./MonthAnalyticsGrid.tsx";
 import { SubCategoryAnalyticsGrid } from "./SubCategoryAnalyticsGrid.tsx";
 import { SummaryAnalyticsGrid } from "./SummaryAnalyticsGrid.tsx";
@@ -26,6 +24,7 @@ import { Button } from "../Button.tsx";
 import { Card } from "../Card.tsx";
 import { STORAGE_KEYS } from "../../constants/storageKeys.ts";
 import { terms } from "../../constants/strings.ts";
+import {TransactionsGrid} from "./TransactionGrid.tsx";
 
 export interface DailyGroup {
     date: Date;
@@ -375,38 +374,16 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, i
                     {/* Endless timeline */}
                     {viewMode === 'days' && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                            {(dailyGroups || []).map((group) => (
-                                <DayAnalyticsGrid
-                                    key={group.date instanceof Date ? group.date.toISOString() : String(group.date)}
-                                    startDate={new Date(group.date)}
-                                    currency={selectedCurrency}
-                                    categories={outcomeCategories}
-                                    items={group.items || []}
-                                    isLoading={isLoading}
-                                />
-                            ))}
-
-                            <div
-                                ref={loadMoreRef}
-                                style={{
-                                    display: 'flex',
-                                    justifyContent: 'center',
-                                    alignItems: 'center',
-                                    padding: '16px 0',
-                                    minHeight: '40px',
-                                }}
-                            >
-                                {isFetchingMoreDays && (
-                                    <Loader2
-                                        size={20}
-                                        color={theme.colors.primary}
-                                        style={{ animation: 'spin 1s linear infinite' }}
-                                    />
-                                )}
-                                {!hasMoreDays && !isFetchingMoreDays && (
-                                    <span style={{ fontSize: '12px', color: theme.colors.textSecondary }}>No earlier data</span>
-                                )}
-                            </div>
+                            <TransactionsGrid
+                                groups={dailyGroups}
+                                currency={selectedCurrency}
+                                categories={outcomeCategories}
+                                isLoading={isLoading}
+                                isLoadingMore={isFetchingMoreDays}
+                                hasMore={hasMoreDays}
+                                onLoadMore={fetchNextChunk}
+                                anchorDate={dailyAnchorDate}
+                            />
                         </div>
                     )}
 

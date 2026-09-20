@@ -154,7 +154,7 @@ export const ExportSheet: FC<ExportSheetProps> = ({ initialDate, currency, onClo
                                 fontSize: 14,
                                 fontWeight: 600,
                                 cursor: "pointer",
-                                background: format === f ? theme.colors.bgElement : theme.colors.surfacePressed,
+                                background: format === f ? theme.colors.primary : theme.colors.surfacePressed,
                                 color: format === f ? "#0b0b0c" : theme.colors.textPrimary,
                             }}
                         >
@@ -163,7 +163,7 @@ export const ExportSheet: FC<ExportSheetProps> = ({ initialDate, currency, onClo
                     ))}
                 </div>
 
-                {error && <div style={{ fontSize: 13, color: "#ff6b6b" }}>{error}</div>}
+                {error && <div style={{ fontSize: 13, color: theme.colors.danger }}>{error}</div>}
 
                 <button
                     type="button"

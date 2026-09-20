@@ -130,6 +130,7 @@ export const EnterTransactionTab: React.FC<EnterOutcomeTabProps> = ({
 
                 setSaveStatus('error');
                 setStatusMessage(error || 'Error, not saved');
+                setTimeout(() => setSaveStatus('idle'), 3 * ONE_SECOND);
                 return;
             }
 

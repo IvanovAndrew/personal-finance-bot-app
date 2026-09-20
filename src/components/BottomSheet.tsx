@@ -1,5 +1,6 @@
 import { X } from "lucide-react";
 import { type FC, type ReactNode, useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 
 import { theme } from "../App.styles.ts";
 import { terms } from "../constants/strings.ts";
@@ -31,7 +32,7 @@ export const BottomSheet: FC<BottomSheetProps> = ({ title, onClose, children }) 
         };
     }, [onClose]);
 
-    return (
+    return createPortal(
         <div
             onClick={onClose}
             style={{
@@ -110,6 +111,7 @@ export const BottomSheet: FC<BottomSheetProps> = ({ title, onClose, children }) 
 
                 {children}
             </div>
-        </div>
+        </div>,
+        document.body
     );
 };
