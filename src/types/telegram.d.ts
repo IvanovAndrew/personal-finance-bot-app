@@ -4,6 +4,9 @@
     expand: () => void;
     setHeaderColor?: (color: string) => void;
     showAlert: (message: string) => void;
+    isVersionAtLeast: (version: string) => boolean;
+    downloadFile: (params: { url: string, file_name: string }) => void;
+    openLink: (url: string) => void;
     HapticFeedback: {
         notificationOccurred: (type: 'success' | 'error' | 'warning') => void;
         selectionChanged: () => void;

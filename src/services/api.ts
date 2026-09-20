@@ -178,6 +178,26 @@ export interface SaveCheckDto {
     shopExpenses?: ShopExpensesDto;
 }
 
+export type ExportFormat = "xlsx" | "pdf";
+
+export interface CreateExportPayload {
+    startDate: Date;
+    endDate: Date;
+    currency: string;
+    format: ExportFormat;
+}
+
+export interface ExportLinkResponse {
+    url: string | null; // null: за период нет трат
+    fileName: string;
+}
+
+export interface ExportCreatedResponse {
+    id: string | null; // null: за период нет трат
+    fileName: string;
+}
+
+
 type HealthResponse = Record<string, boolean>;
 
 export const financeApi = {
@@ -257,5 +277,21 @@ export const financeApi = {
 
     async getMonthlyAnalytics(payload: SpendingHistoryMonthlyPayload, signal?: AbortSignal): Promise<MonthlyAnalyticsResponse> {
         return apiFetch<MonthlyAnalyticsResponse>(`/analytics/history/monthly?start=${toDateOnlyString(payload.startMonth)}&currency=${payload.currency}`, {}, signal);
+    },
+
+    async createExport(payload: CreateExportPayload, signal?: AbortSignal): Promise<ExportCreatedResponse> {
+        return apiFetch<ExportCreatedResponse>('/export', {
+            method: 'POST',
+            body: JSON.stringify({
+                currency: payload.currency,
+                startDate: toDateOnlyString(payload.startDate),
+                endDate: toDateOnlyString(payload.endDate),
+                format: payload.format,
+            }),
+        }, signal);
+    },
+
+    getExportUrl(id: string): string {
+        return `${API_BASE_URL}/export/${id}`;
     },
 };

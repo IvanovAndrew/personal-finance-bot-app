@@ -1,5 +1,5 @@
-import { ChevronDown, ChevronRight } from "lucide-react";
-import { type FC, useMemo, useState } from "react";
+import {ChevronDown, ChevronRight, Download} from "lucide-react";
+import {type FC, useCallback, useMemo, useState} from "react";
 
 import { theme } from "../../App.styles.ts";
 import { type ShopExpensesDto } from "../../services/api.ts";
@@ -12,6 +12,8 @@ import { LoadingData } from "../LoadingData.tsx";
 import { NoAvailableData } from "../NoAvailableData.tsx";
 import { ShopAvatar } from "../ShopAvatar.tsx";
 import { TransactionRow } from "../TransactionRow.tsx";
+import {createPortal} from "react-dom";
+import {ExportSheet} from "../ExportSheet.tsx";
 
 interface DayAnalyticsGridProps {
     startDate: Date;
@@ -29,6 +31,8 @@ export const DayAnalyticsGrid: FC<DayAnalyticsGridProps> = ({
                                                                 isLoading,
                                                             }) => {
     const [expandedShops, setExpandedShops] = useState<Record<string, boolean>>({});
+    const [isExportOpen, setIsExportOpen] = useState(false);
+    const closeExport = useCallback(() => setIsExportOpen(false), []);
 
     const toggleShop = (shopName: string) => {
         setExpandedShops((prev) => ({ ...prev, [shopName]: !prev[shopName] }));
@@ -62,6 +66,30 @@ export const DayAnalyticsGrid: FC<DayAnalyticsGridProps> = ({
                 </span>
                 <Amount value={dayTotal} currency={currency} size={15} weight={600} color={theme.colors.textSecondary} />
             </div>
+            
+            
+
+            <button
+                type="button"
+                onClick={() => setIsExportOpen(true)}
+                style={{
+                    alignSelf: "flex-end",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                    padding: "6px 12px",
+                    border: "none",
+                    borderRadius: 999,
+                    background: theme.colors.surfacePressed,
+                    color: theme.colors.textSecondary,
+                    fontSize: 13,
+                    fontWeight: 600,
+                    cursor: "pointer",
+                }}
+            >
+                <Download size={14} />
+                Download
+            </button>
 
             {items.length === 0 ? (
                 <NoAvailableData text="No expenses recorded for this day" />
@@ -104,6 +132,11 @@ export const DayAnalyticsGrid: FC<DayAnalyticsGridProps> = ({
                     })}
                 </ListGroup>
             )}
+            {isExportOpen &&
+                createPortal(
+                    <ExportSheet initialDate={startDate} currency={currency} onClose={closeExport} />,
+                    document.body,
+                )}
         </div>
     );
 };
