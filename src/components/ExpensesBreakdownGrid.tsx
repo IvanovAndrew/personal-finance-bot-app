@@ -5,14 +5,14 @@ import type { MonthlyAnalyticsItem } from "../services/api.ts";
 import type { Category, Currency } from "../types/finance.ts";
 import { getCategoryMeta } from "../utils/categoryutils.ts";
 import { formatCurrencyValue } from "../utils/numberformatter.ts";
-import type { MonthAnalyticsView } from "./Analytics/MonthAnalyticsGrid.tsx";
 import { AnalyticsRow } from "./AnalyticsRow.tsx";
-import { ListGroup } from "./Card.tsx";
+import { ListGroup } from "../shared/ui/Card.tsx";
 import { DonutChart } from "./DonutChart.tsx";
+import type {MonthMode} from "../utils/analyticUtils.ts";
 
 interface ExpensesBreakdownGridProps {
     activeMonth: MonthlyAnalyticsItem;
-    viewMode: MonthAnalyticsView;
+    viewMode: MonthMode;
     outcomeCategories?: Category[];
     incomeCategories?: Category[];
     activeMonthValues: { income: number; outcome: number };

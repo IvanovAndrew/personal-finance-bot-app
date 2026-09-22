@@ -1,6 +1,6 @@
 import { Children, type CSSProperties, type FC, Fragment, type ReactNode } from "react";
 
-import { theme } from "../App.styles.ts";
+import { theme } from "../../App.styles.ts";
 
 interface CardProps {
     children: ReactNode;

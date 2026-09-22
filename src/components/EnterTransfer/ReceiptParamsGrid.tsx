@@ -1,7 +1,7 @@
 ﻿import React from "react";
 
 import { commonStyles, receiptStyles } from '../../App.styles';
-import { CustomDatePicker } from "../CustomDatePicker";
+import { CustomDatePicker } from "../../shared/ui/CustomDatePicker";
 
 interface ReceiptParamsGridProps {
     date: Date;

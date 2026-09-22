@@ -2,8 +2,8 @@ import { X } from "lucide-react";
 import { type FC, type ReactNode, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
-import { theme } from "../App.styles.ts";
-import { terms } from "../constants/strings.ts";
+import { theme } from "../../App.styles.ts";
+import { terms } from "../../constants/strings.ts";
 
 interface BottomSheetProps {
     title: ReactNode;

@@ -5,10 +5,10 @@ import { theme } from "../App.styles";
 import { terms } from "../constants/strings.ts";
 import type { Category } from "../types/finance";
 import { getCategoryMeta } from "../utils/categoryutils";
-import { BottomSheet } from "./BottomSheet.tsx";
-import { ListGroup } from "./Card.tsx";
+import { BottomSheet } from "../shared/ui/BottomSheet.tsx";
+import { ListGroup } from "../shared/ui/Card.tsx";
 import { CategoryGrid } from "./CategoryGrid";
-import { Chip } from "./Chip.tsx";
+import { Chip } from "../shared/ui/Chip.tsx";
 import { ListRow } from "./ListRow.tsx";
 
 interface CategorySwitcherModalProps {

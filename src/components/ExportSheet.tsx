@@ -5,7 +5,7 @@ import { type ExportFormat, financeApi } from "../services/api.ts";
 import { fromDateInputValue, toDateInputValue } from "../utils/exportExpenses.ts";
 import type {Currency} from "../types/finance.ts";
 import {theme} from "../App.styles.ts";
-import {BottomSheet} from "./BottomSheet.tsx";
+import {BottomSheet} from "../shared/ui/BottomSheet.tsx";
 import {deliverFile} from "../utils/deliverfile.ts";
 
 const MAX_DAYS = 366;

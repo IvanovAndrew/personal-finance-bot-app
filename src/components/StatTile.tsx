@@ -3,7 +3,7 @@ import type { FC } from "react";
 import { theme } from "../App.styles.ts";
 import type { Currency } from "../types/finance.ts";
 import { Amount } from "./Amount.tsx";
-import { Card } from "./Card.tsx";
+import { Card } from "../shared/ui/Card.tsx";
 
 interface StatTileProps {
     label: string;

@@ -4,8 +4,8 @@ import { Calendar } from "lucide-react";
 import React from "react";
 import DatePicker from "react-datepicker";
 
-import { datePickerStyles, theme } from "../App.styles";
-import { EARLIEST_DATA_DATE } from "../constants/data.ts";
+import { datePickerStyles, theme } from "../../App.styles";
+import { EARLIEST_DATA_DATE } from "../../constants/data.ts";
 import { chipStyle } from "./ui.ts";
 
 interface CustomDatePickerProps {

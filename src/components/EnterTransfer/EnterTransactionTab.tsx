@@ -7,13 +7,13 @@ import { financeApi } from "../../services/api.ts";
 import type { Category, Currency, SubCategory, TransactionType } from "../../types/finance.ts";
 import { toDateOnlyString } from "../../utils/dateformatter.ts";
 import { formatCurrencyValue } from "../../utils/numberformatter.ts";
-import { Button } from '../Button.tsx';
+import { Button } from '../../shared/ui/Button.tsx';
 import { CategorySwitcherModal } from '../CategorySwitcherModal.tsx';
-import { CustomDatePicker } from "../CustomDatePicker.tsx";
+import { CustomDatePicker } from "../../shared/ui/CustomDatePicker";
 import { SegmentedControl } from "../SegmentedControl.tsx";
 import { StatusModal } from "../StatusModal.tsx";
-import { chipStyle } from "../ui.ts";
-import { ReceiptTab } from "./ReceiptTab.tsx";
+import { chipStyle } from "../../shared/ui/ui.ts";
+import { ReceiptTab } from "./receipt/ReceiptTab.tsx";
 import {STORAGE_KEYS} from "../../constants/storageKeys.ts";
 
 interface EnterOutcomeTabProps {

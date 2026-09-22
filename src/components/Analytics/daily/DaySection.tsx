@@ -1,16 +1,16 @@
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { type FC, useMemo, useState } from "react";
 
-import { theme } from "../../App.styles.ts";
-import { type ShopExpensesDto } from "../../services/api.ts";
-import type { Category, Currency } from "../../types/finance.ts";
-import { formatDateDMMMMYYYY } from "../../utils/dateformatter.ts";
-import { Amount } from "../Amount.tsx";
-import { ListGroup } from "../Card.tsx";
-import { ListRow } from "../ListRow.tsx";
-import { NoAvailableData } from "../NoAvailableData.tsx";
-import { ShopAvatar } from "../ShopAvatar.tsx";
-import { TransactionRow } from "../TransactionRow.tsx";
+import { theme } from "../../../App.styles.ts";
+import { type ShopExpensesDto } from "../../../services/api.ts";
+import type { Category, Currency } from "../../../types/finance.ts";
+import { formatDateDMMMMYYYY } from "../../../utils/dateformatter.ts";
+import { Amount } from "../../Amount.tsx";
+import { ListGroup } from "../../../shared/ui/Card.tsx";
+import { ListRow } from "../../ListRow.tsx";
+import { NoAvailableData } from "../../../shared/ui/NoAvailableData.tsx";
+import { ShopAvatar } from "../../ShopAvatar.tsx";
+import { TransactionRow } from "../../TransactionRow.tsx";
 
 interface DaySectionProps {
     date: Date;

@@ -1,6 +1,6 @@
 import type { CSSProperties } from "react";
 
-import { theme } from "../App.styles.ts";
+import { theme } from "../../App.styles.ts";
 
 /** Pill chip: surface fill when idle, turquoise fill when active. */
 export const chipStyle = (active = false): CSSProperties => ({

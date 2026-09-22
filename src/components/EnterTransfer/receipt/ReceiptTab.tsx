@@ -1,17 +1,26 @@
 ﻿import { Building2, Link, Plus, QrCode, Trash2 } from 'lucide-react';
 import React, { useState } from 'react';
 
-import { appStyles, commonStyles,receiptStyles } from '../../App.styles';
-import {financeApi, type SaveCheckDto, type ShopExpensesDto} from "../../services/api.ts";
-import type { Category, Currency } from "../../types/finance.ts";
-import { formatISODateTime } from "../../utils/dateformatter.ts";
-import { CheckSavedSuccessModal } from "../CheckSavedSuccessModal.tsx";
-import { StatusModal, type StatusModalType } from "../StatusModal.tsx";
-import { JsonGrid } from "./JsonGrid.tsx";
-import { QRLinkGrid } from "./QRUrl.tsx";
-import { ReceiptParamsGrid } from "./ReceiptParamsGrid.tsx";
-import { YerevanCityGrid } from "./YerevanCityGrid.tsx";
-import {ONE_SECOND} from "../../constants/time.ts";
+import { appStyles, commonStyles, receiptStyles } from '../../../App.styles.ts';
+import { financeApi, type ShopExpensesDto } from "../../../services/api.ts";
+import type { Category, Currency } from "../../../types/finance.ts";
+import { useStatusModal } from "./hooks/useStatusModal.ts";
+import { showAlert } from "./telegram.ts";
+import { CheckSavedSuccessModal } from "../../CheckSavedSuccessModal.tsx";
+import { StatusModal } from "../../StatusModal.tsx";
+import { JsonGrid } from "../JsonGrid.tsx";
+import { QRLinkGrid } from "../QRUrl.tsx";
+import { ReceiptParamsGrid } from "../ReceiptParamsGrid.tsx";
+import { YerevanCityGrid } from "../YerevanCityGrid.tsx";
+import {
+    buildFnsParamsPayload,
+    buildFnsUrlPayload,
+    buildYerevanCityPayload,
+    validateFnsParams,
+    validateFnsUrl,
+    validateYerevanCity,
+} from "./receiptForms.ts";
+import { ONE_SECOND } from "../../../constants/time.ts";
 
 type MainTabMode = 'yerevan_city' | 'fns_ru' | 'manual';
 type RuInputSubMode = 'params' | 'qr_url' | 'json';
@@ -31,7 +40,7 @@ interface ReceiptTabProps {
 export const ReceiptTab: React.FC<ReceiptTabProps> = ({ categories, currencies }) => {
     const [mainTab, setMainTab] = useState<MainTabMode>('yerevan_city');
     const [ruSubMode, setRuSubMode] = useState<RuInputSubMode>('qr_url');
-    
+
     // Yerevan city form
     const [ycDate, setYcDate] = useState<Date>(new Date());
     const [ycBarcode, setYcBarcode] = useState<string>('');
@@ -53,29 +62,11 @@ export const ReceiptTab: React.FC<ReceiptTabProps> = ({ categories, currencies }
     const [manualItems, setManualItems] = useState<ManualItem[]>([
         { id: '1', name: '', price: '', quantity: '1' }
     ]);
-    
+
     const [currency, setCurrency] = useState<Currency>(currencies[0]);
 
-    const [processStatus, setProcessStatus] = useState<StatusModalType | null>(null);
-    const [statusMessage, setStatusMessage] = useState<string>('');
+    const status = useStatusModal();
     const [savedCheck, setSavedCheck] = useState<ShopExpensesDto | undefined>(undefined);
-
-    const showStatus = (status: StatusModalType, message: string, autoHideMs = 2000) => {
-        setProcessStatus(status);
-        setStatusMessage(message);
-
-        if (status === 'error') {
-            window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred('error');
-        } else if (status === 'success' || status === 'saved') {
-            window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred('success');
-        }
-
-        if (autoHideMs > 0) {
-            setTimeout(() => {
-                setProcessStatus(null);
-            }, autoHideMs);
-        }
-    };
 
     const addManualItem = () => {
         setManualItems(prev => [
@@ -95,103 +86,76 @@ export const ReceiptTab: React.FC<ReceiptTabProps> = ({ categories, currencies }
         );
     };
 
-    const handleProcess = async () => {
+    /** Runs one submission: validate -> "loading" -> API call -> "success"/"error". One haptic per outcome (via useStatusModal). */
+    const submit = async (
+        validationError: string | null,
+        call: () => Promise<{ success: boolean; error?: string; shopExpenses?: ShopExpensesDto }>,
+        onSuccess: (shopExpenses: ShopExpensesDto | undefined) => void
+    ) => {
+        if (validationError) {
+            showAlert(validationError);
+            status.show('error', validationError, 2000);
+            return;
+        }
+
+        status.show('loading', 'Loading and parsing receipt...', 0);
+
         try {
-            if (mainTab === 'yerevan_city') {
-                if (!ycBarcode.trim()) {
-                    window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred('warning');
-                    window.Telegram?.WebApp?.showAlert?.('Please enter a barcode');
-                    showStatus('error', 'Please enter a barcode', 2000);
-                    return;
-                }
+            const { success, error, shopExpenses } = await call();
 
-                showStatus('loading', 'Loading and parsing receipt...', 0);
+            if (success) {
+                status.show('success', 'Receipt saved successfully!');
+                onSuccess(shopExpenses);
+            } else {
+                status.show('error', error || 'Failed to save receipt', 2000);
+            }
+        } catch (error) {
+            console.error('Error processing receipt:', error);
+            status.show('error', 'An unexpected error occurred.', 5 * ONE_SECOND);
+        }
+    };
 
-                const { success, error, shopExpenses } = await financeApi.saveYerevanCityCheck({
-                    date: ycDate,
-                    barcode: ycBarcode.trim(),
-                });
-
-                if (success) {
-                    window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred('success');
-                    showStatus('success', 'Receipt saved successfully!');
-                    
+    const handleProcess = async () => {
+        if (mainTab === 'yerevan_city') {
+            await submit(
+                validateYerevanCity(ycBarcode),
+                () => financeApi.saveYerevanCityCheck(buildYerevanCityPayload(ycDate, ycBarcode)),
+                (shopExpenses) => {
                     setYcBarcode('');
                     setCurrency(currencies.find(c => c.name === 'AMD') || currencies[0]);
                     setSavedCheck(shopExpenses);
-                } else {
-                    window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred('error');
-                    showStatus('error', error || 'Failed to save receipt', 2000);
                 }
-            } else if (mainTab === 'fns_ru') {
-                showStatus('loading', 'Loading and parsing receipt...', 0);
-
-                let result: SaveCheckDto = { success: false, error: 'Unknown mode' };
-
-                if (ruSubMode === 'qr_url') {
-                    if (!urlInput.trim()) {
-                        window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred('warning');
-                        window.Telegram?.WebApp?.showAlert?.('Please enter a QR link');
-                        showStatus('error', 'Please enter a QR link', 2000);
-                        return;
-                    }
-
-                    showStatus('loading', 'Fetching FNS receipt...', 0);
-
-                    result = await financeApi.saveFnsCheckFromUrl({
-                        url: urlInput.trim()
-                    });
-                } else if (ruSubMode === 'params') {
-                    if (!ruSum || !ruFn || !ruFd || !ruFp) {
-                        window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred('warning');
-                        window.Telegram?.WebApp?.showAlert?.('Please fill in all fiscal details');
-                        showStatus('error', 'Please fill in all fiscal details', 2000);
-                        return;
-                    }
-
-                    showStatus('loading', 'Fetching FNS receipt...', 0);
-
-                    result = await financeApi.saveFnsCheckByRequisites({
-                        dateTime: formatISODateTime(ruDate, ruTime),
-                        fiscalDocumentNumber: ruFd.trim(),
-                        fiscalDocumentSign: ruFp.trim(),
-                        fiscalNumber: ruFn.trim(),
-                        totalPrice: parseFloat(ruSum.replace(',', '.')) || 0
-                    });
-                } else if (ruSubMode === 'json') {
-                    window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred('warning');
-                    window.Telegram?.WebApp?.showAlert?.('JSON mode is not implemented yet');
-                    showStatus('error', 'JSON mode is not implemented yet', 2000);
-                    return;
-                }
-
-                if (result.success) {
-                    window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred('success');
-                    showStatus('success', 'Receipt saved successfully!');
-
-                    setCurrency(currencies.find(c => c.name === 'RUR') || currencies[0]);
-                    setSavedCheck(result.shopExpenses);
-
-                    if (ruSubMode === 'qr_url') {
+            );
+        } else if (mainTab === 'fns_ru') {
+            if (ruSubMode === 'qr_url') {
+                await submit(
+                    validateFnsUrl(urlInput),
+                    () => financeApi.saveFnsCheckFromUrl(buildFnsUrlPayload(urlInput)),
+                    (shopExpenses) => {
+                        setCurrency(currencies.find(c => c.name === 'RUR') || currencies[0]);
+                        setSavedCheck(shopExpenses);
                         setUrlInput('');
-                    } else if (ruSubMode === 'params') {
+                    }
+                );
+            } else if (ruSubMode === 'params') {
+                const input = { date: ruDate, time: ruTime, sum: ruSum, fiscalNumber: ruFn, fiscalDocument: ruFd, fiscalDocumentSign: ruFp };
+                await submit(
+                    validateFnsParams(input),
+                    () => financeApi.saveFnsCheckByRequisites(buildFnsParamsPayload(input)),
+                    (shopExpenses) => {
+                        setCurrency(currencies.find(c => c.name === 'RUR') || currencies[0]);
+                        setSavedCheck(shopExpenses);
                         setRuSum('');
                         setRuFn('');
                         setRuFd('');
                         setRuFp('');
                         setRuTime('');
                     }
-                } else {
-                    window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred('error');
-                    showStatus('error', result.error || 'Failed to save receipt', 5 * ONE_SECOND);
-                }
-            } else if (mainTab === 'manual') {
-                // Обработка для ручного ввода
+                );
             }
-        } catch (error) {
-            console.error('Error processing receipt:', error);
-            window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred('error');
-            showStatus('error', 'An unexpected error occurred.', 5 * ONE_SECOND);
+            // 'json': no submit button reaches this mode (see the note on JsonGrid) -- nothing to wire up.
+        } else if (mainTab === 'manual') {
+            // Обработка для ручного ввода
         }
     };
 
@@ -270,6 +234,7 @@ export const ReceiptTab: React.FC<ReceiptTabProps> = ({ categories, currencies }
 
                 {ruSubMode === 'qr_url' && <QRLinkGrid urlInput={urlInput} setUrlInput={setUrlInput} />}
 
+                {/* Unreachable: no button ever sets ruSubMode to 'json'. Kept until the JSON mode is wired up or removed. */}
                 {ruSubMode === 'json' && <JsonGrid json={jsonInput} setJson={setJsonInput} />}
                 </>
             )}
@@ -325,7 +290,7 @@ export const ReceiptTab: React.FC<ReceiptTabProps> = ({ categories, currencies }
                 <span>{mainTab === 'manual' ? 'Save Receipt' : 'Load and parse'}</span>
             </button>
 
-            {processStatus && <StatusModal status={processStatus} statusMessage={statusMessage} />}
+            {status.state && <StatusModal status={status.state.status} statusMessage={status.state.message} />}
 
             <CheckSavedSuccessModal
                 isOpen={!!savedCheck}
@@ -338,4 +303,3 @@ export const ReceiptTab: React.FC<ReceiptTabProps> = ({ categories, currencies }
         </div>
     );
 };
-

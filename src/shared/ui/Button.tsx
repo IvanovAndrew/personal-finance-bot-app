@@ -1,6 +1,6 @@
 import type { FC, ReactNode } from "react";
 
-import { theme } from "../App.styles.ts";
+import { theme } from "../../App.styles.ts";
 
 interface ButtonProps {
     children: ReactNode;

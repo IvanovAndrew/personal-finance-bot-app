@@ -1,28 +1,29 @@
 import { ArrowDownLeft, ArrowUpRight, ChevronLeft, ChevronRight } from "lucide-react";
-import { type FC, useCallback, useEffect, useMemo, useState } from "react";
+import { type FC, useCallback, useMemo, useState } from "react";
 
-import { theme } from "../../App.styles.ts";
-import { NOT_EVERYDAY_OUTCOME_CATEGORIES, SALARY_CATEGORY_CODE, SAVINGS_CATEGORY_CODE } from "../../constants/categories.ts";
-import { terms } from "../../constants/strings.ts";
-import type { MonthlyAnalyticsItem, MonthlyAnalyticsResponse } from "../../services/api.ts";
-import type { Category, Currency } from "../../types/finance.ts";
-import { formatDateMMMMYYYY, formatMonth } from "../../utils/dateformatter.ts";
-import { formatCurrencyValue } from "../../utils/numberformatter.ts";
-import { parseMonthString } from "../../utils/dateparser.ts";
-import { formatPeriod } from "../../utils/period.ts";
-import { Amount } from "../Amount.tsx";
-import { Avatar } from "../Avatar.tsx";
-import { BottomSheet } from "../BottomSheet.tsx";
-import { Button } from "../Button.tsx";
-import { Card, Divider } from "../Card.tsx";
-import { ChartComponent, type ChartDataItem } from "../ChartComponent.tsx";
-import { ExpensesBreakdownGrid } from "../ExpensesBreakdownGrid.tsx";
-import { HeroNumber } from "../HeroNumber.tsx";
-import { ListRow } from "../ListRow.tsx";
-import { LoadingData } from "../LoadingData.tsx";
-import { NoAvailableData } from "../NoAvailableData.tsx";
-import { SegmentedControl } from "../SegmentedControl.tsx";
-import { StatTile } from "../StatTile.tsx";
+import { theme } from "../../../App.styles.ts";
+import { terms } from "../../../constants/strings.ts";
+import type { MonthlyAnalyticsResponse } from "../../../services/api.ts";
+import type { Category, Currency } from "../../../types/finance.ts";
+import { formatDateMMMMYYYY, formatMonth } from "../../../utils/dateformatter.ts";
+import { formatCurrencyValue } from "../../../utils/numberformatter.ts";
+import { parseMonthString } from "../../../utils/dateparser.ts";
+import { type MonthMode } from "../../../utils/analyticUtils.ts";
+import { formatPeriod } from "../../../utils/period.ts";
+import { Amount } from "../../Amount.tsx";
+import { Avatar } from "../../Avatar.tsx";
+import { BottomSheet } from "../../../shared/ui/BottomSheet.tsx";
+import { Button } from "../../../shared/ui/Button.tsx";
+import { Card, Divider } from "../../../shared/ui/Card.tsx";
+import { ChartComponent, type ChartDataItem } from "../../ChartComponent.tsx";
+import { ExpensesBreakdownGrid } from "../../ExpensesBreakdownGrid.tsx";
+import { HeroNumber } from "../../HeroNumber.tsx";
+import { ListRow } from "../../ListRow.tsx";
+import { LoadingData } from "../../../shared/ui/LoadingData.tsx";
+import { NoAvailableData } from "../../../shared/ui/NoAvailableData.tsx";
+import { SegmentedControl } from "../../SegmentedControl.tsx";
+import { StatTile } from "../../StatTile.tsx";
+import { buildMonthView, shiftMonth } from "./monthAnalytics.ts";
 
 interface MonthAnalyticsGridProps {
     outcomeCategories?: Category[];
@@ -32,9 +33,7 @@ interface MonthAnalyticsGridProps {
     isLoading?: boolean;
 }
 
-export type MonthAnalyticsView = "total" | "real" | "everyday";
-
-const MODE_OPTIONS: { value: MonthAnalyticsView; label: string }[] = [
+const MODE_OPTIONS: { value: MonthMode; label: string }[] = [
     { value: "total", label: "Total" },
     { value: "real", label: "Real" },
     { value: "everyday", label: "Everyday" },
@@ -80,86 +79,35 @@ export const MonthAnalyticsGrid: FC<MonthAnalyticsGridProps> = ({
                                                                     monthlyData,
                                                                     isLoading,
                                                                 }) => {
-    const [selectedIndex, setSelectedIndex] = useState<number>(0);
+    // null = the latest month. Storing the month (not an index) keeps the selection valid when the data changes.
+    const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-    const [viewMode, setViewMode] = useState<MonthAnalyticsView>("real");
+    const [viewMode, setViewMode] = useState<MonthMode>("real");
 
-    const sortedMonths = useMemo(() => {
-        if (!monthlyData?.months) return [];
-        return [...monthlyData.months].sort((a, b) => a.month.localeCompare(b.month));
-    }, [monthlyData]);
-
-    useEffect(() => {
-        if (sortedMonths.length > 0) {
-            setSelectedIndex(sortedMonths.length - 1);
-        }
-    }, [sortedMonths.length]);
-
-    const activeMonth = sortedMonths[selectedIndex] || sortedMonths[sortedMonths.length - 1];
+    const view = useMemo(
+        () => buildMonthView(monthlyData?.months ?? [], viewMode, selectedMonth),
+        [monthlyData, viewMode, selectedMonth]
+    );
+    const { sortedMonths, totals, points, activeIndex, activeMonth, activeValues: activeMonthValues } = view;
 
     const periodLabel = useMemo(() => formatPeriod(sortedMonths.map((m) => m.month)), [sortedMonths]);
 
-    const getCalculatedMonthValues = useCallback(
-        (m: MonthlyAnalyticsItem) => {
-            if (viewMode === "total") {
-                return { income: m.totalIncome ?? 0, outcome: m.totalOutcome ?? 0 };
-            }
-
-            if (viewMode === "real") {
+    // View concern: labels for the chart.
+    const chartData = useMemo<ChartDataItem[]>(
+        () =>
+            points.map((p) => {
+                const date = parseMonthString(p.monthStr);
                 return {
-                    income: m.totalIncome ?? 0,
-                    outcome: (m.outcomeCategories ?? [])
-                        .filter((cat) => cat.category !== SAVINGS_CATEGORY_CODE)
-                        .reduce((sum, cat) => sum + cat.total, 0),
+                    id: p.monthStr,
+                    label: formatMonth(date),
+                    subLabel: date.getFullYear().toString(),
+                    fullName: formatDateMMMMYYYY(date),
+                    value1: p.income,
+                    value2: p.outcome,
                 };
-            }
-
-            const everydayIncome = (m.incomeCategories ?? [])
-                .filter((cat) => cat.category === SALARY_CATEGORY_CODE)
-                .reduce((sum, cat) => sum + cat.total, 0);
-
-            const everydayOutcome = (m.outcomeCategories ?? [])
-                .filter((cat) => !NOT_EVERYDAY_OUTCOME_CATEGORIES.has(cat.category))
-                .reduce((sum, cat) => sum + cat.total, 0);
-
-            return { income: everydayIncome, outcome: everydayOutcome };
-        },
-        [viewMode]
+            }),
+        [points]
     );
-
-    const totals = useMemo(() => {
-        if (!monthlyData?.months) return { income: 0, outcome: 0, net: 0 };
-        return monthlyData.months.reduce(
-            (acc, m) => {
-                const { income, outcome } = getCalculatedMonthValues(m);
-                acc.income += income;
-                acc.outcome += outcome;
-                acc.net += income - outcome;
-                return acc;
-            },
-            { income: 0, outcome: 0, net: 0 }
-        );
-    }, [monthlyData, getCalculatedMonthValues]);
-
-    const chartData = useMemo<ChartDataItem[]>(() => {
-        return sortedMonths.map((m) => {
-            const date = parseMonthString(m.month);
-            const { income, outcome } = getCalculatedMonthValues(m);
-            return {
-                id: m.month,
-                label: formatMonth(date),
-                subLabel: date.getFullYear().toString(),
-                fullName: formatDateMMMMYYYY(date),
-                value1: income,
-                value2: outcome,
-            };
-        });
-    }, [sortedMonths, getCalculatedMonthValues]);
-
-    const activeMonthValues = useMemo(() => {
-        if (!activeMonth) return { income: 0, outcome: 0 };
-        return getCalculatedMonthValues(activeMonth);
-    }, [activeMonth, getCalculatedMonthValues]);
 
     const closeModal = useCallback(() => setIsModalOpen(false), []);
 
@@ -192,8 +140,8 @@ export const MonthAnalyticsGrid: FC<MonthAnalyticsGridProps> = ({
             <Card padding={12}>
                 <ChartComponent
                     data={chartData}
-                    selectedIndex={selectedIndex}
-                    onSelect={setSelectedIndex}
+                    selectedIndex={activeIndex}
+                    onSelect={(index) => setSelectedMonth(sortedMonths[index]?.month ?? null)}
                     showDualBar={true}
                     formatAmount={(val) => `${formatCurrencyValue(val, currency.format)} ${currency.symbol}`}
                 />
@@ -211,16 +159,16 @@ export const MonthAnalyticsGrid: FC<MonthAnalyticsGridProps> = ({
                     >
                         <MonthNavButton
                             direction="prev"
-                            disabled={selectedIndex === 0}
-                            onClick={() => setSelectedIndex((prev) => Math.max(prev - 1, 0))}
+                            disabled={activeIndex === 0}
+                            onClick={() => setSelectedMonth(shiftMonth(sortedMonths, selectedMonth, -1))}
                         />
                         <span style={{ fontSize: 15, fontWeight: 600, color: theme.colors.textPrimary }}>
                             {activeMonthTitle}
                         </span>
                         <MonthNavButton
                             direction="next"
-                            disabled={selectedIndex === sortedMonths.length - 1}
-                            onClick={() => setSelectedIndex((prev) => Math.min(prev + 1, sortedMonths.length - 1))}
+                            disabled={activeIndex === sortedMonths.length - 1}
+                            onClick={() => setSelectedMonth(shiftMonth(sortedMonths, selectedMonth, 1))}
                         />
                     </div>
 

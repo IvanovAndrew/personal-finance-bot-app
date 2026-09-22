@@ -1,23 +1,24 @@
 import { type FC, useCallback, useMemo, useState } from "react";
 
-import { SUBCATEGORY_PALETTE } from "../../constants/palette.ts";
-import { terms } from "../../constants/strings.ts";
-import type { MonthlyAnalyticsResponse } from "../../services/api.ts";
-import type { Category, Currency } from "../../types/finance.ts";
-import { formatDateMMMMYYYY, formatMonth } from "../../utils/dateformatter.ts";
-import { parseMonthString } from "../../utils/dateparser.ts";
-import { formatCurrencyValue } from "../../utils/numberformatter.ts";
-import { formatPeriod } from "../../utils/period.ts";
+import { SUBCATEGORY_PALETTE } from "../../../constants/palette.ts";
+import { terms } from "../../../constants/strings.ts";
+import type { MonthlyAnalyticsResponse } from "../../../services/api.ts";
+import type { Category, Currency } from "../../../types/finance.ts";
+import { formatDateMMMMYYYY, formatMonth } from "../../../utils/dateformatter.ts";
+import { parseMonthString } from "../../../utils/dateparser.ts";
+import { formatCurrencyValue } from "../../../utils/numberformatter.ts";
+import { formatPeriod } from "../../../utils/period.ts";
 
-import { AnalyticsRow } from "../AnalyticsRow.tsx";
-import { Card, ListGroup } from "../Card.tsx";
-import { CategorySwitcherModal } from "../CategorySwitcherModal.tsx";
-import { ChartComponent, type ChartDataItem } from "../ChartComponent.tsx";
-import { HeroNumber } from "../HeroNumber.tsx";
-import { LoadingData } from "../LoadingData.tsx";
-import { NoAvailableData } from "../NoAvailableData.tsx";
-import { SegmentedControl } from "../SegmentedControl.tsx";
-import { ShareBar } from "../ShareBar.tsx";
+import { AnalyticsRow } from "../../AnalyticsRow.tsx";
+import { Card, ListGroup } from "../../../shared/ui/Card.tsx";
+import { CategorySwitcherModal } from "../../CategorySwitcherModal.tsx";
+import { ChartComponent, type ChartDataItem } from "../../ChartComponent.tsx";
+import { HeroNumber } from "../../HeroNumber.tsx";
+import { LoadingData } from "../../../shared/ui/LoadingData.tsx";
+import { NoAvailableData } from "../../../shared/ui/NoAvailableData.tsx";
+import { SegmentedControl } from "../../SegmentedControl.tsx";
+import { ShareBar } from "../../ShareBar.tsx";
+import { buildSubcategoryView } from "./subcategoryAnalytics.ts";
 
 interface SubCategoryAnalyticsGridProps {
     categories: Category[];
@@ -34,11 +35,6 @@ export const SubCategoryAnalyticsGrid: FC<SubCategoryAnalyticsGridProps> = ({
                                                                             }) => {
     const [selectedCategoryCode, setSelectedCategoryCode] = useState<string | null>(null);
 
-    const selectedCategory = useMemo(
-        () => categories.find((c) => c.code === selectedCategoryCode) || categories[0] || null,
-        [categories, selectedCategoryCode]
-    );
-
     const [selectedSubCatId, setSelectedSubCatId] = useState<string | null>(null);
     const [subCatViewType, setSubCatViewType] = useState<"total" | "monthly">("total");
     const [selectedChartIndex, setSelectedChartIndex] = useState<number>(-1);
@@ -48,87 +44,39 @@ export const SubCategoryAnalyticsGrid: FC<SubCategoryAnalyticsGridProps> = ({
         [currency]
     );
 
-    const subCategoryTotalsMap = useMemo(() => {
-        const map = new Map<string, number>();
-        if (!monthlyData?.months) return map;
+    const view = useMemo(
+        () =>
+            buildSubcategoryView(monthlyData?.months ?? [], categories, {
+                categoryCode: selectedCategoryCode,
+                subCode: selectedSubCatId,
+            }),
+        [monthlyData, categories, selectedCategoryCode, selectedSubCatId]
+    );
+    const { category: selectedCategory, grandTotal, activeSub, sortedMonths, series } = view;
 
-        const catCode = selectedCategory?.code?.toLowerCase();
-
-        monthlyData.months.forEach((m) => {
-            const catData = m.outcomeCategories.find((c) => c.category.toLowerCase() === catCode);
-            if (catData?.subCategories) {
-                catData.subCategories.forEach((sc) => {
-                    const key = (sc.subCategory || "other").toLowerCase();
-                    map.set(key, (map.get(key) || 0) + sc.total);
-                });
-            }
-        });
-
-        return map;
-    }, [monthlyData, selectedCategory]);
-
-    const sortedSubCategories = useMemo(() => {
-        const list = selectedCategory?.subCategories || [];
-        const totalOf = (code: string) => subCategoryTotalsMap.get(code.toLowerCase()) || 0;
-        return [...list].sort((a, b) => totalOf(b.code) - totalOf(a.code));
-    }, [selectedCategory, subCategoryTotalsMap]);
-
-    const { rows, grandTotal } = useMemo(() => {
-        const raw = sortedSubCategories.map((sub, i) => ({
-            sub,
-            total: subCategoryTotalsMap.get(sub.code.toLowerCase()) || 0,
-            color: SUBCATEGORY_PALETTE[i % SUBCATEGORY_PALETTE.length],
-        }));
-        const sum = raw.reduce((s, r) => s + r.total, 0);
-        return {
-            grandTotal: sum,
-            rows: raw.map((r) => ({ ...r, share: sum > 0 ? r.total / sum : 0 })),
-        };
-    }, [sortedSubCategories, subCategoryTotalsMap]);
-
-    const activeSubCatCode = selectedSubCatId || sortedSubCategories[0]?.code || null;
-    const activeSub = sortedSubCategories.find((s) => s.code === activeSubCatCode) || null;
-
-    const getSubcategoryMonthlyTotal = (monthStr: string, subCode: string | null): number => {
-        if (!subCode || !monthlyData?.months) return 0;
-
-        const monthData = monthlyData.months.find((m) => m.month === monthStr);
-        if (!monthData) return 0;
-
-        const catData = monthData.outcomeCategories.find(
-            (c) => c.category.toLowerCase() === selectedCategory?.code?.toLowerCase()
-        );
-
-        const subData = catData?.subCategories?.find(
-            (sc) => (sc.subCategory || "other").toLowerCase() === subCode.toLowerCase()
-        );
-
-        return subData?.total || 0;
-    };
-
-    const sortedMonths = useMemo(() => {
-        if (!monthlyData?.months) return [];
-        return [...monthlyData.months].sort((a, b) => a.month.localeCompare(b.month));
-    }, [monthlyData]);
+    // View concern: a colour per row.
+    const rows = useMemo(
+        () => view.rows.map((r, i) => ({ ...r, color: SUBCATEGORY_PALETTE[i % SUBCATEGORY_PALETTE.length] })),
+        [view.rows]
+    );
 
     const periodLabel = useMemo(() => formatPeriod(sortedMonths.map((m) => m.month)), [sortedMonths]);
 
-    const chartData: ChartDataItem[] = useMemo(() => {
-        if (!sortedMonths.length || !activeSubCatCode) return [];
-        return sortedMonths
-            .filter((m) => getSubcategoryMonthlyTotal(m.month, activeSubCatCode) > 0)
-            .map((m) => {
-                const date = parseMonthString(m.month);
-                const total = getSubcategoryMonthlyTotal(m.month, activeSubCatCode);
+    // View concern: labels for the chart.
+    const chartData: ChartDataItem[] = useMemo(
+        () =>
+            series.map((p) => {
+                const date = parseMonthString(p.monthStr);
                 return {
-                    id: m.month,
+                    id: p.monthStr,
                     label: formatMonth(date),
                     subLabel: String(date.getFullYear()),
                     fullName: formatDateMMMMYYYY(date),
-                    value1: total,
+                    value1: p.total,
                 };
-            });
-    }, [sortedMonths, activeSubCatCode, selectedCategory]);
+            }),
+        [series]
+    );
 
     if (isLoading) {
         return <LoadingData text={"Loading data..."} />;
@@ -169,7 +117,7 @@ export const SubCategoryAnalyticsGrid: FC<SubCategoryAnalyticsGridProps> = ({
                 variant="chip"
                 categories={categories}
                 availableCategories={categories}
-                selectedCategoryCode={selectedCategory?.code}
+                selectedCategoryCode={selectedCategory?.code ?? null}
                 enableSubCategorySelection={false}
                 onSelectCategory={(code) => {
                     setSelectedCategoryCode(code);

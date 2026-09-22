@@ -3,9 +3,9 @@ import React, { useState } from "react";
 
 import { theme } from "../../App.styles";
 import type { Currency } from "../../types/finance";
-import { CurrencyDropdown } from "../CurrencyDropdown";
-import { CustomDatePicker } from "../CustomDatePicker";
-import { chipStyle } from "../ui.ts";
+import { CurrencyDropdown } from "../../shared/ui/CurrencyDropdown";
+import { CustomDatePicker } from "../../shared/ui/CustomDatePicker";
+import { chipStyle } from "../../shared/ui/ui.ts";
 
 interface AnalyticsHeaderProps {
     selectedDate: Date;

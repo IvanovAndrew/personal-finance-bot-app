@@ -1,6 +1,6 @@
 import React from "react";
 
-import { theme } from "../App.styles.ts";
+import { theme } from "../../App.styles.ts";
 import { Card } from "./Card.tsx";
 
 interface NoAvailableDataProps {

@@ -6,7 +6,6 @@ import {
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { appStyles, theme } from '../../App.styles';
-import { EARLIEST_DATA_DATE } from "../../constants/data.ts";
 import {
     type DailyExpensesResponse,
     financeApi,
@@ -14,17 +13,18 @@ import {
     type SummaryResponse
 } from "../../services/api.ts";
 import type { Category, Currency } from '../../types/finance';
-import { CategoryAnalyticsGrid } from "./CategoryAnalyticsGrid.tsx";
-import { MonthAnalyticsGrid } from "./MonthAnalyticsGrid.tsx";
-import { SubCategoryAnalyticsGrid } from "./SubCategoryAnalyticsGrid.tsx";
-import { SummaryAnalyticsGrid } from "./SummaryAnalyticsGrid.tsx";
+import { CategoryAnalyticsGrid } from "./category/CategoryAnalyticsGrid.tsx";
+import { MonthAnalyticsGrid } from "./monthly/MonthAnalyticsGrid.tsx";
+import { SubCategoryAnalyticsGrid } from "./subcategory/SubCategoryAnalyticsGrid.tsx";
+import { SummaryAnalyticsGrid } from "./summary/SummaryAnalyticsGrid.tsx";
 import { AnalyticsHeader } from "./AnalyticsHeader.tsx";
 import { AnalyticsSegmentedControl, type ViewMode } from "../AnalyticsSegmentedControl.tsx";
-import { Button } from "../Button.tsx";
-import { Card } from "../Card.tsx";
+import { Button } from "../../shared/ui/Button.tsx";
+import { Card } from "../../shared/ui/Card.tsx";
 import { STORAGE_KEYS } from "../../constants/storageKeys.ts";
 import { terms } from "../../constants/strings.ts";
-import {TransactionsGrid} from "./TransactionGrid.tsx";
+import {TransactionsGrid} from "./daily/TransactionGrid.tsx";
+import {useDailyTimeline} from "./daily/useDailyTimeline.ts";
 
 export interface DailyGroup {
     date: Date;
@@ -87,11 +87,6 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, i
     const [monthlyData, setMonthlyData] = useState<MonthlyAnalyticsResponse | null>(null);
     const [dailyAnchorDate, setDailyAnchorDate] = useState<Date>(new Date());
 
-    // Infinite scroll
-    const [dailyGroups, setDailyGroups] = useState<DailyGroup[]>([]);
-    const [isFetchingMoreDays, setIsFetchingMoreDays] = useState<boolean>(false);
-    const [hasMoreDays, setHasMoreDays] = useState<boolean>(true);
-
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -101,15 +96,15 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, i
     const dailyCache = useRef<Record<string, DailyGroup[]>>({});
 
     const abortControllerRef = useRef<AbortController | null>(null);
-    const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
     const isToday = (day: Date) => day.toDateString() === new Date().toDateString();
+
+    // The Daily timeline owns its data: it restarts by itself when the currency or the anchor day changes.
+    const dailyTimeline = useDailyTimeline({ enabled: viewMode === 'days', currency: currencyCode, anchorDate: dailyAnchorDate });
 
     const handleCurrencyChange = (currency: Currency) => {
         setCurrencyCode(currency.name);
         localStorage.setItem(STORAGE_KEYS.CURRENCY, currency.name);
-        setDailyGroups([]);
-        setHasMoreDays(true);
     };
 
     const handleMonthChange = (newDate: Date) => {
@@ -123,9 +118,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, i
     };
 
     const resetDailyToToday = () => {
-        setDailyGroups([]);
         setDailyAnchorDate(new Date());
-        setHasMoreDays(true);
     };
 
     // ----------------------------------------------------
@@ -180,7 +173,6 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, i
                 const rangeKey = `${currencyCode}_${startDate.toISOString().slice(0, 10)}_${endDate.toISOString().slice(0, 10)}`;
 
                 if (!forceRefresh && dailyCache.current[rangeKey]) {
-                    setDailyGroups(dailyCache.current[rangeKey]);
                     setError(null);
                     setIsLoading(false);
                     return;
@@ -195,7 +187,6 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, i
                 if (!controller.signal.aborted) {
                     const mappedGroups = mapDailyResponseToGroups(response);
                     dailyCache.current[rangeKey] = mappedGroups;
-                    setDailyGroups(mappedGroups);
                 }
             } else {
                 const data = await financeApi.getMonthlyAnalytics({
@@ -224,89 +215,6 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, i
         }
     }, [viewMode, currencyCode, selectedMonth, dailyAnchorDate]);
 
-    // ----------------------------------------------------
-    // Load next 7-day chunk on scroll
-    // ----------------------------------------------------
-    const fetchNextChunk = useCallback(async () => {
-        if (isFetchingMoreDays || isLoading || viewMode !== 'days' || dailyGroups.length === 0) {
-            return;
-        }
-
-        // Target the last group in array (oldest loaded date due to sorting)
-        const lastGroup = dailyGroups[dailyGroups.length - 1];
-        const lastDate = new Date(lastGroup.date);
-
-        if (lastDate <= EARLIEST_DATA_DATE) {
-            setHasMoreDays(false);
-            return;
-        }
-
-        // Upper limit = 1 day before the oldest loaded date
-        const endDate = new Date(lastDate);
-        endDate.setDate(endDate.getDate() - 1);
-
-        // Lower limit = 6 days prior (total 7-day chunk)
-        let startDate = new Date(endDate);
-        startDate.setDate(startDate.getDate() - 6);
-
-        if (startDate < EARLIEST_DATA_DATE) {
-            startDate = new Date(EARLIEST_DATA_DATE);
-        }
-
-        // Stop if range collapsed or went past boundaries
-        if (endDate < startDate) {
-            setHasMoreDays(false);
-            return;
-        }
-
-        const startKey = startDate.toISOString().slice(0, 10);
-        const endKey = endDate.toISOString().slice(0, 10);
-        const cacheKey = `${currencyCode}_${startKey}_${endKey}`;
-
-        const requestCurrency = currencyCode;
-        const requestAnchorKey = dailyAnchorDate.toISOString().slice(0, 10);
-
-        if (dailyCache.current[cacheKey]) {
-            setDailyGroups(prev => [...(Array.isArray(prev) ? prev : []), ...dailyCache.current[cacheKey]]);
-            return;
-        }
-
-        setIsFetchingMoreDays(true);
-
-        try {
-            const response: DailyExpensesResponse = await financeApi.getDailyExpenses({
-                startDate,
-                endDate,
-                currency: requestCurrency,
-            });
-
-            const stillRelevant =
-                requestCurrency === currencyCode &&
-                requestAnchorKey === dailyAnchorDate.toISOString().slice(0, 10);
-
-            if (stillRelevant) {
-                const newGroups = mapDailyResponseToGroups(response);
-
-                // If API returned no days for period, stop future fetches
-                if (newGroups.length === 0 && startDate <= EARLIEST_DATA_DATE) {
-                    setHasMoreDays(false);
-                }
-
-                dailyCache.current[cacheKey] = newGroups;
-
-                setDailyGroups(prev => [...(Array.isArray(prev) ? prev : []), ...newGroups]);
-
-                if (startDate <= EARLIEST_DATA_DATE) {
-                    setHasMoreDays(false);
-                }
-            }
-        } catch (err) {
-            console.error('Failed to fetch next week analytics:', err);
-        } finally {
-            setIsFetchingMoreDays(false);
-        }
-    }, [dailyGroups, isFetchingMoreDays, isLoading, viewMode, currencyCode, dailyAnchorDate]);
-
     useEffect(() => {
         fetchAnalytics();
 
@@ -316,26 +224,6 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, i
             }
         };
     }, [fetchAnalytics]);
-
-    useEffect(() => {
-        if (viewMode !== 'days' || !hasMoreDays) return;
-
-        const observer = new IntersectionObserver(
-            (entries) => {
-                if (entries[0].isIntersecting) {
-                    fetchNextChunk();
-                }
-            },
-            { rootMargin: '400px' }
-        );
-
-        const currentTarget = loadMoreRef.current;
-        if (currentTarget) observer.observe(currentTarget);
-
-        return () => {
-            if (currentTarget) observer.unobserve(currentTarget);
-        };
-    }, [viewMode, fetchNextChunk, hasMoreDays]);
 
     return (
         <div style={appStyles.tabContent}>
@@ -375,13 +263,9 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ outcomeCategories, i
                     {viewMode === 'days' && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                             <TransactionsGrid
-                                groups={dailyGroups}
+                                timeline={dailyTimeline}
                                 currency={selectedCurrency}
                                 categories={outcomeCategories}
-                                isLoading={isLoading}
-                                isLoadingMore={isFetchingMoreDays}
-                                hasMore={hasMoreDays}
-                                onLoadMore={fetchNextChunk}
                                 anchorDate={dailyAnchorDate}
                             />
                         </div>
