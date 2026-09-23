@@ -39,7 +39,7 @@ import grandcandyLogo from '../assets/shops/grandcandy.jpg';
 import gosuslugiLogo from '../assets/shops/gosuslugi.svg';
 import hafhafLogo from '../assets/shops/hafhaf.png';
 import inecobankLogo from '../assets/shops/inecobank.svg';
-import kaizerLogo from '../assets/shops/kaizerLogo.jpg';
+import kaizerLogo from '../assets/shops/kaizer.jpg';
 import lahtaclinicLogo from '../assets/shops/lahtaclinic.svg';
 import lentaLogo from '../assets/shops/lenta.svg';
 import leovetLogo from '../assets/shops/leovet.jpg';
