@@ -17,6 +17,7 @@
 import alphavetLogo from '../assets/shops/alphavet.jpg';
 import alphastomLogo from '../assets/shops/alphastom.jpg';
 import ardshinkbankLogo from '../assets/shops/ardshinbank.svg';
+import asteriaLogo from '../assets/shops/asteria.svg';
 import avitoLogo from '../assets/shops/avito.svg';
 import auchanLogo from '../assets/shops/auchan.svg';
 import burgerKingLogo from '../assets/shops/burgerking.svg';
@@ -80,6 +81,7 @@ import yerevanCityLogo from '../assets/shops/yerevancity.svg';
 import yerevanSwimLogo from '../assets/shops/yerevanswim.svg';
 import yotaLogo from '../assets/shops/yota.svg';
 import yunyanLogo from '../assets/shops/yunyan.jpg';
+import zaraLogo from '../assets/shops/zara.svg';
 import zoovetLogo from '../assets/shops/zoovet.svg';
 import zovqLogo from '../assets/shops/zovq.svg';
 
@@ -107,6 +109,7 @@ const RAW_SHOPS_REGISTRY: Record<string, ShopMeta> = {
     alphastom: { type: 'image', src: alphastomLogo },
     alphavet: { type: 'image', src: alphavetLogo },
     ardshinbank: { type: 'image', src: ardshinkbankLogo },
+    asteria: { type: 'image', src: asteriaLogo },
     avito: { type: 'image', src: avitoLogo },
     auchan: { type: 'image', src: auchanLogo, hasOwnBackground: true },
     burgerKing: { type: 'image', src: burgerKingLogo },
@@ -149,6 +152,7 @@ const RAW_SHOPS_REGISTRY: Record<string, ShopMeta> = {
     veolia: { type: 'image', src: veoliaLogo },
     veoliajur: { type: 'image', src: veoliaLogo },
     vmvetclinic: { type: 'image', src: vmvetclinicLogo },
+    vmsvetclinic: { type: 'image', src: vmvetclinicLogo },
     wildberries: { type: 'image', src: wildberriesLogo, hasOwnBackground: true },
     yandexeats: { type: 'image', src: yandexeatsLogo },
     yandexgo: { type: 'image', src: yandexgoLogo, hasOwnBackground: true },
@@ -158,6 +162,7 @@ const RAW_SHOPS_REGISTRY: Record<string, ShopMeta> = {
     yota: { type: 'image', src: yotaLogo },
     yunyan: { type: 'image', src: yunyanLogo, hasOwnBackground: true },
     
+    zara: { type: 'image', src: zaraLogo },
     zoovet: { type: 'image', src: zoovetLogo },
     zoovetam: { type: 'image', src: zoovetLogo },
     zovq: { type: 'image', src: zovqLogo },

@@ -22,7 +22,7 @@ interface CategorySwitcherModalProps {
     label?: string;
     textColor?: string;
     /**
-     * "chip"   - standalone pill, used on the analytics screens.
+     * "chip" - standalone pill, used on the analytics screens.
      * "inline" - fills its parent, the parent provides the tile (used in the Enter tab).
      */
     variant?: "chip" | "inline";
