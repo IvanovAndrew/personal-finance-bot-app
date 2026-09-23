@@ -14,6 +14,8 @@
 } from 'simple-icons';
 
 // SVG for local brands (not in simple-icons)
+import alphavetLogo from '../assets/shops/alphavet.jpg';
+import alphastomLogo from '../assets/shops/alphastom.jpg';
 import ardshinkbankLogo from '../assets/shops/ardshinbank.svg';
 import avitoLogo from '../assets/shops/avito.svg';
 import auchanLogo from '../assets/shops/auchan.svg';
@@ -29,6 +31,7 @@ import equusLogo from '../assets/shops/equus.jpg';
 import falafelLogo from '../assets/shops/falafel.png';
 import fixpriceLogo from '../assets/shops/fixprice.svg';
 import fnsLogo from '../assets/shops/fns.svg';
+import gammaclinicsLogo from '../assets/shops/gammaclinics.svg';
 import gazpromLogo from '../assets/shops/gazprom.svg';
 import grandcandyLogo from '../assets/shops/grandcandy.jpg';
 import gosuslugiLogo from '../assets/shops/gosuslugi.svg';
@@ -54,7 +57,7 @@ import royalcaninLogo from '../assets/shops/royalcanin.svg';
 import rtcleaningLogo from '../assets/shops/rtcleaning.svg';
 import semishagoffLogo from '../assets/shops/semishagoff.svg';
 import sixtysecondsLogo from '../assets/shops/sixtyseconds.svg';
-import sorrisoLogo from '../assets/shops/sorriso.svg';
+import sorrisoLogo from '../assets/shops/sorriso.jpg';
 import spbMetroLogo from '../assets/shops/spbmetro.svg';
 import sushilabLogo from '../assets/shops/sushilab.jpg';
 import sushiwhiteLogo from '../assets/shops/sushiwhite.png';
@@ -63,6 +66,7 @@ import telcellLogo from '../assets/shops/telcell.svg';
 import tinsuranceLogo from '../assets/shops/tinsurance.svg';
 import ucomLogo from '../assets/shops/ucom.svg';
 import vkusnoitochkaLogo from '../assets/shops/vkusnoitochka.svg';
+import vmvetclinicLogo from '../assets/shops/vmvetclinic.jpg';
 import volchekLogo from '../assets/shops/vochek.png';
 import vsedomaLogo from '../assets/shops/vsedoma.svg';
 import veoliaLogo from '../assets/shops/veolia.jpg';
@@ -98,6 +102,8 @@ const RAW_SHOPS_REGISTRY: Record<string, ShopMeta> = {
     
     "60секунд": { type: 'image', src: sixtysecondsLogo },
     "88": { type: 'image', src: eightyEightLogo },
+    alphastom: { type: 'image', src: alphastomLogo },
+    alphavet: { type: 'image', src: alphavetLogo },
     ardshinbank: { type: 'image', src: ardshinkbankLogo },
     avito: { type: 'image', src: avitoLogo },
     auchan: { type: 'image', src: auchanLogo, hasOwnBackground: true },
@@ -110,6 +116,7 @@ const RAW_SHOPS_REGISTRY: Record<string, ShopMeta> = {
     equus: { type: 'image', src: equusLogo },
     falafel: { type: 'image', src: falafelLogo, hasOwnBackground: true },
     fixprice: { type: 'image', src: fixpriceLogo },
+    gammaclinics: { type: 'image', src: gammaclinicsLogo },
     gazprom: { type: 'image', src: gazpromLogo },
     grandcandy: { type: 'image', src: grandcandyLogo },
     hafhaf: { type: 'image', src: hafhafLogo },
@@ -135,7 +142,8 @@ const RAW_SHOPS_REGISTRY: Record<string, ShopMeta> = {
     tinsurance: { type: 'image', src: tinsuranceLogo },
     ucom: { type: 'image', src: ucomLogo },
     veolia: { type: 'image', src: veoliaLogo },
-    Veoliajur: { type: 'image', src: veoliaLogo },
+    veoliajur: { type: 'image', src: veoliaLogo },
+    vmvetclinic: { type: 'image', src: vmvetclinicLogo },
     wildberries: { type: 'image', src: wildberriesLogo, hasOwnBackground: true },
     yandexeats: { type: 'image', src: yandexeatsLogo },
     yandexgo: { type: 'image', src: yandexgoLogo, hasOwnBackground: true },
