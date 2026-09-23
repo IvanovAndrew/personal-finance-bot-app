@@ -39,6 +39,7 @@ import grandcandyLogo from '../assets/shops/grandcandy.jpg';
 import gosuslugiLogo from '../assets/shops/gosuslugi.svg';
 import hafhafLogo from '../assets/shops/hafhaf.png';
 import inecobankLogo from '../assets/shops/inecobank.svg';
+import kaizerLogo from '../assets/shops/kaizerLogo.jpg';
 import lahtaclinicLogo from '../assets/shops/lahtaclinic.svg';
 import lentaLogo from '../assets/shops/lenta.svg';
 import leovetLogo from '../assets/shops/leovet.jpg';
@@ -58,6 +59,8 @@ import pyaterochkaLogo from '../assets/shops/pyaterochka.svg';
 import raupoolLogo from '../assets/shops/raupool.jpg';
 import royalcaninLogo from '../assets/shops/royalcanin.svg';
 import rtcleaningLogo from '../assets/shops/rtcleaning.svg';
+import sasLogo from '../assets/shops/sas.svg';
+import sasfoodcourtLogo from '../assets/shops/sasfoodcourt.svg';
 import semishagoffLogo from '../assets/shops/semishagoff.svg';
 import sixtysecondsLogo from '../assets/shops/sixtyseconds.svg';
 import sorrisoLogo from '../assets/shops/sorriso.jpg';
@@ -67,6 +70,7 @@ import sushiwhiteLogo from '../assets/shops/sushiwhite.png';
 import tbankLogo from '../assets/shops/tbank.svg';
 import telcellLogo from '../assets/shops/telcell.svg';
 import tinsuranceLogo from '../assets/shops/tinsurance.svg';
+import tsiranLogo from '../assets/shops/tsiran.jpg';
 import ucomLogo from '../assets/shops/ucom.svg';
 import vkusnoitochkaLogo from '../assets/shops/vkusnoitochka.svg';
 import vmvetclinicLogo from '../assets/shops/vmvetclinic.jpg';
@@ -128,10 +132,11 @@ const RAW_SHOPS_REGISTRY: Record<string, ShopMeta> = {
     grandcandy: { type: 'image', src: grandcandyLogo },
     hafhaf: { type: 'image', src: hafhafLogo },
     inecobank: { type: 'image', src: inecobankLogo },
+    kaizer: { type: 'image', src: kaizerLogo },
     leovet: { type: 'image', src: leovetLogo, hasOwnBackground: true },
     masterclass: { type: 'image', src: masterclassLogo, hasOwnBackground: true },
     microsoft: { type: 'image', src: microsoftLogo, hasOwnBackground: true },
-    moniso: { type: 'image', src: minisoLogo },
+    miniso: { type: 'image', src: minisoLogo },
     nemo: { type: 'image', src: nemoLogo },
     onex: { type: 'image', src: onexLogo },
     ovio: { type: 'image', src: ovioLogo },
@@ -142,12 +147,15 @@ const RAW_SHOPS_REGISTRY: Record<string, ShopMeta> = {
     raupool: { type: 'image', src: raupoolLogo },
     royalcanin: { type: 'image', src: royalcaninLogo },
     rtcleaning: { type: 'image', src: rtcleaningLogo },
+    sas: { type: 'image', src: sasLogo },
+    sasfoodcourt: { type: 'image', src: sasfoodcourtLogo },
     sorriso: { type: 'image', src: sorrisoLogo },
     sushilab: { type: 'image', src: sushilabLogo },
     sushiwhite: { type: 'image', src: sushiwhiteLogo },
     tbank: { type: 'image', src: tbankLogo, hasOwnBackground: true },
     telcell: { type: 'image', src: telcellLogo },
     tinsurance: { type: 'image', src: tinsuranceLogo },
+    tsiran: { type: 'image', src: tsiranLogo },
     ucom: { type: 'image', src: ucomLogo },
     veolia: { type: 'image', src: veoliaLogo },
     veoliajur: { type: 'image', src: veoliaLogo },
@@ -175,6 +183,7 @@ const RAW_SHOPS_REGISTRY: Record<string, ShopMeta> = {
     госуслуги: { type: 'image', src: gosuslugiLogo },
     дикси: { type: 'image', src: dixiLogo, hasOwnBackground: true },
     еревансити: { type: 'image', src: yerevanCityLogo },
+    клиникавахе: { type: 'image', src: vmvetclinicLogo },
     лахтаклиник: { type: 'image', src: lahtaclinicLogo },
     лента: { type: 'image', src: lentaLogo, hasOwnBackground: true },
     летуаль: { type: 'image', src: letualLogo },
@@ -188,6 +197,7 @@ const RAW_SHOPS_REGISTRY: Record<string, ShopMeta> = {
     тбанк: { type: 'image', src: tbankLogo },
     фалафельная: { type: 'image', src: falafelLogo },
     фнс: { type: 'image', src: fnsLogo },
+    циран: { type: 'image', src: tsiranLogo },
     чгк: { type: 'image', src: chgkLogo },
 
     // global brands from simple-icons
