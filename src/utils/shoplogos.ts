@@ -31,6 +31,7 @@ import equusLogo from '../assets/shops/equus.jpg';
 import falafelLogo from '../assets/shops/falafel.png';
 import fixpriceLogo from '../assets/shops/fixprice.svg';
 import fnsLogo from '../assets/shops/fns.svg';
+import fourchettebuffetLogo from '../assets/shops/fourchettebuffet.jpg';
 import gammaclinicsLogo from '../assets/shops/gammaclinics.svg';
 import gazpromLogo from '../assets/shops/gazprom.svg';
 import grandcandyLogo from '../assets/shops/grandcandy.jpg';
@@ -44,6 +45,7 @@ import letualLogo from '../assets/shops/letual.svg';
 import magnitLogo from '../assets/shops/magnit.svg';
 import masterclassLogo from '../assets/shops/masterclass.jpg';
 import microsoftLogo from '../assets/shops/microsoft.svg';
+import minisoLogo from '../assets/shops/miniso.png';
 import nemoLogo from '../assets/shops/nemo.jpg';
 import onexLogo from '../assets/shops/onex.svg';
 import ovioLogo from '../assets/shops/ovio.svg';
@@ -116,6 +118,8 @@ const RAW_SHOPS_REGISTRY: Record<string, ShopMeta> = {
     equus: { type: 'image', src: equusLogo },
     falafel: { type: 'image', src: falafelLogo, hasOwnBackground: true },
     fixprice: { type: 'image', src: fixpriceLogo },
+    fourchette: { type: 'image', src: fourchettebuffetLogo },
+    fourchettebuffet: { type: 'image', src: fourchettebuffetLogo },
     gammaclinics: { type: 'image', src: gammaclinicsLogo },
     gazprom: { type: 'image', src: gazpromLogo },
     grandcandy: { type: 'image', src: grandcandyLogo },
@@ -124,6 +128,7 @@ const RAW_SHOPS_REGISTRY: Record<string, ShopMeta> = {
     leovet: { type: 'image', src: leovetLogo, hasOwnBackground: true },
     masterclass: { type: 'image', src: masterclassLogo, hasOwnBackground: true },
     microsoft: { type: 'image', src: microsoftLogo, hasOwnBackground: true },
+    moniso: { type: 'image', src: minisoLogo },
     nemo: { type: 'image', src: nemoLogo },
     onex: { type: 'image', src: onexLogo },
     ovio: { type: 'image', src: ovioLogo },
