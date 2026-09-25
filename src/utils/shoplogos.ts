@@ -14,6 +14,7 @@
 } from 'simple-icons';
 
 // SVG for local brands (not in simple-icons)
+import aeroflotLogo from '../assets/shops/aeroflot.svg';
 import alphavetLogo from '../assets/shops/alphavet.jpg';
 import alphastomLogo from '../assets/shops/alphastom.jpg';
 import ardshinkbankLogo from '../assets/shops/ardshinbank.svg';
@@ -33,6 +34,7 @@ import falafelLogo from '../assets/shops/falafel.png';
 import fixpriceLogo from '../assets/shops/fixprice.svg';
 import fnsLogo from '../assets/shops/fns.svg';
 import fourchettebuffetLogo from '../assets/shops/fourchettebuffet.jpg';
+import galaLogo from '../assets/shops/gala.jpg';
 import gammaclinicsLogo from '../assets/shops/gammaclinics.svg';
 import gazpromLogo from '../assets/shops/gazprom.svg';
 import grandcandyLogo from '../assets/shops/grandcandy.jpg';
@@ -40,7 +42,7 @@ import gosuslugiLogo from '../assets/shops/gosuslugi.svg';
 import hafhafLogo from '../assets/shops/hafhaf.png';
 import inecobankLogo from '../assets/shops/inecobank.svg';
 import kaizerLogo from '../assets/shops/kaizer.jpg';
-import lahtaclinicLogo from '../assets/shops/lahtaclinic.svg';
+import lahtaclinicLogo from '../assets/shops/lahtaclinic.png';
 import lentaLogo from '../assets/shops/lenta.svg';
 import leovetLogo from '../assets/shops/leovet.jpg';
 import letualLogo from '../assets/shops/letual.svg';
@@ -50,6 +52,7 @@ import microsoftLogo from '../assets/shops/microsoft.svg';
 import minisoLogo from '../assets/shops/miniso.png';
 import nemoLogo from '../assets/shops/nemo.jpg';
 import onexLogo from '../assets/shops/onex.svg';
+import ostLogo from '../assets/shops/ost.jpg';
 import ovioLogo from '../assets/shops/ovio.svg';
 import ozonLogo from '../assets/shops/ozon.svg';
 import phoboLogo from '../assets/shops/phobo.jpg';
@@ -72,6 +75,7 @@ import telcellLogo from '../assets/shops/telcell.svg';
 import tinsuranceLogo from '../assets/shops/tinsurance.svg';
 import tsiranLogo from '../assets/shops/tsiran.jpg';
 import ucomLogo from '../assets/shops/ucom.svg';
+import utairLogo from '../assets/shops/utair.svg';
 import vkusnoitochkaLogo from '../assets/shops/vkusnoitochka.svg';
 import vmvetclinicLogo from '../assets/shops/vmvetclinic.jpg';
 import volchekLogo from '../assets/shops/vochek.png';
@@ -110,6 +114,7 @@ const RAW_SHOPS_REGISTRY: Record<string, ShopMeta> = {
     
     "60секунд": { type: 'image', src: sixtysecondsLogo },
     "88": { type: 'image', src: eightyEightLogo },
+    aeroflot: { type: 'image', src: aeroflotLogo },
     alphastom: { type: 'image', src: alphastomLogo },
     alphavet: { type: 'image', src: alphavetLogo },
     ardshinbank: { type: 'image', src: ardshinkbankLogo },
@@ -127,6 +132,8 @@ const RAW_SHOPS_REGISTRY: Record<string, ShopMeta> = {
     fixprice: { type: 'image', src: fixpriceLogo },
     fourchette: { type: 'image', src: fourchettebuffetLogo },
     fourchettebuffet: { type: 'image', src: fourchettebuffetLogo },
+    gala: { type: 'image', src: galaLogo },
+    gamma: { type: 'image', src: gammaclinicsLogo },
     gammaclinics: { type: 'image', src: gammaclinicsLogo },
     gazprom: { type: 'image', src: gazpromLogo },
     grandcandy: { type: 'image', src: grandcandyLogo },
@@ -139,6 +146,7 @@ const RAW_SHOPS_REGISTRY: Record<string, ShopMeta> = {
     miniso: { type: 'image', src: minisoLogo },
     nemo: { type: 'image', src: nemoLogo },
     onex: { type: 'image', src: onexLogo },
+    ost: { type: 'image', src: ostLogo },
     ovio: { type: 'image', src: ovioLogo },
     ozon: { type: 'image', src: ozonLogo, hasOwnBackground: true },
     озон: { type: 'image', src: ozonLogo, hasOwnBackground: true },
@@ -157,6 +165,7 @@ const RAW_SHOPS_REGISTRY: Record<string, ShopMeta> = {
     tinsurance: { type: 'image', src: tinsuranceLogo },
     tsiran: { type: 'image', src: tsiranLogo },
     ucom: { type: 'image', src: ucomLogo },
+    utair: { type: 'image', src: utairLogo },
     veolia: { type: 'image', src: veoliaLogo },
     veoliajur: { type: 'image', src: veoliaLogo },
     vmvetclinic: { type: 'image', src: vmvetclinicLogo },
@@ -176,6 +185,7 @@ const RAW_SHOPS_REGISTRY: Record<string, ShopMeta> = {
     zovq: { type: 'image', src: zovqLogo },
     авито: { type: 'image', src: avitoLogo },
     ашан: { type: 'image', src: auchanLogo },
+    аэрофлот: { type: 'image', src: aeroflotLogo },
     булочнаявольчека: { type: 'image', src: volchekLogo, hasOwnBackground: true },
     вкусноиточка: { type: 'image', src: vkusnoitochkaLogo },
     вседома: { type: 'image', src: vsedomaLogo },
