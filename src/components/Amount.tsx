@@ -3,7 +3,7 @@ import type { FC } from "react";
 import { theme } from "../App.styles.ts";
 import { NBSP } from "../constants/strings.ts";
 import type { Currency } from "../types/finance.ts";
-import { formatCurrencyValue } from "../utils/numberformatter.ts";
+import {formatCurrencyValue, type FractionDigits} from "../utils/numberformatter.ts";
 
 interface AmountProps {
     value: number;
@@ -14,6 +14,7 @@ interface AmountProps {
     color?: string;
     /** Prefix "+" / "−" and format the absolute value. */
     signed?: boolean;
+    format?: FractionDigits;
 }
 
 export const Amount: FC<AmountProps> = ({
@@ -23,6 +24,7 @@ export const Amount: FC<AmountProps> = ({
                                             weight = 700,
                                             color = theme.colors.textPrimary,
                                             signed = false,
+                                            format = 'actual',
                                         }) => {
     const prefix = signed ? (value > 0 ? "+" : value < 0 ? "−" : "") : "";
     const shown = signed ? Math.abs(value) : value;
@@ -38,7 +40,7 @@ export const Amount: FC<AmountProps> = ({
             }}
         >
             {prefix}
-            {formatCurrencyValue(shown, currency.format)}
+            {formatCurrencyValue(shown, format)}
             <span style={{ color: theme.colors.textSecondary, fontWeight: 600 }}>
                 {NBSP}
                 {currency.symbol}

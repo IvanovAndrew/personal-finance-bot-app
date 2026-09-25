@@ -40,7 +40,7 @@ export const SubCategoryAnalyticsGrid: FC<SubCategoryAnalyticsGridProps> = ({
     const [selectedChartIndex, setSelectedChartIndex] = useState<number>(-1);
 
     const formatAmount = useCallback(
-        (val: number) => `${formatCurrencyValue(val, currency.format)} ${currency.symbol}`,
+        (val: number) => `${formatCurrencyValue(val, 'round')} ${currency.symbol}`,
         [currency]
     );
 

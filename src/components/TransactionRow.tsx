@@ -96,6 +96,7 @@ export const TransactionRow: React.FC<TransactionRowProps> = ({
             <Amount
                 value={transaction.isOutcome ? -transaction.amount : transaction.amount}
                 currency={currency}
+                format={'actual'}
                 size={15}
                 weight={600}
                 signed

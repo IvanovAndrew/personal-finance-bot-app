@@ -141,7 +141,7 @@ export const CategoryAnalyticsGrid: FC<CategoryAnalyticsGridProps> = ({
                             data={chartData}
                             selectedIndex={selectedIndex}
                             showDualBar={false}
-                            formatAmount={(val) => `${formatCurrencyValue(val, currency.format)} ${currency.symbol}`}
+                            formatAmount={(val) => `${formatCurrencyValue(val, 'round')} ${currency.symbol}`}
                             onSelect={(index) => {
                                 const clickedMonth = trend[index]?.monthStr;
                                 if (clickedMonth) setSelectedMonthStr((prev) => toggleMonth(prev, clickedMonth));

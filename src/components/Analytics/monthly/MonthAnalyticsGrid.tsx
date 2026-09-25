@@ -143,7 +143,7 @@ export const MonthAnalyticsGrid: FC<MonthAnalyticsGridProps> = ({
                     selectedIndex={activeIndex}
                     onSelect={(index) => setSelectedMonth(sortedMonths[index]?.month ?? null)}
                     showDualBar={true}
-                    formatAmount={(val) => `${formatCurrencyValue(val, currency.format)} ${currency.symbol}`}
+                    formatAmount={(val) => `${formatCurrencyValue(val, 'round')} ${currency.symbol}`}
                 />
             </Card>
 

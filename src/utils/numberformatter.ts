@@ -1,7 +1,9 @@
-﻿// Formats a number to always show the specified number of decimal places with local grouping separators
-export const formatCurrencyValue = (value: number, format: string, locale: string = 'ru-RU'): string => {
+﻿export type FractionDigits = 'round' | 'actual';
 
-    const maximumFractionDigits = Number(format.match(/^C(\d+)$/)?.[1] ?? 0);
+// Formats a number to always show the specified number of decimal places with local grouping separators
+export const formatCurrencyValue = (value: number, format: FractionDigits, locale: string = 'ru-RU'): string => {
+
+    const maximumFractionDigits = format == 'round'? 0 : 2;
     
     return value.toLocaleString(locale, {
         maximumFractionDigits

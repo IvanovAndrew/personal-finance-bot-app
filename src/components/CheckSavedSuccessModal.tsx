@@ -6,6 +6,7 @@ import type { Category, Currency } from '../types/finance';
 import { getCategoryMeta, getSubCategoryName } from '../utils/categoryutils';
 import { formatCurrencyValue } from '../utils/numberformatter';
 import {ShopAvatar} from "./ShopAvatar.tsx";
+import {Amount} from "./Amount.tsx";
 
 interface CheckSavedSuccessModalProps {
     isOpen: boolean;
@@ -60,7 +61,7 @@ export const CheckSavedSuccessModal: React.FC<CheckSavedSuccessModalProps> = ({
             TOTAL AMOUNT
           </span>
                     <span style={{ fontSize: '18px', fontWeight: '800', color: theme.colors.primary }}>
-            {formatCurrencyValue(totalSum, currency.format)} {currency.symbol}
+            {formatCurrencyValue(totalSum, 'actual')} {currency.symbol}
           </span>
                 </div>
 
@@ -139,9 +140,7 @@ export const CheckSavedSuccessModal: React.FC<CheckSavedSuccessModalProps> = ({
                                     </div>
                                 </div>
 
-                                <span style={{ fontSize: '13px', fontWeight: '700', color: theme.colors.textPrimary }}>
-                  {formatCurrencyValue(item.amount, currency.format)} {currency.symbol}
-                </span>
+                                <Amount value={item.amount} currency={currency} size={13} format={'actual'}/>
                             </div>
                         );
                     })}

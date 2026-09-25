@@ -28,7 +28,7 @@ export const ExpensesBreakdownGrid: FC<ExpensesBreakdownGridProps> = ({
                                                                       }) => {
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
-    const formatAmount = (val: number) => `${formatCurrencyValue(val, currency.format)} ${currency.symbol}`;
+    const formatAmount = (val: number) => `${formatCurrencyValue(val, 'round')} ${currency.symbol}`;
 
     const filteredCategories = useMemo(
         () =>
