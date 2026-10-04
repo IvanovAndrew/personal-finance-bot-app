@@ -17,6 +17,7 @@
 import aeroflotLogo from '../assets/shops/aeroflot.svg';
 import alphavetLogo from '../assets/shops/alphavet.jpg';
 import alphastomLogo from '../assets/shops/alphastom.jpg';
+import ambarLogo from '../assets/shops/ambar.jpg';
 import ardshinkbankLogo from '../assets/shops/ardshinbank.svg';
 import asteriaLogo from '../assets/shops/asteria.svg';
 import avitoLogo from '../assets/shops/avito.svg';
@@ -120,6 +121,7 @@ const RAW_SHOPS_REGISTRY: Record<string, ShopMeta> = {
     aeroflot: { type: 'image', src: aeroflotLogo },
     alphastom: { type: 'image', src: alphastomLogo },
     alphavet: { type: 'image', src: alphavetLogo },
+    ambar: { type: 'image', src: ambarLogo },
     ardshinbank: { type: 'image', src: ardshinkbankLogo },
     asteria: { type: 'image', src: asteriaLogo },
     avito: { type: 'image', src: avitoLogo },
