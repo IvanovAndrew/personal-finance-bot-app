@@ -202,6 +202,7 @@ const RAW_SHOPS_REGISTRY: Record<string, ShopMeta> = {
     летуаль: { type: 'image', src: letualLogo },
     магнит: { type: 'image', src: magnitLogo },
     метрополитен: { type: 'image', src: spbMetroLogo },
+    метрополитенcанктпетербурга: { type: 'image', src: spbMetroLogo },
     метроcанктпетербурга: { type: 'image', src: spbMetroLogo },
     перекрёсток: { type: 'image', src: perekrestokLogo },
     петербургскиеаптеки: { type: 'image', src: petersburgpharmaciesLogo },
