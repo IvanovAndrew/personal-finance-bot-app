@@ -63,6 +63,7 @@ import pyaterochkaLogo from '../assets/shops/pyaterochka.svg';
 import raupoolLogo from '../assets/shops/raupool.jpg';
 import royalcaninLogo from '../assets/shops/royalcanin.svg';
 import rtcleaningLogo from '../assets/shops/rtcleaning.svg';
+import russianRailwaysLogo from '../assets/shops/russianrailways.svg';
 import sasLogo from '../assets/shops/sas.svg';
 import sasfoodcourtLogo from '../assets/shops/sasfoodcourt.svg';
 import semishagoffLogo from '../assets/shops/semishagoff.svg';
@@ -205,6 +206,7 @@ const RAW_SHOPS_REGISTRY: Record<string, ShopMeta> = {
     перекрёсток: { type: 'image', src: perekrestokLogo },
     петербургскиеаптеки: { type: 'image', src: petersburgpharmaciesLogo },
     пятёрочка: { type: 'image', src: pyaterochkaLogo, hasOwnBackground: true },
+    ржд: { type: 'image', src: russianRailwaysLogo },
     семишагофф: { type: 'image', src: semishagoffLogo },
     тбанк: { type: 'image', src: tbankLogo },
     фалафельная: { type: 'image', src: falafelLogo },
