@@ -114,7 +114,7 @@ export const normalizeShopName = (name: string): string => {
 const RAW_SHOPS_REGISTRY: Record<string, ShopMeta> = {
     
     "60секунд": { type: 'image', src: sixtysecondsLogo },
-    "88": { type: 'image', src: eightyEightLogo },
+    "88": { type: 'image', src: eightyEightLogo, hasOwnBackground: true },
     aeroflot: { type: 'image', src: aeroflotLogo },
     alphastom: { type: 'image', src: alphastomLogo },
     alphavet: { type: 'image', src: alphavetLogo },
@@ -148,7 +148,7 @@ const RAW_SHOPS_REGISTRY: Record<string, ShopMeta> = {
     nemo: { type: 'image', src: nemoLogo },
     onex: { type: 'image', src: onexLogo },
     ost: { type: 'image', src: ostLogo },
-    ostbistro: { type: 'image', src: ostBistroLogo },
+    ostbistro: { type: 'image', src: ostBistroLogo, hasOwnBackground: true },
     ovio: { type: 'image', src: ovioLogo },
     ozon: { type: 'image', src: ozonLogo, hasOwnBackground: true },
     озон: { type: 'image', src: ozonLogo, hasOwnBackground: true },
