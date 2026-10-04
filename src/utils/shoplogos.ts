@@ -53,6 +53,7 @@ import minisoLogo from '../assets/shops/miniso.png';
 import nemoLogo from '../assets/shops/nemo.jpg';
 import onexLogo from '../assets/shops/onex.svg';
 import ostLogo from '../assets/shops/ost.jpg';
+import ostBistroLogo from '../assets/shops/ostbistro.png';
 import ovioLogo from '../assets/shops/ovio.svg';
 import ozonLogo from '../assets/shops/ozon.svg';
 import phoboLogo from '../assets/shops/phobo.jpg';
@@ -147,6 +148,7 @@ const RAW_SHOPS_REGISTRY: Record<string, ShopMeta> = {
     nemo: { type: 'image', src: nemoLogo },
     onex: { type: 'image', src: onexLogo },
     ost: { type: 'image', src: ostLogo },
+    ostbistro: { type: 'image', src: ostBistroLogo },
     ovio: { type: 'image', src: ovioLogo },
     ozon: { type: 'image', src: ozonLogo, hasOwnBackground: true },
     озон: { type: 'image', src: ozonLogo, hasOwnBackground: true },
