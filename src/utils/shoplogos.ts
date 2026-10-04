@@ -23,6 +23,7 @@ import asteriaLogo from '../assets/shops/asteria.svg';
 import avitoLogo from '../assets/shops/avito.svg';
 import auchanLogo from '../assets/shops/auchan.svg';
 import burgerKingLogo from '../assets/shops/burgerking.svg';
+import castleRockLogo from '../assets/shops/castlerock.jpg';
 import chgkLogo from '../assets/shops/chgk.png';
 import coffeehouseLogo from '../assets/shops/coffeehouse.svg';
 import ddxLogo from '../assets/shops/ddx.svg';
@@ -30,6 +31,7 @@ import dixiLogo from '../assets/shops/dixy.svg';
 import dnsLogo from '../assets/shops/dns.svg';
 import dodoLogo from '../assets/shops/dodo.svg';
 import eightyEightLogo from '../assets/shops/88.jpg';
+import estetikatelaLogo from '../assets/shops/estetikatela.jpg';
 import equusLogo from '../assets/shops/equus.jpg';
 import falafelLogo from '../assets/shops/falafel.png';
 import fixpriceLogo from '../assets/shops/fixprice.svg';
@@ -38,11 +40,14 @@ import fourchettebuffetLogo from '../assets/shops/fourchettebuffet.jpg';
 import galaLogo from '../assets/shops/gala.jpg';
 import gammaclinicsLogo from '../assets/shops/gammaclinics.svg';
 import gazpromLogo from '../assets/shops/gazprom.svg';
+import grabandgoLogo from '../assets/shops/grabandgo.jpg';
 import grandcandyLogo from '../assets/shops/grandcandy.jpg';
 import gosuslugiLogo from '../assets/shops/gosuslugi.svg';
 import hafhafLogo from '../assets/shops/hafhaf.png';
 import inecobankLogo from '../assets/shops/inecobank.svg';
 import kaizerLogo from '../assets/shops/kaizer.jpg';
+import khlebnikLogo from '../assets/shops/khlebnik.jpg';
+import krasnykarandashLogo from '../assets/shops/krasnykarandash.jpg';
 import lahtaclinicLogo from '../assets/shops/lahtaclinic.png';
 import lentaLogo from '../assets/shops/lenta.svg';
 import leovetLogo from '../assets/shops/leovet.jpg';
@@ -58,9 +63,10 @@ import ostLogo from '../assets/shops/ost.jpg';
 import ostBistroLogo from '../assets/shops/ostbistro.png';
 import ovioLogo from '../assets/shops/ovio.svg';
 import ozonLogo from '../assets/shops/ozon.svg';
-import phoboLogo from '../assets/shops/phobo.jpg';
 import perekrestokLogo from '../assets/shops/perekrestok.svg';
 import petersburgpharmaciesLogo from '../assets/shops/petersburgpharmacies.jpg';
+import phoboLogo from '../assets/shops/phobo.jpg';
+import polkachudesLogo from '../assets/shops/polkachudes.jpg';
 import pyaterochkaLogo from '../assets/shops/pyaterochka.svg';
 import raupoolLogo from '../assets/shops/raupool.jpg';
 import royalcaninLogo from '../assets/shops/royalcanin.svg';
@@ -86,6 +92,7 @@ import volchekLogo from '../assets/shops/vochek.png';
 import vsedomaLogo from '../assets/shops/vsedoma.svg';
 import veoliaLogo from '../assets/shops/veolia.jpg';
 import wildberriesLogo from '../assets/shops/wildberries.svg';
+import yandexafishaLogo from '../assets/shops/yandexafisha.svg';
 import yandexeatsLogo from '../assets/shops/yandexeats.svg';
 import yandexgoLogo from '../assets/shops/yandexgo.svg';
 import yandexTaxiLogo from '../assets/shops/yandextaxi.svg';
@@ -126,7 +133,8 @@ const RAW_SHOPS_REGISTRY: Record<string, ShopMeta> = {
     asteria: { type: 'image', src: asteriaLogo },
     avito: { type: 'image', src: avitoLogo },
     auchan: { type: 'image', src: auchanLogo, hasOwnBackground: true },
-    burgerKing: { type: 'image', src: burgerKingLogo },
+    burgerking: { type: 'image', src: burgerKingLogo },
+    castlerock: { type: 'image', src: castleRockLogo },
     coffeehouse: { type: 'image', src: coffeehouseLogo },
     ddx: { type: 'image', src: ddxLogo },
     dixi: { type: 'image', src: dixiLogo },
@@ -141,6 +149,8 @@ const RAW_SHOPS_REGISTRY: Record<string, ShopMeta> = {
     gamma: { type: 'image', src: gammaclinicsLogo },
     gammaclinics: { type: 'image', src: gammaclinicsLogo },
     gazprom: { type: 'image', src: gazpromLogo },
+    grabgo: { type: 'image', src: grabandgoLogo },
+    grabandgo: { type: 'image', src: grabandgoLogo },
     grandcandy: { type: 'image', src: grandcandyLogo },
     hafhaf: { type: 'image', src: hafhafLogo },
     inecobank: { type: 'image', src: inecobankLogo },
@@ -201,6 +211,7 @@ const RAW_SHOPS_REGISTRY: Record<string, ShopMeta> = {
     дикси: { type: 'image', src: dixiLogo, hasOwnBackground: true },
     еревансити: { type: 'image', src: yerevanCityLogo },
     клиникавахе: { type: 'image', src: vmvetclinicLogo },
+    красныйкарандаш: { type: 'image', src: krasnykarandashLogo },
     лахтаклиник: { type: 'image', src: lahtaclinicLogo },
     лента: { type: 'image', src: lentaLogo, hasOwnBackground: true },
     летуаль: { type: 'image', src: letualLogo },
@@ -210,14 +221,18 @@ const RAW_SHOPS_REGISTRY: Record<string, ShopMeta> = {
     метроcанктпетербурга: { type: 'image', src: spbMetroLogo },
     перекрёсток: { type: 'image', src: perekrestokLogo },
     петербургскиеаптеки: { type: 'image', src: petersburgpharmaciesLogo },
+    полкачудес: { type: 'image', src: polkachudesLogo },
     пятёрочка: { type: 'image', src: pyaterochkaLogo, hasOwnBackground: true },
     ржд: { type: 'image', src: russianRailwaysLogo },
     семишагофф: { type: 'image', src: semishagoffLogo },
     тбанк: { type: 'image', src: tbankLogo },
     фалафельная: { type: 'image', src: falafelLogo },
     фнс: { type: 'image', src: fnsLogo },
+    хлебник: { type: 'image', src: khlebnikLogo },
     циран: { type: 'image', src: tsiranLogo },
     чгк: { type: 'image', src: chgkLogo },
+    эстетикатела: { type: 'image', src: estetikatelaLogo },
+    яндексафиша: { type: 'image', src: yandexafishaLogo },
 
     // global brands from simple-icons
     aliexpress: { type: 'svg-path', src: siAliexpress.path, hexColor: `#${siAliexpress.hex}` },
