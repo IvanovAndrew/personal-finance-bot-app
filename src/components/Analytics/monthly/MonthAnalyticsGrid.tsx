@@ -184,7 +184,7 @@ export const MonthAnalyticsGrid: FC<MonthAnalyticsGridProps> = ({
                             />
                         }
                         title={terms.income}
-                        right={<Amount value={activeMonthValues.income} currency={currency} size={15} signed color={theme.colors.success} />}
+                        right={<Amount value={activeMonthValues.income} currency={currency} fontSize={15} signed color={theme.colors.success} />}
                     />
                     <Divider inset={68} />
                     <ListRow
@@ -197,7 +197,7 @@ export const MonthAnalyticsGrid: FC<MonthAnalyticsGridProps> = ({
                             />
                         }
                         title={terms.expenses}
-                        right={<Amount value={-activeMonthValues.outcome} currency={currency} size={15} signed color={theme.colors.danger} />}
+                        right={<Amount value={-activeMonthValues.outcome} currency={currency} fontSize={15} signed color={theme.colors.danger} />}
                     />
 
                     <div style={{ padding: 16 }}>

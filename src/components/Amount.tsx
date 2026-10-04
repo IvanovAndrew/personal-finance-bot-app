@@ -8,8 +8,8 @@ import {formatCurrencyValue, type FractionDigits} from "../utils/numberformatter
 interface AmountProps {
     value: number;
     currency: Currency;
-    size: number;
-    weight?: number;
+    fontSize: number;
+    fontWeight?: number;
     /** Colour of the number. The currency symbol stays muted. */
     color?: string;
     /** Prefix "+" / "−" and format the absolute value. */
@@ -20,8 +20,8 @@ interface AmountProps {
 export const Amount: FC<AmountProps> = ({
                                             value,
                                             currency,
-                                            size,
-                                            weight = 700,
+                                            fontSize,
+                                            fontWeight = 700,
                                             color = theme.colors.textPrimary,
                                             signed = false,
                                             format = 'actual',
@@ -32,8 +32,8 @@ export const Amount: FC<AmountProps> = ({
     return (
         <span
             style={{
-                fontSize: size,
-                fontWeight: weight,
+                fontSize: fontSize,
+                fontWeight: fontWeight,
                 color,
                 fontVariantNumeric: "tabular-nums",
                 whiteSpace: "nowrap",

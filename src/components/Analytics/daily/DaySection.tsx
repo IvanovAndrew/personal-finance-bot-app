@@ -49,7 +49,7 @@ export const DaySection: FC<DaySectionProps> = ({ date, currency, categories = [
                 <span style={{ fontSize: 15, fontWeight: 700, color: theme.colors.textPrimary }}>
                     {formatDateDMMMMYYYY(date)}
                 </span>
-                <Amount value={dayTotal} currency={currency} size={15} weight={600} color={theme.colors.textSecondary} />
+                <Amount value={dayTotal} currency={currency} fontSize={15} fontWeight={600} color={theme.colors.textSecondary} />
             </div>
 
             {items.length === 0 ? (
@@ -66,7 +66,7 @@ export const DaySection: FC<DaySectionProps> = ({ date, currency, categories = [
                                     avatar={<ShopAvatar shopName={shopExpenses.shop} size={40} />}
                                     title={shopExpenses.shop}
                                     subtitle={`${shopExpenses.expenses.length} ${shopExpenses.expenses.length === 1 ? "item" : "items"}`}
-                                    right={<Amount value={shopExpenses.total} currency={currency} size={15} />}
+                                    right={<Amount value={shopExpenses.total} currency={currency} fontSize={15} />}
                                     trailing={<Chevron size={16} color={theme.colors.textSecondary} style={{ flex: "0 0 auto" }} />}
                                     onClick={() => toggleShop(shopExpenses.shop)}
                                 />

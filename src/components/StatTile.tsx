@@ -17,7 +17,7 @@ export const StatTile: FC<StatTileProps> = ({ label, value, currency, color, sig
     <Card padding="14px 16px">
         <div style={{ fontSize: 13, color: theme.colors.textSecondary }}>{label}</div>
         <div style={{ marginTop: 4 }}>
-            <Amount value={value} currency={currency} size={17} color={color} signed={signed} />
+            <Amount value={value} currency={currency} fontSize={17} color={color} signed={signed} />
         </div>
     </Card>
 );

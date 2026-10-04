@@ -97,8 +97,8 @@ export const TransactionRow: React.FC<TransactionRowProps> = ({
                 value={transaction.isOutcome ? -transaction.amount : transaction.amount}
                 currency={currency}
                 format={'actual'}
-                size={15}
-                weight={600}
+                fontSize={15}
+                fontWeight={600}
                 signed
                 color={transaction.isOutcome ? theme.colors.textPrimary : theme.colors.success}
             />

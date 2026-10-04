@@ -140,7 +140,7 @@ export const CheckSavedSuccessModal: React.FC<CheckSavedSuccessModalProps> = ({
                                     </div>
                                 </div>
 
-                                <Amount value={item.amount} currency={currency} size={13} format={'actual'}/>
+                                <Amount value={item.amount} currency={currency} fontSize={13} format={'actual'}/>
                             </div>
                         );
                     })}

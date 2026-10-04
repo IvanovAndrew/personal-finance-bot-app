@@ -64,16 +64,16 @@ export const SummaryAnalyticsGrid: FC<SummaryAnalyticsGridProps> = ({ currency, 
             <ListGroup inset={16}>
                 <ListRow
                     title={terms.netBalance}
-                    right={<Amount value={totalBalance} currency={currency} size={15} />}
+                    right={<Amount value={totalBalance} currency={currency} fontSize={15} />}
                 />
                 <ListRow
                     title={terms.upcomingPayments}
-                    right={<Amount value={-futureExpensesTotal} currency={currency} size={15} signed weight={600} />}
+                    right={<Amount value={-futureExpensesTotal} currency={currency} fontSize={15} signed fontWeight={600} />}
                     onClick={hasFutureExpenses ? () => setIsModalOpen(true) : undefined}
                 />
                 <ListRow
                     title={<span style={{ fontWeight: 700 }}>{terms.safeToSpend}</span>}
-                    right={<Amount value={realFreeMoney} currency={currency} size={17} color={theme.colors.success} />}
+                    right={<Amount value={realFreeMoney} currency={currency} fontSize={17} color={theme.colors.success} />}
                 />
             </ListGroup>
 
@@ -92,7 +92,7 @@ export const SummaryAnalyticsGrid: FC<SummaryAnalyticsGridProps> = ({ currency, 
                                 }
                                 title={row.title}
                                 subtitle={row.subtitle}
-                                right={<Amount value={row.amount} currency={row.currency} size={15} signed />}
+                                right={<Amount value={row.amount} currency={row.currency} fontSize={15} signed />}
                             />
                         </div>
                     ))}

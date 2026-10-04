@@ -29,7 +29,7 @@ export const AnalyticsRow: FC<AnalyticsRowProps> = ({ name, color, share, total,
         avatar={<Avatar name={name} color={color} icon={icon} />}
         title={name}
         subtitle={formatShare(share)}
-        right={<Amount value={total} currency={currency} size={15} />}
+        right={<Amount value={total} currency={currency} fontSize={15} />}
         onClick={onClick}
     />
 );
