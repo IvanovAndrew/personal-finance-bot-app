@@ -46,6 +46,7 @@ import lahtaclinicLogo from '../assets/shops/lahtaclinic.png';
 import lentaLogo from '../assets/shops/lenta.svg';
 import leovetLogo from '../assets/shops/leovet.jpg';
 import letualLogo from '../assets/shops/letual.svg';
+import loftLogo from '../assets/shops/loft.jpg';
 import magnitLogo from '../assets/shops/magnit.svg';
 import masterclassLogo from '../assets/shops/masterclass.jpg';
 import microsoftLogo from '../assets/shops/microsoft.svg';
@@ -143,6 +144,7 @@ const RAW_SHOPS_REGISTRY: Record<string, ShopMeta> = {
     inecobank: { type: 'image', src: inecobankLogo },
     kaizer: { type: 'image', src: kaizerLogo },
     leovet: { type: 'image', src: leovetLogo, hasOwnBackground: true },
+    loft: { type: 'image', src: loftLogo, hasOwnBackground: true },
     masterclass: { type: 'image', src: masterclassLogo, hasOwnBackground: true },
     microsoft: { type: 'image', src: microsoftLogo, hasOwnBackground: true },
     miniso: { type: 'image', src: minisoLogo },
