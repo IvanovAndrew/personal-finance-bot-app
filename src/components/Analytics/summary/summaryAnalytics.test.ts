@@ -9,7 +9,7 @@ const cat = (code: string, name: string, subs: [string, string][] = []): Categor
 
 const categories = [cat("Food", "Еда", [["Groceries", "Продукты"]]), cat("Netflix", "Подписки")];
 const currency = { name: "AMD", symbol: "֏", format: "C0", isPopular: true };
-const exp = (over: Partial<FutureExpense> = {}): FutureExpense => ({ name: "Netflix", category: "Netflix", amount: 999, currency: "AMD", ...over });
+const exp = (over: Partial<FutureExpense> = {}): FutureExpense => ({ name: "Netflix", category: "Netflix", amount: 999, currency: "AMD", start: "2026-10-01", end: "2026-10-31", ...over });
 
 describe("describeCategory", () => {
     it("is just the category name without a subcategory", () => {
