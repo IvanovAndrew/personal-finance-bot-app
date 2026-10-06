@@ -82,6 +82,7 @@ import sushilabLogo from '../assets/shops/sushilab.jpg';
 import sushiwhiteLogo from '../assets/shops/sushiwhite.png';
 import tbankLogo from '../assets/shops/tbank.svg';
 import telcellLogo from '../assets/shops/telcell.svg';
+import tele2Logo from '../assets/shops/tele2.svg';
 import tinsuranceLogo from '../assets/shops/tinsurance.svg';
 import tsiranLogo from '../assets/shops/tsiran.jpg';
 import ucomLogo from '../assets/shops/ucom.svg';
@@ -179,6 +180,7 @@ const RAW_SHOPS_REGISTRY: Record<string, ShopMeta> = {
     sushiwhite: { type: 'image', src: sushiwhiteLogo },
     tbank: { type: 'image', src: tbankLogo, hasOwnBackground: true },
     telcell: { type: 'image', src: telcellLogo },
+    tele2: { type: 'image', src: tele2Logo },
     tinsurance: { type: 'image', src: tinsuranceLogo },
     tsiran: { type: 'image', src: tsiranLogo },
     ucom: { type: 'image', src: ucomLogo },
