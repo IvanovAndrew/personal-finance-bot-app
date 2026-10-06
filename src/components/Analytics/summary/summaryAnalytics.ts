@@ -46,7 +46,7 @@ export const resolveExpenseAvatar = (categories: Category[], exp: FutureExpense)
 };
 
 export const buildFutureExpenseRows = (categories: Category[], expenses: FutureExpense[], currency: Currency): FutureExpenseRow[] =>
-    expenses.map((exp, index) => ({
+    expenses.sort((a, b) => parseIsoDate(a.start).getTime() - parseIsoDate(b.start).getTime()).map((exp, index) => ({
         key: index,
         title: exp.name,
         subtitle: [describeCategory(categories, exp), describePaymentDate(exp)]
