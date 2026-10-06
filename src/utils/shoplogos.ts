@@ -31,6 +31,7 @@ import dixiLogo from '../assets/shops/dixy.svg';
 import dnsLogo from '../assets/shops/dns.svg';
 import dodoLogo from '../assets/shops/dodo.svg';
 import eightyEightLogo from '../assets/shops/88.jpg';
+import englexLogo from '../assets/shops/englex.png';
 import estetikatelaLogo from '../assets/shops/estetikatela.jpg';
 import equusLogo from '../assets/shops/equus.jpg';
 import falafelLogo from '../assets/shops/falafel.png';
@@ -141,6 +142,7 @@ const RAW_SHOPS_REGISTRY: Record<string, ShopMeta> = {
     dixi: { type: 'image', src: dixiLogo },
     dns: { type: 'image', src: dnsLogo },
     dodo: { type: 'image', src: dodoLogo },
+    englex: { type: 'image', src: englexLogo },
     equus: { type: 'image', src: equusLogo },
     falafel: { type: 'image', src: falafelLogo, hasOwnBackground: true },
     fixprice: { type: 'image', src: fixpriceLogo },
