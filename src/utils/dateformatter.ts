@@ -1,4 +1,6 @@
-﻿export const formatDateMMMMYYYY = (date: Date, locale = 'en-US'): string => {
+﻿const MONTH = new Intl.DateTimeFormat("ru-RU", { month: "short" });
+
+export const formatDateMMMMYYYY = (date: Date, locale = 'en-US'): string => {
     return new Intl.DateTimeFormat(locale, {
         month: 'long',
         year: 'numeric'
@@ -38,4 +40,18 @@ export const formatISODateTime = (date: Date, timeStr: string): string => {
     const formattedTime = timeStr.length === 5 ? `${timeStr}:00` : timeStr || '00:00:00';
 
     return `${year}-${month}-${day}T${formattedTime}`;
+};
+
+export const formatPaymentDateRange = (start: Date, end: Date): string => {
+
+    if (start.getTime() === end.getTime()) return `${start.getDate()} ${MONTH.format(start)}`;
+    if (start.getMonth() === end.getMonth()) {
+        
+        if (start.getDate() == 1 && end.getDate() == new Date(end.getFullYear(), end.getMonth() + 1, 0).getDate()) {
+            return `${MONTH.format(start)}`;
+        }
+        
+        return `${start.getDate()}–${end.getDate()} ${MONTH.format(end)}`;
+    }
+    return `${start.getDate()} ${MONTH.format(start)} – ${end.getDate()} ${MONTH.format(end)}`;
 };

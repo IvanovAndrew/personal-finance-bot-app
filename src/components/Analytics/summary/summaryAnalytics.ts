@@ -2,6 +2,8 @@ import type { Category, Currency } from "../../../types/finance.ts";
 import type { FutureExpense } from "../../../services/api.ts";
 import { getCategoryMeta, getSubCategoryName } from "../../../utils/categoryutils.ts";
 import { getShopMeta } from "../../../utils/shoplogos.ts";
+import {formatPaymentDateRange} from "../../../utils/dateformatter.ts";
+import {parseIsoDate} from "../../../utils/dateparser.ts";
 
 // Pure logic of the Summary screen. No React, no formatting for display (dates, currency).
 
@@ -31,6 +33,11 @@ export const describeCategory = (categories: Category[], exp: FutureExpense): st
     return subName ? `${meta.name} · ${subName}` : meta.name;
 };
 
+export const describePaymentDate = (exp: FutureExpense): string | null =>
+    exp.start && exp.end
+        ? formatPaymentDateRange(parseIsoDate(exp.start), parseIsoDate(exp.end))
+        : null;
+
 /** A shop avatar when we have a logo for it, else the expense's category avatar. */
 export const resolveExpenseAvatar = (categories: Category[], exp: FutureExpense): ExpenseAvatar => {
     if (exp.shop && getShopMeta(exp.shop)) return { kind: "shop", name: exp.shop };
@@ -42,7 +49,9 @@ export const buildFutureExpenseRows = (categories: Category[], expenses: FutureE
     expenses.map((exp, index) => ({
         key: index,
         title: exp.name,
-        subtitle: describeCategory(categories, exp),
+        subtitle: [describeCategory(categories, exp), describePaymentDate(exp)]
+            .filter(Boolean)
+            .join(" · "),
         avatar: resolveExpenseAvatar(categories, exp),
         amount: -exp.amount,
         currency,
