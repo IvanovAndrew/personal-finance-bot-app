@@ -73,7 +73,7 @@ export const SummaryAnalyticsGrid: FC<SummaryAnalyticsGridProps> = ({ currency, 
                 />
                 <ListRow
                     title={<span style={{ fontWeight: 700 }}>{terms.safeToSpend}</span>}
-                    right={<Amount value={realFreeMoney} currency={currency} fontSize={17} color={theme.colors.success} />}
+                    right={<Amount value={realFreeMoney} currency={currency} fontSize={17} color={realFreeMoney >= 0? theme.colors.success : theme.colors.danger} />}
                 />
             </ListGroup>
 
