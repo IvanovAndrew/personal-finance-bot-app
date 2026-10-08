@@ -41,6 +41,7 @@ import fourchettebuffetLogo from '../assets/shops/fourchettebuffet.jpg';
 import galaLogo from '../assets/shops/gala.jpg';
 import gammaclinicsLogo from '../assets/shops/gammaclinics.svg';
 import gazpromLogo from '../assets/shops/gazprom.svg';
+import gladiolusLogo from '../assets/shops/gladiolus.jpg';
 import grabandgoLogo from '../assets/shops/grabandgo.jpg';
 import grandcandyLogo from '../assets/shops/grandcandy.jpg';
 import gosuslugiLogo from '../assets/shops/gosuslugi.svg';
@@ -211,6 +212,7 @@ const RAW_SHOPS_REGISTRY: Record<string, ShopMeta> = {
     вкусноиточка: { type: 'image', src: vkusnoitochkaLogo },
     вседома: { type: 'image', src: vsedomaLogo },
     газпром: { type: 'image', src: gazpromLogo },
+    гладиолус: { type: 'image', src: gladiolusLogo },
     госуслуги: { type: 'image', src: gosuslugiLogo },
     дикси: { type: 'image', src: dixiLogo, hasOwnBackground: true },
     еревансити: { type: 'image', src: yerevanCityLogo },
