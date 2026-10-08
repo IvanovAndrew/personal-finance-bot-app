@@ -361,15 +361,13 @@ export const EnterTransactionTab: React.FC<EnterOutcomeTabProps> = ({
                     </div>
 
                     {/* Text inputs */}
-                    {txType === 'expense' && (
-                        <input
-                            type="text"
-                            placeholder="Shop / Place (e.g. Yerevan-city)"
-                            value={shop}
-                            onChange={e => setShop(e.target.value)}
-                            style={inputStyle}
-                        />
-                    )}
+                    <input
+                        type="text"
+                        placeholder={txType === 'expense'? "Shop / Place (e.g. Yerevan-city)" : "Source / From (e.g. Company)"}
+                        value={shop}
+                        onChange={e => setShop(e.target.value)}
+                        style={inputStyle}
+                    />
 
                     <input
                         type="text"
