@@ -31,7 +31,8 @@ export const EnterTransactionTab: React.FC<EnterOutcomeTabProps> = ({
                                                                         currencies
                                                                     }) => {
 
-    var defaultCurrencyCode = localStorage.getItem(STORAGE_KEYS.CURRENCY) || currencies[0]?.name || 'AMD';
+    //var defaultCurrencyCode = localStorage.getItem(STORAGE_KEYS.CURRENCY) || currencies[0]?.name || 'AMD';
+    var defaultCurrencyCode = 'AMD';
     
     const [inputMethod, setInputMethod] = useState<InputMethod>('manual');
 
