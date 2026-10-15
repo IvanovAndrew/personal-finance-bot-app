@@ -25,6 +25,7 @@ import auchanLogo from '../assets/shops/auchan.svg';
 import burgerKingLogo from '../assets/shops/burgerking.svg';
 import castleRockLogo from '../assets/shops/castlerock.jpg';
 import chgkLogo from '../assets/shops/chgk.png';
+import chgkArmeniaLogo from '../assets/shops/chgkarmenia.jpg';
 import coffeehouseLogo from '../assets/shops/coffeehouse.svg';
 import ddxLogo from '../assets/shops/ddx.svg';
 import dixiLogo from '../assets/shops/dixy.svg';
@@ -85,7 +86,9 @@ import sushiwhiteLogo from '../assets/shops/sushiwhite.png';
 import tbankLogo from '../assets/shops/tbank.svg';
 import telcellLogo from '../assets/shops/telcell.svg';
 import tele2Logo from '../assets/shops/tele2.svg';
+import ticketonLogo from '../assets/shops/ticketon.png';
 import tinsuranceLogo from '../assets/shops/tinsurance.svg';
+import tomsarkghLogo from '../assets/shops/tomsarkgh.jpg';
 import tsiranLogo from '../assets/shops/tsiran.jpg';
 import ucomLogo from '../assets/shops/ucom.svg';
 import utairLogo from '../assets/shops/utair.svg';
@@ -184,7 +187,9 @@ const RAW_SHOPS_REGISTRY: Record<string, ShopMeta> = {
     tbank: { type: 'image', src: tbankLogo, hasOwnBackground: true },
     telcell: { type: 'image', src: telcellLogo },
     tele2: { type: 'image', src: tele2Logo },
+    ticketon: { type: 'image', src: ticketonLogo },
     tinsurance: { type: 'image', src: tinsuranceLogo },
+    tomsarkghLogo: { type: 'image', src: tomsarkghLogo },
     tsiran: { type: 'image', src: tsiranLogo },
     ucom: { type: 'image', src: ucomLogo },
     utair: { type: 'image', src: utairLogo },
@@ -214,6 +219,8 @@ const RAW_SHOPS_REGISTRY: Record<string, ShopMeta> = {
     газпром: { type: 'image', src: gazpromLogo },
     гладиолус: { type: 'image', src: gladiolusLogo },
     госуслуги: { type: 'image', src: gosuslugiLogo },
+    додо: { type: 'image', src: dodoLogo },
+    додопицца: { type: 'image', src: dodoLogo },
     дикси: { type: 'image', src: dixiLogo, hasOwnBackground: true },
     еревансити: { type: 'image', src: yerevanCityLogo },
     клиникавахе: { type: 'image', src: vmvetclinicLogo },
@@ -237,6 +244,7 @@ const RAW_SHOPS_REGISTRY: Record<string, ShopMeta> = {
     хлебник: { type: 'image', src: khlebnikLogo },
     циран: { type: 'image', src: tsiranLogo },
     чгк: { type: 'image', src: chgkLogo },
+    чгквармении: { type: 'image', src: chgkArmeniaLogo },
     эстетикатела: { type: 'image', src: estetikatelaLogo },
     яндексафиша: { type: 'image', src: yandexafishaLogo },
 
