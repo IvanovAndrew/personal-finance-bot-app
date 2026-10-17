@@ -32,6 +32,7 @@ import dixiLogo from '../assets/shops/dixy.svg';
 import dnsLogo from '../assets/shops/dns.svg';
 import dodoLogo from '../assets/shops/dodo.svg';
 import eightyEightLogo from '../assets/shops/88.jpg';
+import enaLogo from '../assets/shops/armenianelectricity.jpg';
 import englexLogo from '../assets/shops/englex.png';
 import estetikatelaLogo from '../assets/shops/estetikatela.jpg';
 import equusLogo from '../assets/shops/equus.jpg';
@@ -78,6 +79,7 @@ import russianRailwaysLogo from '../assets/shops/russianrailways.svg';
 import sasLogo from '../assets/shops/sas.svg';
 import sasfoodcourtLogo from '../assets/shops/sasfoodcourt.svg';
 import semishagoffLogo from '../assets/shops/semishagoff.svg';
+import shtudiyaLogo from '../assets/shops/штудия.jpg';
 import sixtysecondsLogo from '../assets/shops/sixtyseconds.svg';
 import sorrisoLogo from '../assets/shops/sorriso.jpg';
 import spbMetroLogo from '../assets/shops/spbmetro.svg';
@@ -146,6 +148,7 @@ const RAW_SHOPS_REGISTRY: Record<string, ShopMeta> = {
     dixi: { type: 'image', src: dixiLogo },
     dns: { type: 'image', src: dnsLogo },
     dodo: { type: 'image', src: dodoLogo },
+    ena: { type: 'image', src: enaLogo },
     englex: { type: 'image', src: englexLogo },
     equus: { type: 'image', src: equusLogo },
     falafel: { type: 'image', src: falafelLogo, hasOwnBackground: true },
@@ -241,10 +244,12 @@ const RAW_SHOPS_REGISTRY: Record<string, ShopMeta> = {
     тбанк: { type: 'image', src: tbankLogo },
     фалафельная: { type: 'image', src: falafelLogo },
     фнс: { type: 'image', src: fnsLogo },
+    фнсрф: { type: 'image', src: fnsLogo },
     хлебник: { type: 'image', src: khlebnikLogo },
     циран: { type: 'image', src: tsiranLogo },
     чгк: { type: 'image', src: chgkLogo },
     чгквармении: { type: 'image', src: chgkArmeniaLogo },
+    штудия: { type: 'image', src: shtudiyaLogo },
     эстетикатела: { type: 'image', src: estetikatelaLogo },
     яндексафиша: { type: 'image', src: yandexafishaLogo },
 
