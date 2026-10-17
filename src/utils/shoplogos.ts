@@ -96,6 +96,7 @@ import ucomLogo from '../assets/shops/ucom.svg';
 import utairLogo from '../assets/shops/utair.svg';
 import vkusnoitochkaLogo from '../assets/shops/vkusnoitochka.svg';
 import vmvetclinicLogo from '../assets/shops/vmvetclinic.jpg';
+import varpetLogo from '../assets/shops/varpet.jpg';
 import volchekLogo from '../assets/shops/vochek.png';
 import vsedomaLogo from '../assets/shops/vsedoma.svg';
 import veoliaLogo from '../assets/shops/veolia.jpg';
@@ -196,6 +197,7 @@ const RAW_SHOPS_REGISTRY: Record<string, ShopMeta> = {
     tsiran: { type: 'image', src: tsiranLogo },
     ucom: { type: 'image', src: ucomLogo },
     utair: { type: 'image', src: utairLogo },
+    varpet: { type: 'image', src: varpetLogo },
     veolia: { type: 'image', src: veoliaLogo },
     veoliajur: { type: 'image', src: veoliaLogo },
     vmvetclinic: { type: 'image', src: vmvetclinicLogo },
