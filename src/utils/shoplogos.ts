@@ -15,8 +15,9 @@
 
 // SVG for local brands (not in simple-icons)
 import aeroflotLogo from '../assets/shops/aeroflot.svg';
-import alphavetLogo from '../assets/shops/alphavet.jpg';
+import alphapharmLogo from '../assets/shops/alphapharm.jpg';
 import alphastomLogo from '../assets/shops/alphastom.jpg';
+import alphavetLogo from '../assets/shops/alphavet.jpg';
 import ambarLogo from '../assets/shops/ambar.jpg';
 import ardshinkbankLogo from '../assets/shops/ardshinbank.svg';
 import asteriaLogo from '../assets/shops/asteria.svg';
@@ -43,6 +44,7 @@ import fourchettebuffetLogo from '../assets/shops/fourchettebuffet.jpg';
 import galaLogo from '../assets/shops/gala.jpg';
 import gammaclinicsLogo from '../assets/shops/gammaclinics.svg';
 import gazpromLogo from '../assets/shops/gazprom.svg';
+import gedeonRichterLogo from '../assets/shops/gedeonrichter.jpg';
 import gladiolusLogo from '../assets/shops/gladiolus.jpg';
 import grabandgoLogo from '../assets/shops/grabandgo.jpg';
 import grandcandyLogo from '../assets/shops/grandcandy.jpg';
@@ -58,6 +60,7 @@ import leovetLogo from '../assets/shops/leovet.jpg';
 import letualLogo from '../assets/shops/letual.svg';
 import loftLogo from '../assets/shops/loft.jpg';
 import magnitLogo from '../assets/shops/magnit.svg';
+import martLogo from '../assets/shops/mart.jpg';
 import masterclassLogo from '../assets/shops/masterclass.jpg';
 import microsoftLogo from '../assets/shops/microsoft.svg';
 import minisoLogo from '../assets/shops/miniso.png';
@@ -135,6 +138,7 @@ const RAW_SHOPS_REGISTRY: Record<string, ShopMeta> = {
     "60секунд": { type: 'image', src: sixtysecondsLogo },
     "88": { type: 'image', src: eightyEightLogo, hasOwnBackground: true },
     aeroflot: { type: 'image', src: aeroflotLogo },
+    alphapharm: { type: 'image', src: alphapharmLogo, hasOwnBackground: true },
     alphastom: { type: 'image', src: alphastomLogo },
     alphavet: { type: 'image', src: alphavetLogo },
     ambar: { type: 'image', src: ambarLogo },
@@ -160,6 +164,7 @@ const RAW_SHOPS_REGISTRY: Record<string, ShopMeta> = {
     gamma: { type: 'image', src: gammaclinicsLogo },
     gammaclinics: { type: 'image', src: gammaclinicsLogo },
     gazprom: { type: 'image', src: gazpromLogo },
+    gedeonrichter: { type: 'image', src: gedeonRichterLogo, hasOwnBackground: true },
     grabgo: { type: 'image', src: grabandgoLogo },
     grabandgo: { type: 'image', src: grabandgoLogo },
     grandcandy: { type: 'image', src: grandcandyLogo },
@@ -168,6 +173,7 @@ const RAW_SHOPS_REGISTRY: Record<string, ShopMeta> = {
     kaizer: { type: 'image', src: kaizerLogo },
     leovet: { type: 'image', src: leovetLogo, hasOwnBackground: true },
     loft: { type: 'image', src: loftLogo, hasOwnBackground: true },
+    mart: { type: 'image', src: martLogo, hasOwnBackground: true },
     masterclass: { type: 'image', src: masterclassLogo, hasOwnBackground: true },
     microsoft: { type: 'image', src: microsoftLogo, hasOwnBackground: true },
     miniso: { type: 'image', src: minisoLogo },
@@ -251,7 +257,7 @@ const RAW_SHOPS_REGISTRY: Record<string, ShopMeta> = {
     циран: { type: 'image', src: tsiranLogo },
     чгк: { type: 'image', src: chgkLogo },
     чгквармении: { type: 'image', src: chgkArmeniaLogo },
-    штудия: { type: 'image', src: shtudiyaLogo },
+    штудия: { type: 'image', src: shtudiyaLogo, hasOwnBackground: true },
     эстетикатела: { type: 'image', src: estetikatelaLogo },
     яндексафиша: { type: 'image', src: yandexafishaLogo },
 
