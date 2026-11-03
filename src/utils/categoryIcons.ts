@@ -12,6 +12,7 @@ export const CATEGORY_ICONS: Record<string, CategoryVisual> = {
     Food: { icon: '🍏', color: '#4CAF50' },             // Сочный зеленый
     Bank: { icon: '🏦', color: '#3F51B5' },             // Глубокий синий
     Beauty: { icon: '✨', color: '#E91E63' },           // Розовый
+    Car: { icon: '🚗', color: '#3F51B5' },           // Глубокий синий
     ClothesAndShoes: { icon: '🛍️', color: '#9C27B0' },  // Фиолетовый
     CurrencyExchange: { icon: '💱', color: '#00BCD4' }, // Бирюзовый
     Delivery: { icon: '📦', color: '#FF9800' },         // Оранжевый
