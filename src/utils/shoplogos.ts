@@ -22,6 +22,7 @@ import ambarLogo from '../assets/shops/ambar.jpg';
 import ardshinkbankLogo from '../assets/shops/ardshinbank.svg';
 import asteriaLogo from '../assets/shops/asteria.svg';
 import avitoLogo from '../assets/shops/avito.svg';
+import beautyangelLogo from '../assets/shops/beautyangel.jpg';
 import auchanLogo from '../assets/shops/auchan.svg';
 import burgerKingLogo from '../assets/shops/burgerking.svg';
 import castleRockLogo from '../assets/shops/castlerock.jpg';
@@ -84,6 +85,7 @@ import sasfoodcourtLogo from '../assets/shops/sasfoodcourt.svg';
 import semishagoffLogo from '../assets/shops/semishagoff.svg';
 import shtudiyaLogo from '../assets/shops/штудия.jpg';
 import sixtysecondsLogo from '../assets/shops/sixtyseconds.svg';
+import smokingChefLogo from '../assets/shops/smokingchef.jpg';
 import sorrisoLogo from '../assets/shops/sorriso.jpg';
 import spbMetroLogo from '../assets/shops/spbmetro.svg';
 import sushilabLogo from '../assets/shops/sushilab.jpg';
@@ -91,6 +93,7 @@ import sushiwhiteLogo from '../assets/shops/sushiwhite.png';
 import tbankLogo from '../assets/shops/tbank.svg';
 import telcellLogo from '../assets/shops/telcell.svg';
 import tele2Logo from '../assets/shops/tele2.svg';
+import thebeatlespubLogo from '../assets/shops/thebeatlespub.jpg';
 import ticketonLogo from '../assets/shops/ticketon.png';
 import tinsuranceLogo from '../assets/shops/tinsurance.svg';
 import tomsarkghLogo from '../assets/shops/tomsarkgh.jpg';
@@ -146,6 +149,8 @@ const RAW_SHOPS_REGISTRY: Record<string, ShopMeta> = {
     asteria: { type: 'image', src: asteriaLogo },
     avito: { type: 'image', src: avitoLogo },
     auchan: { type: 'image', src: auchanLogo, hasOwnBackground: true },
+    beatlespub: { type: 'image', src: thebeatlespubLogo, hasOwnBackground: true },
+    beautyangel: { type: 'image', src: beautyangelLogo, hasOwnBackground: true },
     burgerking: { type: 'image', src: burgerKingLogo },
     castlerock: { type: 'image', src: castleRockLogo },
     coffeehouse: { type: 'image', src: coffeehouseLogo },
@@ -191,12 +196,14 @@ const RAW_SHOPS_REGISTRY: Record<string, ShopMeta> = {
     rtcleaning: { type: 'image', src: rtcleaningLogo },
     sas: { type: 'image', src: sasLogo },
     sasfoodcourt: { type: 'image', src: sasfoodcourtLogo },
+    smokingchef: { type: 'image', src: smokingChefLogo },
     sorriso: { type: 'image', src: sorrisoLogo },
     sushilab: { type: 'image', src: sushilabLogo },
     sushiwhite: { type: 'image', src: sushiwhiteLogo },
     tbank: { type: 'image', src: tbankLogo, hasOwnBackground: true },
     telcell: { type: 'image', src: telcellLogo },
     tele2: { type: 'image', src: tele2Logo },
+    thebeatlespub: { type: 'image', src: thebeatlespubLogo },
     ticketon: { type: 'image', src: ticketonLogo },
     tinsurance: { type: 'image', src: tinsuranceLogo },
     tomsarkghLogo: { type: 'image', src: tomsarkghLogo },
